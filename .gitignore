@@ -1,0 +1,43 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage and test
+.coverage
+.pytest_cache/
+.tox/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Cached platform resources
+index_files/
+index_files/**/*

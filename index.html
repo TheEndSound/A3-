@@ -1,0 +1,3012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性化学习系统 - 学习伙伴</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* ========== 基础变量 ========== */
+        :root {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #f5f5f4;
+            --bg-card: #ffffff;
+            --bg-hover: #f5f5f4;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --text-muted: #a8a29e;
+            --border: #e7e5e4;
+            --accent: #ea580c;
+            --accent-hover: #c2410c;
+            --accent-light: #fff7ed;
+            --accent-subtle: #fed7aa;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        /* ========== 基础重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========== 顶部导航 ========== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .nav-tab {
+            padding: 6px 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: none;
+            background: transparent;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .nav-tab.active {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            font-weight: 500;
+        }
+
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px 4px 4px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* ========== 主内容区 ========== */
+        .main {
+            margin-top: 56px;
+            min-height: calc(100vh - 56px);
+        }
+
+        .page {
+            display: none;
+            padding: 32px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ========== 页面标题 ========== */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* ========== 统计卡片 ========== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -1px;
+        }
+
+        .stat-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .stat-change {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+
+        .stat-change.up {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .stat-change.down {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* ========== 内容区块 ========== */
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-link {
+            font-size: 13px;
+            color: var(--accent);
+
+            text-decoration: none;
+        }
+
+        .section-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ========== 资源卡片 ========== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-preview {
+            height: 100px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .card-preview-icon {
+            font-size: 32px;
+            opacity: 0.6;
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 11px;
+            padding: 3px 8px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .card-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            width: 60px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* ========== 学习记录列表 ========== */
+        .record-list {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .record-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-right: 14px;
+        }
+
+        .record-content {
+            flex: 1;
+        }
+
+        .record-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .record-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .record-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .record-status.done {
+            background: #dcfce7;
+            color: var(--success);
+        }
+
+        .record-status.progress {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        /* ========== 对话式画像页面 ========== */
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            height: calc(100vh - 120px);
+        }
+
+        .chat-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            margin-bottom: 20px;
+        }
+
+        .chat-message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .chat-message:not(.user) .message-bubble {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .chat-message.user .message-bubble {
+            background: var(--accent);
+            color: white;
+        }
+
+        .chat-input-row {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* 画像侧边栏 */
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .profile-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .radar-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag {
+            font-size: 12px;
+            padding: 4px 10px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            color: var(--text-secondary);
+        }
+
+        .tag.active {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .dimension-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .dimension-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .dimension-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .dimension-name {
+            color: var(--text-secondary);
+        }
+
+        .dimension-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .dimension-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .dimension-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        /* ========== 资源生成页面 ========== */
+        .workflow-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .workflow-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .agents-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .agent-card {
+            flex: 1;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            text-align: center;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .agent-card.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        .agent-card.done {
+            border-color: var(--success);
+        }
+
+        .agent-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .agent-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .agent-status {
+            font-size: 11px;
+            margin-top: 8px;
+            color: var(--text-muted);
+        }
+
+        .agent-card.active .agent-status {
+            color: var(--accent);
+        }
+
+        .agent-card.done .agent-status {
+            color: var(--success);
+        }
+
+        .arrow {
+            font-size: 18px;
+            color: var(--text-muted);
+        }
+
+        .gen-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .gen-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .gen-btn.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .gen-btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .gen-btn.secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .resource-list {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .resource-item:last-child {
+            border-bottom: none;
+        }
+
+        .resource-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 16px;
+        }
+
+        .resource-info {
+            flex: 1;
+        }
+
+        .resource-type {
+            font-size: 11px;
+            color: var(--accent);
+            margin-bottom: 2px;
+        }
+
+        .resource-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .resource-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .resource-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+
+        /* ========== 学习路径页面 ========== */
+        .path-page {
+            max-width: 1000px;
+        }
+
+        .path-canvas-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .path-canvas {
+            width: 100%;
+            height: 400px;
+        }
+
+        .path-legend {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.done { background: var(--success); }
+        .legend-dot.current { background: var(--accent); }
+        .legend-dot.todo { background: var(--text-muted); }
+
+        /* ========== 路径详情面板 ========== */
+        .path-detail-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .path-detail-panel.visible {
+            display: block;
+        }
+
+        .path-summary {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: var(--accent-light);
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--accent);
+        }
+
+        .path-detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .path-detail-status-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .path-detail-status-badge.current {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .path-detail-status-badge.done {
+            background: #f0fdf4;
+            color: var(--success);
+        }
+
+        .path-detail-status-badge.todo {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+        }
+
+        .path-detail-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .path-detail-goal {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        .path-detail-goal strong {
+            color: var(--text-secondary);
+        }
+
+        .path-detail-resources {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .path-resource-tag {
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+        }
+
+        .path-resource-tag:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-subtle);
+            color: var(--accent);
+        }
+
+        .path-detail-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .path-btn {
+            padding: 8px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.15s ease;
+        }
+
+        .path-btn-primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .path-btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .path-btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .path-btn-success {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .path-btn-success:hover {
+            background: #15803d;
+        }
+
+        .path-btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .path-btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .path-btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+
+        /* ========== 路径空状态 ========== */
+        .path-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .path-empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.4;
+        }
+
+        .path-empty-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .path-empty-desc {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* ========== Canvas 节点点击 ========== */
+        .path-canvas {
+            cursor: pointer;
+        }
+
+        /* ========== 智能辅导页面 ========== */
+        .tutoring-layout {
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 24px;
+            height: calc(100vh - 120px);
+        }
+
+        .tutoring-main {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tutoring-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tutoring-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .tutoring-header p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .tutoring-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .tutoring-msg {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .tutoring-msg.user {
+            flex-direction: row-reverse;
+        }
+
+        .tutoring-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .tutoring-msg:not(.user) .tutoring-avatar {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tutoring-msg.user .tutoring-avatar {
+            background: var(--bg-secondary);
+        }
+
+        .tutoring-content {
+            max-width: 70%;
+        }
+
+        .tutoring-bubble {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .tutoring-msg:not(.user) .tutoring-bubble {
+            background: var(--bg-secondary);
+        }
+
+        .tutoring-msg.user .tutoring-bubble {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tutoring-extra {
+            margin-top: 10px;
+            padding: 12px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .quick-questions {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-q {
+            font-size: 12px;
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .quick-q:hover {
+            background: var(--border);
+        }
+
+        .tutoring-input-row {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .history-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .history-item {
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: var(--border);
+        }
+
+        .history-item h4 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-item p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ========== 效果评估页面 ========== */
+        .eval-header-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .eval-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .eval-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .score-display {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .score-ring {
+            position: relative;
+            width: 100px;
+            height: 100px;
+        }
+
+        .score-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .score-ring circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .score-ring .bg {
+            stroke: var(--border);
+        }
+
+        .score-ring .fg {
+            stroke: var(--accent);
+            stroke-linecap: round;
+            stroke-dasharray: 251;
+            stroke-dashoffset: 251;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .eval-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .metric-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .metric-card:nth-child(1) .metric-icon { background: #dbeafe; }
+        .metric-card:nth-child(2) .metric-icon { background: #dcfce7; }
+        .metric-card:nth-child(3) .metric-icon { background: #fef3c7; }
+        .metric-card:nth-child(4) .metric-icon { background: #e0e7ff; }
+
+        .metric-name {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .metric-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 220px;
+        }
+
+        .insights-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .insight-item {
+            display: flex;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+        }
+
+        .insight-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .insight-item:nth-child(1) .insight-icon { background: #dcfce7; }
+        .insight-item:nth-child(2) .insight-icon { background: #fef3c7; }
+        .insight-item:nth-child(3) .insight-icon { background: #e0e7ff; }
+
+        .insight-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .insight-content p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ========== Toast ========== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            background: var(--text-primary);
+            color: white;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ========== 资源详情模态框 ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            max-width: 720px;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-header h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .modal-body h2, .modal-body h3 {
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+        .modal-body pre {
+            background: var(--bg-secondary);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .modal-body code {
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        .modal-body pre code {
+            padding: 0;
+            background: none;
+        }
+
+        /* ========== 打字机光标 ========== */
+        .typing {
+            display: inline-flex;
+            gap: 3px;
+            margin-left: 4px;
+        }
+
+        .typing span {
+            width: 4px;
+            height: 4px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typingDot 1.4s infinite;
+        }
+
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">学习伙伴</div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-page="home">首页</button>
+                <button class="nav-tab" data-page="profile">画像</button>
+                <button class="nav-tab" data-page="generate">生成</button>
+                <button class="nav-tab" data-page="path">路径</button>
+                <button class="nav-tab" data-page="tutor">辅导</button>
+                <button class="nav-tab" data-page="eval">评估</button>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="user-chip">
+                <div class="user-avatar">智</div>
+                <span>AI智学</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main">
+        <!-- 首页 -->
+        <div class="page active" id="page-home">
+            <div class="page-header">
+                <h1 class="page-title">AI智学 - 个性化学习系统</h1>
+                <p class="page-subtitle">多智能体协同驱动，根据你的对话自动生成个性化学习内容</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">对话轮次</div>
+                    <div class="stat-value" id="stat-messages">0</div>
+                    <div class="stat-meta">累计交互</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">资源生成</div>
+                    <div class="stat-value" id="stat-resources">0</div>
+                    <div class="stat-meta">个性化学习材料</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">画像维度</div>
+                    <div class="stat-value" id="stat-profile">--</div>
+                    <div class="stat-meta" id="stat-profile-meta">等待分析</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">路径步骤</div>
+                    <div class="stat-value" id="stat-path">0</div>
+                    <div class="stat-meta" id="stat-path-meta">学习计划未生成</div>
+                </div>
+            </div>
+
+            <div class="section" id="home-recommend-section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">最新对话回复</h2>
+                </div>
+                <div class="card-grid" id="home-latest-response">
+                    <!-- 由 updateHomeStats() 动态填充 -->
+                </div>
+            </div>
+
+            <div class="section" id="home-records-section" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">最近对话记录</h2>
+                </div>
+                <div class="record-list" id="home-record-list">
+                    <!-- 由 updateHomeStats() 动态填充 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 画像页面 -->
+        <div class="page" id="page-profile">
+            <div class="page-header">
+                <h1 class="page-title">学习画像分析</h1>
+                <p class="page-subtitle">基于你的学习行为，自动构建个性化学习特征模型</p>
+            </div>
+
+            <div class="profile-layout">
+                <div class="chat-panel">
+                    <div class="chat-header">AI 画像分析师</div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message">
+                            <div class="message-bubble">
+                                你好！我是你的专属学习画像分析师。通过几次简短的对话，我可以了解你的学习习惯和特点，从而提供更个性化的学习建议。<br><br>
+                                我们开始吧——你平时更喜欢在什么时间段学习？
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" class="chat-input" id="chat-input" placeholder="输入你的回答..." onkeypress="handleChatEnter(event)">
+                        <button class="btn btn-primary" onclick="sendChat()">发送</button>
+                    </div>
+                </div>
+
+                <div class="profile-sidebar">
+                    <div class="profile-card">
+                        <div class="profile-card-title">画像进度</div>
+                        <div class="radar-wrapper">
+                            <canvas id="radar-canvas" width="260" height="260"></canvas>
+                        </div>
+                        <div class="tags" id="profile-tags">
+                        </div>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="profile-card-title">维度分析</div>
+                        <div class="dimension-list">
+                            <div class="dimension-item">
+                                <div class="dimension-header">
+                                    <span class="dimension-name">知识基础</span>
+                                    <span class="dimension-value" id="dim-knowledge">--</span>
+                                </div>
+                                <div class="dimension-bar"><div class="dimension-fill" id="bar-knowledge" style="width: 0%"></div></div>
+                            </div>
+                            <div class="dimension-item">
+                                <div class="dimension-header">
+                                    <span class="dimension-name">学习风格</span>
+                                    <span class="dimension-value" id="dim-style">--</span>
+                                </div>
+                                <div class="dimension-bar"><div class="dimension-fill" id="bar-style" style="width: 0%"></div></div>
+                            </div>
+                            <div class="dimension-item">
+                                <div class="dimension-header">
+                                    <span class="dimension-name">学习节奏</span>
+                                    <span class="dimension-value" id="dim-pace">--</span>
+                                </div>
+                                <div class="dimension-bar"><div class="dimension-fill" id="bar-pace" style="width: 0%"></div></div>
+                            </div>
+                            <div class="dimension-item">
+                                <div class="dimension-header">
+                                    <span class="dimension-name">兴趣方向</span>
+                                    <span class="dimension-value" id="dim-interest">--</span>
+                                </div>
+                                <div class="dimension-bar"><div class="dimension-fill" id="bar-interest" style="width: 0%"></div></div>
+                            </div>
+                            <div class="dimension-item">
+                                <div class="dimension-header">
+                                    <span class="dimension-name">薄弱点</span>
+                                    <span class="dimension-value" id="dim-weakness">--</span>
+                                </div>
+                                <div class="tags" id="weak-points-tags" style="margin-top: 4px;"></div>
+                            </div>
+                            <div class="dimension-item">
+                                <div class="dimension-header">
+                                    <span class="dimension-name">交互摘要</span>
+                                </div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="dim-summary">暂无交互</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 资源生成页面 -->
+        <div class="page" id="page-generate">
+            <div class="page-header">
+                <h1 class="page-title">个性化资源生成</h1>
+                <p class="page-subtitle">多智能体协同，根据你的画像自动生成定制学习内容</p>
+            </div>
+
+            <div class="gen-controls">
+                <button class="gen-btn primary" id="gen-btn" onclick="startGen()">开始生成</button>
+                <button class="gen-btn secondary" onclick="resetGen()">重置</button>
+            </div>
+
+            <!-- 状态显示 -->
+            <div id="gen-status-bar" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; font-size:13px; color:var(--text-secondary); min-height:20px; transition:all 0.2s;"></div>
+
+            <div class="workflow-panel">
+                <div class="workflow-title">智能工作流</div>
+                <div class="agents-row">
+                    <div class="agent-card" id="agent-1">
+                        <div class="agent-name">需求分析</div>
+                        <div class="agent-desc">理解学习目标</div>
+                        <div class="agent-status">等待</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="agent-card" id="agent-2">
+                        <div class="agent-name">内容规划</div>
+                        <div class="agent-desc">制定生成方案</div>
+                        <div class="agent-status">等待</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="agent-card" id="agent-3">
+                        <div class="agent-name">资源创作</div>
+                        <div class="agent-desc">生成学习材料</div>
+                        <div class="agent-status">等待</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="agent-card" id="agent-4">
+                        <div class="agent-name">质量审核</div>
+                        <div class="agent-desc">优化完善内容</div>
+                        <div class="agent-status">等待</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="resource-list">
+                <div class="section-header" style="margin-bottom: 16px;">
+                    <h2 class="section-title">生成内容</h2>
+                </div>
+                <div id="gen-streaming" style="display: none; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 20px; margin-bottom: 16px; max-height: 400px; overflow-y: auto; font-size: 14px; line-height: 1.7;"></div>
+                <div id="resource-items">
+                    <!-- 由 startGen() 动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习路径页面 -->
+        <div class="page path-page" id="page-path">
+            <div class="page-header">
+                <h1 class="page-title">学习路径规划</h1>
+                <p class="page-subtitle">基于你的知识掌握情况，智能规划最优学习路线</p>
+            </div>
+
+            <div class="path-empty" id="path-empty">
+                <div class="path-empty-icon">🗺️</div>
+                <div class="path-empty-title">暂无学习路径</div>
+                <div class="path-empty-desc">请先在「资源生成」页面点击「开始生成」，系统将自动为你规划个性化学习路径。</div>
+            </div>
+
+            <div class="path-canvas-wrapper" id="path-canvas-wrapper" style="display:none;">
+                <canvas id="path-canvas" class="path-canvas"></canvas>
+                <div class="path-legend">
+                    <div class="legend-item"><div class="legend-dot done"></div><span>已掌握</span></div>
+                    <div class="legend-item"><div class="legend-dot current"></div><span>当前学习</span></div>
+                    <div class="legend-item"><div class="legend-dot todo"></div><span>待学习</span></div>
+                </div>
+            </div>
+
+            <!-- 路径总结 + 步骤详情 -->
+            <div class="path-detail-panel" id="path-detail-panel">
+                <div class="path-summary" id="path-summary"></div>
+                <div id="path-detail-body">
+                    <div class="path-detail-title">
+                        <span id="path-step-number"></span>
+                        <span id="path-step-title"></span>
+                        <span class="path-detail-status-badge" id="path-step-badge"></span>
+                    </div>
+                    <div class="path-detail-desc" id="path-step-desc"></div>
+                    <div class="path-detail-goal" id="path-step-goal"></div>
+                    <div class="path-detail-resources" id="path-step-resources"></div>
+                    <div class="path-detail-actions">
+                        <button class="path-btn path-btn-success" id="path-btn-complete" onclick="toggleStepStatus()">✅ 标记为已完成</button>
+                        <button class="path-btn path-btn-secondary" onclick="document.getElementById('path-detail-panel').classList.remove('visible')">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能辅导页面 -->
+        <div class="page" id="page-tutor">
+            <div class="page-header">
+                <h1 class="page-title">智能辅导助手</h1>
+                <p class="page-subtitle">随时提问，获得针对性的学习指导</p>
+            </div>
+
+            <div class="tutoring-layout">
+                <div class="tutoring-main">
+                    <div class="tutoring-header">
+                        <h3>学习助手</h3>
+                        <p>支持文字解答、图示说明、视频讲解</p>
+                    </div>
+                    <div class="tutoring-messages" id="tutor-messages">
+                        <!-- 由 sendTutor() 动态填充 -->
+                    </div>
+                    <div class="quick-questions" style="display: none;"></div>
+                    <div class="tutoring-input-row">
+                        <input type="text" class="chat-input" id="tutor-input" placeholder="输入你的问题..." onkeypress="handleTutorEnter(event)">
+                        <button class="btn btn-primary" onclick="sendTutor()">发送</button>
+                    </div>
+                </div>
+
+                <div class="history-panel">
+                    <div class="history-title">问答历史</div>
+                    <div id="tutor-history">
+                        <!-- 由 sendTutor() 动态填充 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 效果评估页面 -->
+        <div class="page" id="page-eval">
+            <div class="page-header">
+                <h1 class="page-title">学习效果评估</h1>
+                <p class="page-subtitle">多维度分析你的学习表现，提供个性化改进建议</p>
+            </div>
+
+            <div class="eval-header-card">
+                <div class="eval-title">学习效果评估</div>
+                <div class="eval-subtitle">在对话中触发"评估我的学习效果"后，评估数据将在此显示</div>
+                <div class="score-display" id="eval-score-area" style="display: none;">
+                    <div class="score-ring">
+                        <svg width="100" height="100">
+                            <circle class="bg" cx="50" cy="50" r="40"/>
+                            <circle class="fg" id="score-circle" cx="50" cy="50" r="40"/>
+                        </svg>
+                        <div class="score-text" id="score-num">0</div>
+                    </div>
+                    <div class="score-label">分</div>
+                </div>
+                <div id="eval-placeholder" style="color: var(--text-muted); font-size: 14px; padding: 20px 0;">
+                    在「辅导」页面输入"评估我的学习效果"以生成评估报告
+                </div>
+            </div>
+
+            <div class="eval-metrics">
+                <div class="metric-card">
+                    <div class="metric-icon">书</div>
+                    <div class="metric-name">知识掌握度</div>
+                    <div class="metric-value" id="eval-knowledge">--</div>
+                    <div class="metric-note" id="eval-knowledge-note">等待评估</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">速</div>
+                    <div class="metric-name">学习效率</div>
+                    <div class="metric-value" id="eval-efficiency">--</div>
+                    <div class="metric-note" id="eval-efficiency-note">等待评估</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">准</div>
+                    <div class="metric-name">薄弱环节</div>
+                    <div class="metric-value" id="eval-weakness">--</div>
+                    <div class="metric-note" id="eval-weakness-note">等待评估</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">热</div>
+                    <div class="metric-name">学习进度</div>
+                    <div class="metric-value" id="eval-progress">--</div>
+                    <div class="metric-note" id="eval-progress-note">等待评估</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-title">学习趋势</div>
+                    <canvas id="trend-chart" class="chart-canvas"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">学习洞察</div>
+                    <div id="eval-insights" class="insights-list" style="color: var(--text-muted); font-size: 13px; text-align: center; padding-top: 40px;">
+                        在「辅导」页面提问并触发效果评估后将显示洞察
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ========== 全局状态管理 ==========
+        window.appState = {
+            profile: null,
+            learningPlan: {steps: [], summary: ''},
+            resourceCount: 0,
+            messageCount: 0,
+            evalScores: []
+        };
+
+        // ========== 导航 ==========
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const page = this.dataset.page;
+                switchPage(page);
+            });
+        });
+
+        function switchPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('page-' + name).classList.add('active');
+            document.querySelector(`[data-page="${name}"]`).classList.add('active');
+
+            if (name === 'home') updateHomeStats();
+            if (name === 'profile') drawRadar();
+            if (name === 'path') drawPath();
+            if (name === 'eval') {
+                animateScore();
+                drawTrend();
+            }
+        }
+
+        // ========== 会话管理 ==========
+        function getSessionId() {
+            let sid = localStorage.getItem('session_id');
+            if (!sid) {
+                sid = 'web_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                localStorage.setItem('session_id', sid);
+            }
+            return sid;
+        }
+
+        // ========== 共享 SSE 流式函数 ==========
+        function streamChat(message, callbacks) {
+            const sessionId = getSessionId();
+            fetch('/chat/stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message, session_id: sessionId })
+            }).then(function(response) {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                var buffer = '';
+                var stopped = false;
+
+                function read() {
+                    if (stopped) return;
+                    reader.read().then(function(result) {
+                        if (result.done) {
+                            // 流正常结束但没有 end 事件时也触发回调
+                            if (!stopped && callbacks.onEnd) callbacks.onEnd();
+                            stopped = true;
+                            return;
+                        }
+                        buffer += decoder.decode(result.value, { stream: true });
+                        var lines = buffer.split('\n');
+                        buffer = lines.pop();
+                        for (var i = 0; i < lines.length; i++) {
+                            var line = lines[i];
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    var data = JSON.parse(line.slice(6));
+                                    if (data.type === 'chunk' && callbacks.onChunk) {
+                                        callbacks.onChunk(data.content);
+                                    } else if (data.type === 'status' && callbacks.onStatus) {
+                                        callbacks.onStatus(data.content);
+                                    } else if (data.type === 'data') {
+                                        // 结构化数据事件（画像、路径等）
+                                        try {
+                                            var payload = JSON.parse(data.content);
+                                            if (payload.type === 'profile') {
+                                                window.appState.profile = payload.data;
+                                                if (typeof callbacks.onProfile === 'function') callbacks.onProfile(payload.data);
+                                            } else if (payload.type === 'plan') {
+                                                var planData = payload.data;
+                                                if (Array.isArray(planData)) {
+                                                    // 旧格式：扁平字符串数组 → 自动转换
+                                                    var steps = planData.map(function(s, i) {
+                                                        var title = s.replace(/\|.*$/, '').trim().slice(0, 20);
+                                                        return {title: title, description: s, goal: '掌握相关知识', resource_types: ['文档', '练习'], status: i === 0 ? 'current' : 'todo'};
+                                                    });
+                                                    window.appState.learningPlan = {steps: steps, summary: '个性化学习路径'};
+                                                } else if (planData && planData.steps) {
+                                                    // 新格式：结构化对象
+                                                    window.appState.learningPlan = planData;
+                                                }
+                                                if (typeof callbacks.onPlan === 'function') callbacks.onPlan(window.appState.learningPlan);
+                                            }
+                                        } catch(e) {}
+                                    } else if (data.type === 'end' && callbacks.onEnd) {
+                                        stopped = true;
+                                        callbacks.onEnd();
+                                        return;
+                                    } else if (data.type === 'error' && callbacks.onError) {
+                                        stopped = true;
+                                        callbacks.onError(data.content);
+                                        return;
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                        read();
+                    }).catch(function(err) {
+                        if (!stopped && callbacks.onError) callbacks.onError(err.message);
+                        stopped = true;
+                    });
+                }
+                read();
+            }).catch(function(err) {
+                if (callbacks.onError) callbacks.onError(err.message);
+            });
+        }
+
+        // ========== 画像对话 ==========
+        var profileSending = false;
+        let profileStep = 0;
+        const profileQs = [
+            '你平时更喜欢在什么时间段学习？',
+            '遇到不懂的问题，你习惯怎么解决？',
+            '你更喜欢理论学习还是动手实践？',
+            '你每周大概花多少时间编程练习？',
+            '你觉得自己在哪个方面最需要提升？',
+            '你希望学习系统重点关注什么？'
+        ];
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') sendChat();
+        }
+
+        function sendChat() {
+            if (profileSending) return;
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            profileSending = true;
+            addChatMsg('user', msg);
+            input.value = '';
+
+            // 显示输入中指示器
+            const typing = document.createElement('div');
+            typing.className = 'chat-message ai typing-indicator';
+            typing.innerHTML = '<div class="message-bubble"><span class="typing"><span></span><span></span><span></span></span></div>';
+            document.getElementById('chat-messages').appendChild(typing);
+            var typingEl = typing;
+
+            var fullContent = '';
+            streamChat(msg, {
+                onChunk: function(text) {
+                    fullContent += text;
+                    // 实时渲染到气泡中，让用户看到逐渐生成的过程
+                    if (typingEl.parentNode) {
+                        var bubble = typingEl.querySelector('.message-bubble');
+                        if (bubble) {
+                            try {
+                                bubble.innerHTML = marked.parse(fullContent + '▌');
+                            } catch(e) {
+                                bubble.innerHTML = fullContent.replace(/</g,'&lt;') + '▌';
+                            }
+                        }
+                        var container = document.getElementById('chat-messages');
+                        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 60) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    }
+                },
+                onStatus: function(status) {
+                    // 解析画像更新状态
+                    if (status.indexOf('画像已更新') !== -1) {
+                        var match = status.match(/画像已更新：(.+)/);
+                        if (match) {
+                            var parts = match[1].split('|').map(function(s) { return s.trim(); });
+                            profileStep++;
+                            updateProfileFromStatus(parts);
+                        }
+                    }
+                },
+                onProfile: function(profile) {
+                    applyProfileData(profile);
+                },
+                onEnd: function() {
+                    profileSending = false;
+                    if (fullContent) {
+                        if (typingEl.parentNode) {
+                            // 更新流式气泡为最终内容（去掉光标）
+                            try {
+                                typingEl.querySelector('.message-bubble').innerHTML = marked.parse(fullContent);
+                            } catch(e) {
+                                typingEl.querySelector('.message-bubble').innerHTML = fullContent.replace(/</g,'&lt;');
+                            }
+                            typingEl.classList.remove('typing-indicator');
+                        } else {
+                            addChatMsg('ai', fullContent);
+                        }
+                    } else {
+                        if (typingEl.parentNode) typingEl.remove();
+                    }
+                    window.appState.messageCount++;
+                    updateHomeStats();
+                },
+                onError: function(err) {
+                    profileSending = false;
+                    if (typingEl.parentNode) typingEl.remove();
+                    addChatMsg('ai', '抱歉，处理出错：' + err);
+                }
+            });
+        }
+
+        function addChatMsg(type, text) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'chat-message ' + type;
+            div.innerHTML = `<div class="message-bubble">${text}</div>`;
+            container.appendChild(div);
+            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 60) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function updateProfileFromStatus(parts) {
+            // parts example: ["中级基础", "视觉型"]
+            var kb = '中级';
+            var style = '视觉型';
+            if (parts.length > 0) kb = parts[0].replace('基础', '').trim();
+            if (parts.length > 1) style = parts[1].trim();
+
+            var dims = ['knowledge', 'style', 'pace', 'interest'];
+            var labels = { '初级': '初级', '中级': '中等', '高级': '良好' };
+            var vals = { '初级': [55, 50, 50, 50], '中级': [78, 75, 65, 70], '高级': [90, 88, 82, 85] };
+            var level = kb in vals ? kb : '中级';
+            var selected = vals[level];
+
+            dims.forEach(function(d, i) {
+                var v = selected[i] + Math.floor(Math.random() * 6);
+                document.getElementById('dim-' + d).textContent = (d === 'knowledge') ? (labels[level] || '中等') : (d === 'style' ? style : v + '%');
+                document.getElementById('bar-' + d).style.width = Math.min(v, 100) + '%';
+            });
+
+            drawRadar();
+        }
+
+        // 结构化画像数据更新
+        function applyProfileData(profile) {
+            if (!profile) return;
+            // 知识基础
+            var kbMap = {'初级': 40, '中级': 70, '高级': 92};
+            var kbVal = kbMap[profile.knowledge_base] || 60;
+            document.getElementById('dim-knowledge').textContent = profile.knowledge_base || '--';
+            document.getElementById('bar-knowledge').style.width = kbVal + '%';
+
+            // 学习风格
+            var styleVal = 70;
+            document.getElementById('dim-style').textContent = profile.learning_style || '--';
+            document.getElementById('bar-style').style.width = styleVal + '%';
+
+            // 学习节奏
+            var paceMap = {'慢': 40, '中': 65, '快': 85};
+            var paceVal = paceMap[profile.learning_pace] || 60;
+            document.getElementById('dim-pace').textContent = profile.learning_pace || '--';
+            document.getElementById('bar-pace').style.width = paceVal + '%';
+
+            // 兴趣方向
+            document.getElementById('dim-interest').textContent = profile.interest || '--';
+            document.getElementById('bar-interest').style.width = '70%';
+
+            // 薄弱点标签云
+            var weakEl = document.getElementById('weak-points-tags');
+            if (profile.weak_points && profile.weak_points.length > 0) {
+                document.getElementById('dim-weakness').textContent = profile.weak_points.length + ' 项';
+                weakEl.innerHTML = profile.weak_points.map(function(w) {
+                    return '<span class="tag active">' + w + '</span>';
+                }).join('');
+            } else {
+                document.getElementById('dim-weakness').textContent = '暂无';
+                weakEl.innerHTML = '';
+            }
+
+            // 交互摘要
+            document.getElementById('dim-summary').textContent = profile.interaction_summary || '暂无交互';
+
+            // 更新标签云
+            var tags = [profile.learning_style || '分析中'];
+            if (profile.interest) tags.push(profile.interest);
+            if (profile.learning_pace) tags.push(profile.learning_pace + '节奏');
+            var html = tags.map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('');
+            document.getElementById('profile-tags').innerHTML = html;
+
+            drawRadar();
+        }
+
+        // ========== 雷达图 ==========
+        function drawRadar() {
+            const canvas = document.getElementById('radar-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const cx = 130, cy = 130, r = 85;
+            const labels = ['知识', '风格', '节奏', '兴趣', '薄弱', '总结'];
+
+            ctx.clearRect(0, 0, 260, 260);
+
+            var p = window.appState.profile;
+            if (!p) {
+                ctx.fillStyle = '#a8a29e';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('在左侧对话后', 130, 120);
+                ctx.fillText('将显示画像雷达', 130, 140);
+                return;
+            }
+
+            // 背景
+            for (let i = 1; i <= 4; i++) {
+                ctx.beginPath();
+                for (let j = 0; j <= 6; j++) {
+                    const a = (Math.PI * 2 / 6) * j - Math.PI / 2;
+                    const x = cx + r * (i / 4) * Math.cos(a);
+                    const y = cy + r * (i / 4) * Math.sin(a);
+                    if (j === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = '#e7e5e4';
+                ctx.stroke();
+            }
+
+            // 从 appState 计算雷达值
+            var p = window.appState.profile;
+            var kbVal = {'初级': 0.4, '中级': 0.7, '高级': 0.92}[p.knowledge_base] || 0.6;
+            var styleVal = {'视觉型': 0.7, '听觉型': 0.5, '动手型': 0.85}[p.learning_style] || 0.6;
+            var paceVal = {'慢': 0.4, '中': 0.65, '快': 0.85}[p.learning_pace] || 0.6;
+            var interestVal = p.interest ? 0.75 : 0.4;
+            var weakScore = p.weak_points && p.weak_points.length > 0 ? Math.max(0.3, 1 - p.weak_points.length * 0.15) : 1.0;
+            var summaryVal = p.interaction_summary ? 0.7 : 0.3;
+            var data = [kbVal, styleVal, paceVal, interestVal, weakScore, summaryVal];
+            var valueLabels = [
+                (kbVal * 4.0).toFixed(1),
+                (styleVal * 4.0).toFixed(1),
+                (paceVal * 4.0).toFixed(1),
+                (interestVal * 4.0).toFixed(1),
+                (weakScore * 4.0).toFixed(1),
+                (summaryVal * 4.0).toFixed(1)
+            ];
+
+            // 数据
+            ctx.beginPath();
+            data.forEach((v, i) => {
+                const a = (Math.PI * 2 / 6) * i - Math.PI / 2;
+                const x = cx + r * v * Math.cos(a);
+                const y = cy + r * v * Math.sin(a);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(234, 88, 12, 0.15)';
+            ctx.fill();
+            ctx.strokeStyle = '#ea580c';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 维度名称 + 数值标签
+            ctx.textAlign = 'center';
+            labels.forEach((l, i) => {
+                const a = (Math.PI * 2 / 6) * i - Math.PI / 2;
+                const x = cx + (r + 18) * Math.cos(a);
+                const y = cy + (r + 18) * Math.sin(a);
+
+                // 维度名称
+                ctx.fillStyle = '#57534e';
+                ctx.font = '11px sans-serif';
+                ctx.fillText(l, x, y + 4);
+
+                // 数值
+                const vx = cx + (r + 32) * Math.cos(a);
+                const vy = cy + (r + 32) * Math.sin(a);
+                ctx.fillStyle = '#ea580c';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText(valueLabels[i], vx, vy + 3);
+            });
+        }
+
+        // ========== 资源生成 ==========
+        let isGenerating = false;
+
+        function startGen() {
+            if (isGenerating) return;
+            isGenerating = true;
+            var btn = document.getElementById('gen-btn');
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+
+            document.querySelectorAll('.agent-card').forEach(function(c) {
+                c.classList.remove('active', 'done');
+                c.querySelector('.agent-status').textContent = '等待';
+            });
+
+            // 清除旧的资源项
+            document.getElementById('resource-items').innerHTML = '';
+
+            var content = '';
+            var agents = ['agent-1', 'agent-2', 'agent-3', 'agent-4'];
+            var agentKeywords = ['资源规划', '内容生成', '多模态', '案例'];
+
+            function setAgentActive(idx) {
+                if (idx > 0) {
+                    document.getElementById(agents[idx - 1]).classList.remove('active');
+                    document.getElementById(agents[idx - 1]).classList.add('done');
+                    document.getElementById(agents[idx - 1]).querySelector('.agent-status').textContent = '完成';
+                }
+                if (idx < agents.length) {
+                    document.getElementById(agents[idx]).classList.add('active');
+                    document.getElementById(agents[idx]).querySelector('.agent-status').textContent = '运行中';
+                }
+            }
+
+            // 显示状态栏
+            var statusBar = document.getElementById('gen-status-bar');
+            statusBar.style.display = 'block';
+            statusBar.textContent = '⏳ 正在准备生成...';
+
+            // 显示流式预览区域
+            var streamArea = document.getElementById('gen-streaming');
+            streamArea.style.display = 'block';
+            streamArea.innerHTML = '<div style="color: var(--text-muted);">正在等待模型响应...</div>';
+
+            streamChat('帮我生成学习资源', {
+                onStatus: function(status) {
+                    // 在状态栏显示最新状态
+                    statusBar.textContent = status;
+                    // 检查是否匹配智能体关键词
+                    for (var i = 0; i < agentKeywords.length; i++) {
+                        if (status.indexOf(agentKeywords[i]) !== -1) {
+                            setAgentActive(i);
+                            break;
+                        }
+                    }
+                },
+                onChunk: function(text) {
+                    content += text;
+                    // 实时渲染到流式预览区
+                    try {
+                        var html = marked.parse(content);
+                        streamArea.innerHTML = html;
+                    } catch(e) {
+                        // markdown 解析失败时显示纯文本
+                        streamArea.innerHTML = '<pre style="white-space:pre-wrap;font-family:inherit;">' + content.replace(/</g,'&lt;') + '</pre>';
+                    }
+                    streamArea.scrollTop = streamArea.scrollHeight;
+                },
+                onPlan: function(plan) {
+                    // already set in SSE handler
+                },
+                onEnd: function() {
+                    // 所有代理标记完成
+                    document.getElementById(agents[agents.length - 1]).classList.remove('active');
+                    document.getElementById(agents[agents.length - 1]).classList.add('done');
+                    document.getElementById(agents[agents.length - 1]).querySelector('.agent-status').textContent = '完成';
+
+                    // 状态栏显示完成
+                    statusBar.textContent = '✅ 资源生成完成！';
+                    setTimeout(function() { statusBar.style.display = 'none'; }, 3000);
+
+                    isGenerating = false;
+                    btn.disabled = false;
+                    btn.textContent = '再次生成';
+
+                    updateHomeStats();
+
+                    // 显示生成的资源
+                    if (content) {
+                        var items = document.getElementById('resource-items');
+                        var sections = content.split(/(?:^|\n)#{1,3}\s+/).filter(function(s) { return s.trim().length > 0; });
+                        if (sections.length === 0) sections = [content];
+                        // 存储完整内容供"查看"使用
+                        window._resourceSections = sections;
+                        var shownCount = 0;
+                        sections.forEach(function(section, idx) {
+                            var lines = section.split('\n');
+                            var title = lines[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
+                            if (!title) return;
+                            var desc = lines.slice(1).join(' ').replace(/\*\*/g, '').trim().slice(0, 100);
+                            if (!desc) desc = '点击查看详细内容';
+
+                            var icon = '文档';
+                            if (/(导图|思维|图谱|脑图)/.test(title)) icon = '导图';
+                            else if (/(练习|习题|题目|试题|测验)/.test(title)) icon = '练习';
+                            else if (/(视频|脚本|动画|影片)/.test(title)) icon = '视频';
+                            else if (/(案例|实操|实践|项目|实战)/.test(title)) icon = '案例';
+                            else if (/(讲解|文档|概念|原理|笔记)/.test(title)) icon = '文档';
+
+                            var div = document.createElement('div');
+                            div.className = 'resource-item gen-item';
+                            div.style.opacity = '0';
+                            div.innerHTML =
+                                '<div class="resource-icon">' + icon + '</div>' +
+                                '<div class="resource-info">' +
+                                    '<div class="resource-type">' + title.slice(0, 20) + '</div>' +
+                                    '<div class="resource-title">' + title.slice(0, 30) + '</div>' +
+                                    '<div class="resource-desc">' + desc.slice(0, 80) + '</div>' +
+                                '</div>' +
+                                '<div class="resource-actions">' +
+                                    '<button class="action-btn primary" onclick="showResourceDetail(' + idx + ')">查看</button>' +
+                                '</div>';
+                            items.appendChild(div);
+                            shownCount++;
+                            setTimeout(function() { div.style.opacity = '1'; }, idx * 150);
+                        });
+                        // 更新资源计数
+                        window.appState.resourceCount = shownCount;
+                        updateHomeStats();
+                    }
+                },
+                onError: function(err) {
+                    isGenerating = false;
+                    btn.disabled = false;
+                    btn.textContent = '重新生成';
+                    statusBar.textContent = '❌ 生成出错：' + err;
+                    showToast('生成出错：' + err);
+                }
+            });
+        }
+
+        function finishGen() {
+            // 改为由 startGen 的 onEnd 回调处理
+        }
+
+        function resetGen() {
+            document.querySelectorAll('.agent-card').forEach(function(c) {
+                c.classList.remove('active', 'done');
+                c.querySelector('.agent-status').textContent = '等待';
+            });
+            document.getElementById('resource-items').innerHTML = '';
+            document.getElementById('gen-streaming').style.display = 'none';
+            document.getElementById('gen-streaming').innerHTML = '';
+            document.getElementById('gen-status-bar').style.display = 'none';
+            document.getElementById('gen-status-bar').innerHTML = '';
+            document.getElementById('gen-btn').disabled = false;
+            document.getElementById('gen-btn').textContent = '开始生成';
+            isGenerating = false;
+        }
+
+        // ========== 学习路径 ==========
+        var _selectedStepIndex = -1;
+
+        function getPlan() {
+            var p = window.appState.learningPlan;
+            if (!p) return {steps: [], summary: ''};
+            // 兼容旧格式（扁平数组，没有 .steps）
+            if (Array.isArray(p)) {
+                var steps = p.map(function(s, i) {
+                    return {title: s.replace(/\|.*$/, '').trim().slice(0, 20), description: s, goal: '掌握相关知识', resource_types: ['文档', '练习'], status: i === 0 ? 'current' : 'todo'};
+                });
+                return {steps: steps, summary: '个性化学习路径'};
+            }
+            return p;
+        }
+
+        function drawPath() {
+            const canvas = document.getElementById('path-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+
+            var plan = getPlan();
+            var steps = plan.steps || [];
+
+            // 切换空状态 / Canvas 显示
+            var wrapper = document.getElementById('path-canvas-wrapper');
+            var empty = document.getElementById('path-empty');
+            if (!steps || steps.length === 0) {
+                wrapper.style.display = 'none';
+                empty.style.display = 'block';
+                document.getElementById('path-detail-panel').classList.remove('visible');
+                return;
+            }
+            wrapper.style.display = 'block';
+            empty.style.display = 'none';
+
+            // 显示路径总结
+            if (plan.summary) {
+                document.getElementById('path-summary').textContent = '📌 ' + plan.summary;
+            }
+
+            // 计算节点位置
+            var count = steps.length;
+            var spacing = Math.min(140, (canvas.width - 160) / Math.max(count - 1, 1));
+            var startX = Math.max(80, (canvas.width - spacing * (count - 1)) / 2);
+            var nodes = [];
+            for (var i = 0; i < count; i++) {
+                nodes.push({
+                    x: startX + i * spacing,
+                    y: 200,
+                    step: steps[i],
+                    index: i
+                });
+            }
+
+            // 保存节点位置以供点击检测
+            window._pathNodes = nodes;
+
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 画箭头连线
+            for (var i = 0; i < nodes.length - 1; i++) {
+                var na = nodes[i], nb = nodes[i+1];
+                var fromX = na.x + 22, fromY = na.y;
+                var toX = nb.x - 22, toY = nb.y;
+
+                ctx.beginPath();
+                ctx.moveTo(fromX, fromY);
+                ctx.lineTo(toX, toY);
+                ctx.strokeStyle = '#d6d3d1';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 箭头
+                var arrowSize = 8;
+                var angle = Math.atan2(toY - fromY, toX - fromX);
+                ctx.beginPath();
+                ctx.moveTo(toX, toY);
+                ctx.lineTo(toX - arrowSize * Math.cos(angle - 0.4), toY - arrowSize * Math.sin(angle - 0.4));
+                ctx.lineTo(toX - arrowSize * Math.cos(angle + 0.4), toY - arrowSize * Math.sin(angle + 0.4));
+                ctx.closePath();
+                ctx.fillStyle = '#d6d3d1';
+                ctx.fill();
+            }
+
+            // 画节点
+            nodes.forEach(function(n, i) {
+                var status = n.step.status || 'todo';
+                var colors = {
+                    done: { bg: '#16a34a', text: '#fff', border: '#15803d' },
+                    current: { bg: '#ea580c', text: '#fff', border: '#c2410c' },
+                    todo: { bg: '#f5f5f4', text: '#57534e', border: '#d6d3d1' }
+                };
+                var c = colors[status] || colors.todo;
+
+                // 外发光（当前步骤）
+                if (status === 'current') {
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, 28, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(234, 88, 12, 0.1)';
+                    ctx.fill();
+                }
+
+                // 外圈
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, 24, 0, Math.PI * 2);
+                ctx.fillStyle = c.bg;
+                ctx.fill();
+                ctx.strokeStyle = c.border;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 序号
+                ctx.fillStyle = c.text;
+                ctx.font = 'bold 13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, n.x, n.y);
+
+                // 状态标记（已完成步骤显示勾）
+                if (status === 'done') {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 10px sans-serif';
+                    ctx.fillText('✓', n.x, n.y + 1);
+                }
+
+                // 步骤标题（下方）
+                ctx.fillStyle = status === 'todo' ? '#a8a29e' : '#57534e';
+                ctx.font = '11px sans-serif';
+                ctx.textBaseline = 'top';
+                var title = n.step.title || '步骤 ' + (i+1);
+                var maxW = 90;
+                if (ctx.measureText(title).width > maxW) {
+                    while (title.length > 1 && ctx.measureText(title + '…').width > maxW) {
+                        title = title.slice(0, -1);
+                    }
+                    title += '…';
+                }
+                ctx.fillText(title, n.x, n.y + 30);
+
+                // 状态标签
+                var statusLabel = {done: '已完成', current: '学习中', todo: '待学习'}[status] || '待学习';
+                ctx.fillStyle = status === 'current' ? '#ea580c' : '#a8a29e';
+                ctx.font = '10px sans-serif';
+                ctx.textBaseline = 'top';
+                ctx.fillText(statusLabel, n.x, n.y + 44);
+            });
+
+            // 如果之前有选中的步骤，恢复高亮
+            if (_selectedStepIndex >= 0 && _selectedStepIndex < nodes.length) {
+                var ns = nodes[_selectedStepIndex];
+                ctx.beginPath();
+                ctx.arc(ns.x, ns.y, 30, 0, Math.PI * 2);
+                ctx.strokeStyle = '#ea580c';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([4, 4]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // 如果详情面板是打开的，刷新内容
+            if (document.getElementById('path-detail-panel').classList.contains('visible') && _selectedStepIndex >= 0) {
+                renderStepDetail(_selectedStepIndex);
+            }
+        }
+
+        // Canvas 点击检测
+        function handleCanvasClick(e) {
+            const canvas = document.getElementById('path-canvas');
+            if (!canvas) return;
+            var rect = canvas.getBoundingClientRect();
+            var scaleX = canvas.width / rect.width;
+            var scaleY = canvas.height / rect.height;
+            var clickX = (e.clientX - rect.left) * scaleX;
+            var clickY = (e.clientY - rect.top) * scaleY;
+
+            var nodes = window._pathNodes || [];
+            for (var i = 0; i < nodes.length; i++) {
+                var n = nodes[i];
+                var dx = clickX - n.x;
+                var dy = clickY - n.y;
+                if (dx * dx + dy * dy <= 32 * 32) {
+                    handleStepClick(i);
+                    return;
+                }
+            }
+        }
+
+        // 点击步骤节点
+        function handleStepClick(index) {
+            var plan = getPlan();
+            var steps = plan.steps || [];
+            if (index < 0 || index >= steps.length) return;
+            _selectedStepIndex = index;
+            renderStepDetail(index);
+            drawPath(); // 重绘以更新高亮
+        }
+
+        // 渲染步骤详情面板
+        function renderStepDetail(index) {
+            var plan = getPlan();
+            var steps = plan.steps || [];
+            if (index < 0 || index >= steps.length) return;
+            var step = steps[index];
+            var panel = document.getElementById('path-detail-panel');
+            panel.classList.add('visible');
+
+            document.getElementById('path-step-number').textContent = '步骤 ' + (index + 1) + '：';
+            document.getElementById('path-step-title').textContent = step.title || '';
+
+            var badge = document.getElementById('path-step-badge');
+            var status = step.status || 'todo';
+            var badgeText = {done: '✅ 已完成', current: '🟠 学习中', todo: '⏳ 待学习'}[status] || '⏳ 待学习';
+            badge.textContent = badgeText;
+            badge.className = 'path-detail-status-badge ' + status;
+
+            document.getElementById('path-step-desc').textContent = step.description || '';
+            document.getElementById('path-step-goal').innerHTML = '<strong>学习目标：</strong>' + (step.goal || '');
+
+            // 资源标签
+            var resContainer = document.getElementById('path-step-resources');
+            resContainer.innerHTML = '';
+            var types = step.resource_types || ['文档', '练习'];
+            types.forEach(function(t) {
+                var tag = document.createElement('span');
+                tag.className = 'path-resource-tag';
+                tag.textContent = '📚 ' + t;
+                tag.onclick = function() { openResourceForType(t); };
+                resContainer.appendChild(tag);
+            });
+
+            // 完成按钮
+            var btn = document.getElementById('path-btn-complete');
+            if (status === 'done') {
+                btn.textContent = '✅ 已完成';
+                btn.className = 'path-btn path-btn-success';
+                btn.disabled = true;
+            } else if (status === 'current') {
+                btn.textContent = '✅ 标记为已完成';
+                btn.className = 'path-btn path-btn-success';
+                btn.disabled = false;
+            } else {
+                btn.textContent = '🔒 前置步骤未完成';
+                btn.className = 'path-btn path-btn-primary';
+                btn.disabled = true;
+            }
+        }
+
+        // 切换步骤状态
+        function toggleStepStatus() {
+            var plan = getPlan();
+            var steps = plan.steps || [];
+            if (_selectedStepIndex < 0 || _selectedStepIndex >= steps.length) return;
+            var step = steps[_selectedStepIndex];
+            if (step.status !== 'current') return;
+
+            // 标记当前步骤为 done
+            step.status = 'done';
+
+            // 将下一步标记为 current
+            if (_selectedStepIndex + 1 < steps.length) {
+                steps[_selectedStepIndex + 1].status = 'current';
+            }
+
+            // 更新 appState
+            window.appState.learningPlan = plan;
+
+            renderStepDetail(_selectedStepIndex);
+            drawPath();
+            showToast('🎉 步骤 "' + step.title + '" 已完成！');
+        }
+
+        // 根据资源类型查找并打开匹配的章节
+        function openResourceForType(resourceType) {
+            var sections = window._resourceSections || [];
+            if (sections.length === 0) {
+                showToast('暂无可用资源，请先在「资源生成」页面生成学习内容');
+                return;
+            }
+
+            // 根据资源类型匹配章节
+            var typeKeywords = {
+                '文档': ['讲解', '文档', '概念', '原理', '笔记'],
+                '视频': ['视频', '脚本', '动画', '影片'],
+                '练习': ['练习', '习题', '题目', '试题', '测验'],
+                '案例': ['案例', '实操', '实践', '项目', '实战'],
+                '导图': ['导图', '思维', '图谱', '脑图']
+            };
+            var keywords = typeKeywords[resourceType] || [resourceType];
+            var foundIdx = -1;
+
+            for (var i = 0; i < sections.length; i++) {
+                var header = sections[i].split('\n')[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
+                for (var k = 0; k < keywords.length; k++) {
+                    if (header.indexOf(keywords[k]) !== -1) {
+                        foundIdx = i;
+                        break;
+                    }
+                }
+                if (foundIdx >= 0) break;
+            }
+
+            if (foundIdx >= 0) {
+                showResourceDetail(foundIdx);
+            } else {
+                // 没有精确匹配，打开第一个
+                showResourceDetail(0);
+            }
+        }
+
+        // ========== 智能辅导 ==========
+        var tutorSending = false;
+
+        function handleTutorEnter(e) {
+            if (e.key === 'Enter') sendTutor();
+        }
+
+        function askTutor(q) {
+            document.getElementById('tutor-input').value = q;
+            sendTutor();
+        }
+
+        function sendTutor() {
+            if (tutorSending) return;
+            const input = document.getElementById('tutor-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            tutorSending = true;
+            addTutorMsg('user', msg);
+            input.value = '';
+
+            const typing = document.createElement('div');
+            typing.className = 'tutoring-msg typing-indicator';
+            typing.innerHTML = `
+                <div class="tutoring-avatar">助</div>
+                <div class="tutoring-content">
+                    <div class="tutoring-bubble">
+                        <span class="typing"><span></span><span></span><span></span></span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('tutor-messages').appendChild(typing);
+            var typingEl = typing;
+
+            var fullContent = '';
+            streamChat(msg, {
+                onChunk: function(text) {
+                    fullContent += text;
+                    if (typingEl.parentNode) {
+                        typingEl.querySelector('.tutoring-bubble').innerHTML = marked.parse(fullContent + '▌');
+                        var container = document.getElementById('tutor-messages');
+                        // 仅在用户已在底部附近时自动滚动
+                        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 60) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    }
+                },
+                onProfile: function(profile) {
+                    applyProfileData(profile);
+                },
+                onPlan: function(plan) {
+                    // already set in SSE handler
+                },
+                onEnd: function() {
+                    tutorSending = false;
+                    if (typingEl.parentNode) {
+                        typingEl.querySelector('.tutoring-bubble').innerHTML = marked.parse(fullContent);
+                        var container = document.getElementById('tutor-messages');
+                        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 60) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    }
+                    window.appState.messageCount++;
+                    updateHomeStats();
+                },
+                onError: function(err) {
+                    tutorSending = false;
+                    if (typingEl.parentNode) typingEl.remove();
+                    addTutorMsg('ai', '抱歉，处理出错：' + err);
+                }
+            });
+        }
+
+        function addTutorMsg(type, text) {
+            const container = document.getElementById('tutor-messages');
+            const div = document.createElement('div');
+            div.className = 'tutoring-msg ' + type;
+            div.innerHTML = `
+                <div class="tutoring-avatar">${type === 'ai' ? '助' : '我'}</div>
+                <div class="tutoring-content">
+                    <div class="tutoring-bubble">${text}</div>
+                </div>
+            `;
+            container.appendChild(div);
+            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 60) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        // ========== 效果评估 ==========
+        function animateScore() {
+            const circle = document.getElementById('score-circle');
+            const num = document.getElementById('score-num');
+            // 从 appState 或默认值获取分数
+            var target = 72;
+            var evalMsgs = document.querySelectorAll('#tutor-messages .tutoring-msg:not(.user) .tutoring-bubble');
+            if (evalMsgs.length > 0) {
+                var lastEval = evalMsgs[evalMsgs.length - 1].textContent;
+                var scoreMatch = lastEval.match(/(\d+)\s*[分%]/);
+                if (scoreMatch) target = parseInt(scoreMatch[1]);
+            }
+            // 保存到历史趋势
+            window.appState.evalScores.push(target);
+            if (window.appState.evalScores.length > 10) {
+                window.appState.evalScores = window.appState.evalScores.slice(-10);
+            }
+
+            const circumference = 251;
+            let current = 0;
+
+            const offset = circumference - (target / 100) * circumference;
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+
+            const interval = setInterval(() => {
+                current++;
+                num.textContent = current;
+                if (current >= target) clearInterval(interval);
+            }, 15);
+        }
+
+        function drawTrend() {
+            const canvas = document.getElementById('trend-chart');
+            if (!canvas) return;
+
+            var scores = window.appState.evalScores;
+            if (!scores || scores.length < 2) {
+                // 无数据时显示提示
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+                ctx.scale(2, 2);
+                ctx.fillStyle = '#a8a29e';
+                ctx.font = '13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('触发效果评估后将显示学习趋势', canvas.offsetWidth/2, canvas.offsetHeight/2);
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth * 2;
+            canvas.height = canvas.offsetHeight * 2;
+            ctx.scale(2, 2);
+
+            const w = canvas.offsetWidth, h = canvas.offsetHeight;
+            const pad = 30;
+            var data = scores;
+            var labels = scores.map(function(_, i) { return '#' + (i + 1); });
+            var stepX = data.length > 1 ? (w - pad * 2) / (data.length - 1) : 0;
+
+            // 网格
+            ctx.strokeStyle = '#e7e5e4';
+            for (let i = 0; i <= 4; i++) {
+                const y = pad + (h - pad * 2) / 4 * i;
+                ctx.beginPath();
+                ctx.moveTo(pad, y);
+                ctx.lineTo(w - pad, y);
+                ctx.stroke();
+            }
+
+            // 渐变
+            const grad = ctx.createLinearGradient(0, pad, 0, h - pad);
+            grad.addColorStop(0, 'rgba(234, 88, 12, 0.1)');
+            grad.addColorStop(1, 'rgba(234, 88, 12, 0)');
+
+            ctx.beginPath();
+            ctx.moveTo(pad, h - pad);
+            data.forEach((v, i) => {
+                ctx.lineTo(pad + i * stepX, pad + (100 - v) / 100 * (h - pad * 2));
+            });
+            ctx.lineTo(pad + (data.length - 1) * stepX, h - pad);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // 线
+            ctx.beginPath();
+            ctx.strokeStyle = '#ea580c';
+            ctx.lineWidth = 2;
+            data.forEach((v, i) => {
+                const x = pad + i * stepX;
+                const y = pad + (100 - v) / 100 * (h - pad * 2);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // 点
+            data.forEach((v, i) => {
+                const x = pad + i * stepX;
+                const y = pad + (100 - v) / 100 * (h - pad * 2);
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ea580c';
+                ctx.fill();
+            });
+
+            // 标签
+            ctx.fillStyle = '#a8a29e';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            labels.forEach((l, i) => {
+                ctx.fillText(l, pad + i * stepX, h - 8);
+            });
+        }
+
+        // ========== 首页统计更新 ==========
+        function updateHomeStats() {
+            var p = window.appState.profile;
+            var msgCount = window.appState.messageCount;
+            var resCount = window.appState.resourceCount;
+            var plan = getPlan();
+            var planSteps = (plan.steps || []).length;
+
+            document.getElementById('stat-messages').textContent = msgCount || '0';
+            document.getElementById('stat-resources').textContent = resCount || '0';
+
+            if (p) {
+                document.getElementById('stat-profile').textContent = p.knowledge_base || '--';
+                document.getElementById('stat-profile-meta').textContent = (p.learning_style || '') + ' · ' + (p.learning_pace || '') + '节奏';
+            } else {
+                document.getElementById('stat-profile').textContent = '--';
+                document.getElementById('stat-profile-meta').textContent = '等待分析';
+            }
+
+            document.getElementById('stat-path').textContent = planSteps || '0';
+            if (planSteps > 0) {
+                var doneCount = (plan.steps || []).filter(function(s) { return s.status === 'done'; }).length;
+                document.getElementById('stat-path-meta').textContent = planSteps + ' 个步骤 · 已完成 ' + doneCount + '/' + planSteps;
+            } else {
+                document.getElementById('stat-path-meta').textContent = '学习计划未生成';
+            }
+        }
+
+        // ========== 资源详情查看 ==========
+        function showResourceDetail(idx) {
+            var sections = window._resourceSections;
+            if (!sections || !sections[idx]) {
+                showToast('内容暂不可用');
+                return;
+            }
+            var section = sections[idx];
+            var lines = section.split('\n');
+            var title = lines[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim() || '资源详情';
+            document.getElementById('modal-title').textContent = title;
+            try {
+                document.getElementById('modal-body').innerHTML = marked.parse(section);
+            } catch(e) {
+                document.getElementById('modal-body').innerHTML = '<pre style="white-space:pre-wrap;">' + section.replace(/</g,'&lt;') + '</pre>';
+            }
+            document.getElementById('resource-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeResourceModal(e) {
+            if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
+            document.getElementById('resource-modal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        // ========== Toast ==========
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // ========== 初始化 ==========
+        // Canvas 点击事件
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('path-canvas');
+            if (canvas) {
+                canvas.addEventListener('click', handleCanvasClick);
+            }
+        });
+        // 如果 DOM 已加载，直接绑定
+        var pathCanvas = document.getElementById('path-canvas');
+        if (pathCanvas && !pathCanvas._clickBound) {
+            pathCanvas.addEventListener('click', handleCanvasClick);
+            pathCanvas._clickBound = true;
+        }
+
+        window.addEventListener('resize', function() {
+            if (document.getElementById('page-path').classList.contains('active')) drawPath();
+            if (document.getElementById('page-eval').classList.contains('active')) drawTrend();
+        });
+
+        // 首页动态更新
+        updateHomeStats();
+    </script>
+
+    <!-- ========== 资源详情模态框 ========== -->
+    <div id="resource-modal" class="modal-overlay" onclick="closeResourceModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modal-title">资源详情</h3>
+                <button class="modal-close" onclick="closeResourceModal()">&times;</button>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+
+</body>
+</html>

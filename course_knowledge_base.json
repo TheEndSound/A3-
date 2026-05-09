@@ -1,0 +1,293 @@
+{
+  "course": {
+    "name": "数据结构与算法",
+    "name_en": "Data Structures and Algorithms",
+    "department": "计算机科学与技术",
+    "description": "数据结构与算法是计算机科学的核心基础课程，主要研究数据的组织、存储、管理和操作方法，以及算法的设计与分析。",
+    "prerequisites": ["程序设计基础（C/C++/Python）", "离散数学"],
+    "total_hours": 64,
+    "credits": 4
+  },
+  "chapters": [
+    {
+      "id": "ch01",
+      "title": "绪论",
+      "difficulty": "初级",
+      "order": 1,
+      "learning_objectives": [
+        "理解数据结构的基本概念和术语",
+        "掌握算法的时间复杂度与空间复杂度分析方法",
+        "了解抽象数据类型（ADT）的概念"
+      ],
+      "knowledge_points": [
+        {"name": "数据结构的基本概念", "difficulty": "初级", "prerequisites": []},
+        {"name": "逻辑结构与物理结构", "difficulty": "初级", "prerequisites": []},
+        {"name": "抽象数据类型", "difficulty": "初级", "prerequisites": []},
+        {"name": "算法定义与特性", "difficulty": "初级", "prerequisites": []},
+        {"name": "大O表示法与时间复杂度", "difficulty": "中级", "prerequisites": ["算法定义与特性"]},
+        {"name": "空间复杂度分析", "difficulty": "中级", "prerequisites": ["大O表示法与时间复杂度"]},
+        {"name": "最坏/最好/平均时间复杂度", "difficulty": "中级", "prerequisites": ["大O表示法与时间复杂度"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "以下哪个不是数据的逻辑结构？", "options": ["集合", "线性结构", "树形结构", "存储结构"], "answer": "存储结构"},
+        {"type": "choice", "question": "时间复杂度O(n log n)通常出现在哪种算法中？", "options": ["冒泡排序", "归并排序", "顺序查找", "插入排序"], "answer": "归并排序"},
+        {"type": "programming", "question": "编写一个函数，计算斐波那契数列第n项的时间复杂度"}
+      ]
+    },
+    {
+      "id": "ch02",
+      "title": "线性表",
+      "difficulty": "初级",
+      "order": 2,
+      "learning_objectives": [
+        "掌握线性表的顺序存储结构和链式存储结构",
+        "掌握单链表、双向链表、循环链表的实现",
+        "能够分析不同存储结构的优缺点",
+        "能够应用线性表解决实际问题"
+      ],
+      "knowledge_points": [
+        {"name": "线性表的定义与操作", "difficulty": "初级", "prerequisites": ["数据结构的基本概念"]},
+        {"name": "顺序表（数组实现）", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "单链表", "difficulty": "中级", "prerequisites": ["顺序表（数组实现）"]},
+        {"name": "双向链表", "difficulty": "中级", "prerequisites": ["单链表"]},
+        {"name": "循环链表", "difficulty": "中级", "prerequisites": ["单链表"]},
+        {"name": "静态链表", "difficulty": "中级", "prerequisites": ["单链表"]},
+        {"name": "顺序表与链表的比较", "difficulty": "中级", "prerequisites": ["顺序表（数组实现）", "单链表"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "在单链表中，删除一个节点需要修改几个指针？", "options": ["1个", "2个", "3个", "0个"], "answer": "1个"},
+        {"type": "choice", "question": "顺序表的主要优点是什么？", "options": ["插入删除方便", "随机访问高效", "存储空间利用率低", "无需预分配空间"], "answer": "随机访问高效"},
+        {"type": "programming", "question": "实现单链表的反转操作（原地反转）"},
+        {"type": "programming", "question": "判断一个单链表是否有环"}
+      ]
+    },
+    {
+      "id": "ch03",
+      "title": "栈与队列",
+      "difficulty": "初级",
+      "order": 3,
+      "learning_objectives": [
+        "掌握栈和队列的定义、特性和基本操作",
+        "掌握栈和队列的顺序存储和链式存储实现",
+        "理解栈在递归、表达式求值中的应用",
+        "理解队列在广度优先搜索中的应用"
+      ],
+      "knowledge_points": [
+        {"name": "栈的定义与基本操作", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "栈的顺序存储实现", "difficulty": "初级", "prerequisites": ["栈的定义与基本操作"]},
+        {"name": "栈的链式存储实现", "difficulty": "初级", "prerequisites": ["栈的定义与基本操作"]},
+        {"name": "栈的应用：括号匹配", "difficulty": "中级", "prerequisites": ["栈的顺序存储实现"]},
+        {"name": "栈的应用：表达式求值", "difficulty": "中级", "prerequisites": ["栈的应用：括号匹配"]},
+        {"name": "栈与递归的关系", "difficulty": "中级", "prerequisites": ["栈的定义与基本操作"]},
+        {"name": "队列的定义与基本操作", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "循环队列", "difficulty": "中级", "prerequisites": ["队列的定义与基本操作"]},
+        {"name": "链队列", "difficulty": "中级", "prerequisites": ["队列的定义与基本操作"]},
+        {"name": "双端队列", "difficulty": "中级", "prerequisites": ["队列的定义与基本操作"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "栈和队列的共同点是什么？", "options": ["都是先进先出", "都是后进先出", "只允许在端点处插入和删除", "没有共同点"], "answer": "只允许在端点处插入和删除"},
+        {"type": "choice", "question": "循环队列的队空条件是什么（front指向队头，rear指向队尾）？", "options": ["front == rear", "front == rear+1", "front == (rear+1)%max", "front == rear-1"], "answer": "front == rear"},
+        {"type": "programming", "question": "用两个栈实现一个队列"},
+        {"type": "programming", "question": "实现中缀表达式转后缀表达式并求值"}
+      ]
+    },
+    {
+      "id": "ch04",
+      "title": "串与数组",
+      "difficulty": "初级",
+      "order": 4,
+      "learning_objectives": [
+        "掌握串的定义和基本操作",
+        "理解KMP算法的原理和实现",
+        "掌握数组的存储结构和特殊矩阵的压缩存储",
+        "理解稀疏矩阵的三元组表示"
+      ],
+      "knowledge_points": [
+        {"name": "串的定义与基本操作", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "朴素的模式匹配算法", "difficulty": "初级", "prerequisites": ["串的定义与基本操作"]},
+        {"name": "KMP算法原理", "difficulty": "高级", "prerequisites": ["朴素的模式匹配算法"]},
+        {"name": "KMP算法的next数组", "difficulty": "高级", "prerequisites": ["KMP算法原理"]},
+        {"name": "多维数组的存储", "difficulty": "中级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "特殊矩阵压缩存储", "difficulty": "中级", "prerequisites": ["多维数组的存储"]},
+        {"name": "稀疏矩阵的三元组表示", "difficulty": "中级", "prerequisites": ["多维数组的存储"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "KMP算法的时间复杂度是？", "options": ["O(n*m)", "O(n+m)", "O(n^2)", "O(log n)"], "answer": "O(n+m)"},
+        {"type": "programming", "question": "实现KMP字符串匹配算法"},
+        {"type": "programming", "question": "实现稀疏矩阵的转置操作"}
+      ]
+    },
+    {
+      "id": "ch05",
+      "title": "树与二叉树",
+      "difficulty": "中级",
+      "order": 5,
+      "learning_objectives": [
+        "掌握树和二叉树的基本概念和术语",
+        "掌握二叉树的遍历方法（前序、中序、后序、层次）",
+        "掌握线索二叉树的构建和遍历",
+        "理解树与二叉树的转换",
+        "掌握哈夫曼树和哈夫曼编码",
+        "理解并查集"
+      ],
+      "knowledge_points": [
+        {"name": "树的定义与基本术语", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "二叉树的定义与性质", "difficulty": "初级", "prerequisites": ["树的定义与基本术语"]},
+        {"name": "二叉树的顺序存储", "difficulty": "初级", "prerequisites": ["二叉树的定义与性质"]},
+        {"name": "二叉树的链式存储", "difficulty": "初级", "prerequisites": ["二叉树的定义与性质"]},
+        {"name": "二叉树的前序遍历", "difficulty": "中级", "prerequisites": ["二叉树的链式存储"]},
+        {"name": "二叉树的中序遍历", "difficulty": "中级", "prerequisites": ["二叉树的链式存储"]},
+        {"name": "二叉树的后序遍历", "difficulty": "中级", "prerequisites": ["二叉树的链式存储"]},
+        {"name": "二叉树的层次遍历", "difficulty": "中级", "prerequisites": ["二叉树的链式存储"]},
+        {"name": "由遍历序列重构二叉树", "difficulty": "中级", "prerequisites": ["二叉树的前序遍历", "二叉树的中序遍历"]},
+        {"name": "线索二叉树", "difficulty": "高级", "prerequisites": ["二叉树的中序遍历"]},
+        {"name": "树与二叉树的转换", "difficulty": "中级", "prerequisites": ["树的定义与基本术语", "二叉树的定义与性质"]},
+        {"name": "哈夫曼树与哈夫曼编码", "difficulty": "中级", "prerequisites": ["树与二叉树的转换"]},
+        {"name": "并查集", "difficulty": "高级", "prerequisites": ["树与二叉树的转换"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "二叉树中度为0的节点数比度为2的节点数多几个？", "options": ["0", "1", "2", "不确定"], "answer": "1"},
+        {"type": "choice", "question": "一棵完全二叉树有1001个节点，叶子节点数是多少？", "options": ["500", "501", "502", "无法确定"], "answer": "501"},
+        {"type": "programming", "question": "实现二叉树的前序、中序、后序遍历（递归和非递归）"},
+        {"type": "programming", "question": "实现哈夫曼编码和解码"}
+      ]
+    },
+    {
+      "id": "ch06",
+      "title": "图",
+      "difficulty": "高级",
+      "order": 6,
+      "learning_objectives": [
+        "掌握图的定义、基本术语和存储结构",
+        "掌握图的深度优先搜索和广度优先搜索",
+        "掌握最小生成树算法（Prim、Kruskal）",
+        "掌握最短路径算法（Dijkstra、Floyd）",
+        "理解拓扑排序和关键路径"
+      ],
+      "knowledge_points": [
+        {"name": "图的定义与基本术语", "difficulty": "中级", "prerequisites": ["树与二叉树的转换"]},
+        {"name": "邻接矩阵表示法", "difficulty": "中级", "prerequisites": ["图的定义与基本术语"]},
+        {"name": "邻接表表示法", "difficulty": "中级", "prerequisites": ["图的定义与基本术语"]},
+        {"name": "深度优先搜索（DFS）", "difficulty": "中级", "prerequisites": ["邻接矩阵表示法", "邻接表表示法"]},
+        {"name": "广度优先搜索（BFS）", "difficulty": "中级", "prerequisites": ["邻接矩阵表示法", "邻接表表示法"]},
+        {"name": "Prim最小生成树算法", "difficulty": "高级", "prerequisites": ["深度优先搜索（DFS）"]},
+        {"name": "Kruskal最小生成树算法", "difficulty": "高级", "prerequisites": ["并查集"]},
+        {"name": "Dijkstra最短路径算法", "difficulty": "高级", "prerequisites": ["广度优先搜索（BFS）"]},
+        {"name": "Floyd最短路径算法", "difficulty": "高级", "prerequisites": ["Dijkstra最短路径算法"]},
+        {"name": "拓扑排序", "difficulty": "中级", "prerequisites": ["图的定义与基本术语"]},
+        {"name": "关键路径", "difficulty": "高级", "prerequisites": ["拓扑排序"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "一个有n个顶点的无向图最多有多少条边？", "options": ["n", "n-1", "n(n-1)/2", "n^2"], "answer": "n(n-1)/2"},
+        {"type": "choice", "question": "Dijkstra算法不能处理以下哪种情况？", "options": ["无向图", "有向图", "负权边", "正权边"], "answer": "负权边"},
+        {"type": "programming", "question": "实现图的DFS和BFS遍历"},
+        {"type": "programming", "question": "实现Dijkstra最短路径算法"}
+      ]
+    },
+    {
+      "id": "ch07",
+      "title": "查找",
+      "difficulty": "中级",
+      "order": 7,
+      "learning_objectives": [
+        "掌握顺序查找、折半查找和分块查找",
+        "理解二叉排序树（BST）的构建和操作",
+        "掌握平衡二叉树（AVL）的插入和旋转",
+        "理解B树和B+树的基本概念",
+        "掌握哈希表的构建和冲突处理方法"
+      ],
+      "knowledge_points": [
+        {"name": "顺序查找", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "折半查找", "difficulty": "中级", "prerequisites": ["顺序表（数组实现）"]},
+        {"name": "分块查找", "difficulty": "中级", "prerequisites": ["折半查找"]},
+        {"name": "二叉排序树（BST）", "difficulty": "中级", "prerequisites": ["二叉树的中序遍历"]},
+        {"name": "平衡二叉树（AVL）", "difficulty": "高级", "prerequisites": ["二叉排序树（BST）"]},
+        {"name": "B树的基本概念与操作", "difficulty": "高级", "prerequisites": ["平衡二叉树（AVL）"]},
+        {"name": "B+树的基本概念", "difficulty": "高级", "prerequisites": ["B树的基本概念与操作"]},
+        {"name": "哈希表与哈希函数", "difficulty": "中级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "冲突处理方法（链地址法/开放定址法）", "difficulty": "中级", "prerequisites": ["哈希表与哈希函数"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "折半查找的时间复杂度是？", "options": ["O(n)", "O(log n)", "O(n log n)", "O(n^2)"], "answer": "O(log n)"},
+        {"type": "choice", "question": "AVL树中任一节点的左右子树高度差绝对值不超过？", "options": ["0", "1", "2", "3"], "answer": "1"},
+        {"type": "programming", "question": "实现AVL树的插入和旋转操作"},
+        {"type": "programming", "question": "实现哈希表（链地址法）"}
+      ]
+    },
+    {
+      "id": "ch08",
+      "title": "排序",
+      "difficulty": "中级",
+      "order": 8,
+      "learning_objectives": [
+        "掌握插入排序、交换排序、选择排序、归并排序的原理和实现",
+        "能够分析各种排序算法的时间复杂度和空间复杂度",
+        "理解排序算法的稳定性和适用场景",
+        "掌握快速排序和堆排序的核心思想"
+      ],
+      "knowledge_points": [
+        {"name": "排序的基本概念与分类", "difficulty": "初级", "prerequisites": ["线性表的定义与操作"]},
+        {"name": "直接插入排序", "difficulty": "初级", "prerequisites": ["排序的基本概念与分类"]},
+        {"name": "希尔排序", "difficulty": "中级", "prerequisites": ["直接插入排序"]},
+        {"name": "冒泡排序", "difficulty": "初级", "prerequisites": ["排序的基本概念与分类"]},
+        {"name": "快速排序", "difficulty": "中级", "prerequisites": ["冒泡排序"]},
+        {"name": "简单选择排序", "difficulty": "初级", "prerequisites": ["排序的基本概念与分类"]},
+        {"name": "堆排序", "difficulty": "高级", "prerequisites": ["简单选择排序", "二叉树的顺序存储"]},
+        {"name": "归并排序", "difficulty": "中级", "prerequisites": ["快速排序"]},
+        {"name": "基数排序", "difficulty": "中级", "prerequisites": ["排序的基本概念与分类"]},
+        {"name": "各种排序算法的比较", "difficulty": "中级", "prerequisites": ["以上所有排序算法"]}
+      ],
+      "exercises": [
+        {"type": "choice", "question": "以下哪个排序算法是稳定的？", "options": ["快速排序", "堆排序", "归并排序", "希尔排序"], "answer": "归并排序"},
+        {"type": "choice", "question": "快速排序在最坏情况下的时间复杂度是？", "options": ["O(n log n)", "O(n)", "O(n^2)", "O(log n)"], "answer": "O(n^2)"},
+        {"type": "programming", "question": "实现快速排序算法"},
+        {"type": "programming", "question": "实现堆排序算法"},
+        {"type": "programming", "question": "实现归并排序算法"}
+      ]
+    }
+  ],
+  "knowledge_graph": {
+    "nodes": [
+      {"id": "basic", "name": "基础概念", "level": 0},
+      {"id": "linear", "name": "线性结构", "level": 1},
+      {"id": "tree", "name": "树形结构", "level": 2},
+      {"id": "graph", "name": "图形结构", "level": 3},
+      {"id": "search", "name": "查找算法", "level": 2},
+      {"id": "sort", "name": "排序算法", "level": 1}
+    ],
+    "edges": [
+      {"from": "basic", "to": "linear"},
+      {"from": "linear", "to": "tree"},
+      {"from": "tree", "to": "graph"},
+      {"from": "linear", "to": "sort"},
+      {"from": "tree", "to": "search"}
+    ],
+    "learning_paths": {
+      "计算机专业": ["ch01", "ch02", "ch03", "ch04", "ch05", "ch06", "ch07", "ch08"],
+      "软件工程": ["ch01", "ch02", "ch03", "ch05", "ch06", "ch07", "ch08"],
+      "数据科学": ["ch01", "ch02", "ch03", "ch07", "ch08", "ch05"]
+    }
+  },
+  "resource_templates": {
+    "讲解文档": {
+      "structure": ["概念定义", "原理说明", "代码示例", "复杂度分析", "应用场景"],
+      "style_guide": "面向{knowledge_base}水平学生，使用{learning_style}偏好方式讲解"
+    },
+    "知识点思维导图": {
+      "structure": ["中心主题", "一级分支（核心概念）", "二级分支（子概念/操作）", "三级分支（代码/示例）"],
+      "style_guide": "文本描述结构，使用缩进表示层级关系"
+    },
+    "练习题": {
+      "structure": ["概念选择题2-3道", "代码填空题1-2道", "编程题1-2道"],
+      "difficulty_distribution": "40%基础, 40%中等, 20%进阶"
+    },
+    "实操案例": {
+      "structure": ["问题描述", "需求分析", "设计与实现", "代码展示", "运行结果", "扩展思考"],
+      "style_guide": "贴近实际开发场景，注重工程实践"
+    },
+    "多模态教学视频": {
+      "structure": ["片头引入（30秒）", "概念讲解（2-3分钟）", "动画演示（1-2分钟）", "代码实践（2-3分钟）", "总结回顾（30秒）"],
+      "style_guide": "每个场景包含：画面描述、旁白文本、动画效果建议、屏幕标注"
+    }
+  }
+}
