@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个性化学习系统 - 学习伙伴</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/marked.min.js"></script>
+    <script src="/static/mermaid.min.js"></script>
     <style>
         /* ========== 基础变量 ========== */
         :root {
@@ -1481,6 +1482,119 @@
             0%, 60%, 100% { opacity: 0.3; }
             30% { opacity: 1; }
         }
+
+        /* ========== Mermaid 思维导图 ========== */
+        .mermaid-container {
+            margin: 16px 0;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+        }
+        .mermaid-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .mermaid-error {
+            border-left: 3px solid #ef4444;
+            padding: 12px 16px;
+            margin: 12px 0;
+            background: #fef2f2;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: #991b1b;
+        }
+
+        /* ========== Bilibili 视频卡片 ========== */
+        .bilibili-video-section {
+            margin: 16px 0;
+        }
+        .bilibili-video-card {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            transition: box-shadow 0.15s ease;
+        }
+        .bilibili-video-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .bilibili-cover {
+            width: 160px;
+            height: 90px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            flex-shrink: 0;
+            background: var(--bg-secondary);
+        }
+        .bilibili-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .bilibili-info .bilibili-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+        }
+        .bilibili-info .bilibili-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .bilibili-play-btn {
+            display: inline-block;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #fff;
+            background: #fb7299;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            transition: background 0.15s ease;
+        }
+        .bilibili-play-btn:hover {
+            background: #e0608a;
+        }
+        .bilibili-iframe-wrapper {
+            margin-top: 8px;
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-sm);
+        }
+        .bilibili-iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .bilibili-fallback {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .bilibili-fallback a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .bilibili-fallback a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -2036,7 +2150,10 @@
                         if (typingEl.parentNode) {
                             // 更新流式气泡为最终内容（去掉光标）
                             try {
-                                typingEl.querySelector('.message-bubble').innerHTML = marked.parse(fullContent);
+                                var bubble = typingEl.querySelector('.message-bubble');
+                                bubble.innerHTML = marked.parse(fullContent);
+                                renderMermaid(bubble);
+                                renderBilibiliVideos(bubble);
                             } catch(e) {
                                 typingEl.querySelector('.message-bubble').innerHTML = fullContent.replace(/</g,'&lt;');
                             }
@@ -2360,6 +2477,10 @@
                         window.appState.resourceCount = shownCount;
                         updateHomeStats();
                     }
+
+                    // 渲染 Mermaid 思维导图和 B站视频
+                    renderMermaid(streamArea);
+                    renderBilibiliVideos(streamArea);
                 },
                 onError: function(err) {
                     isGenerating = false;
@@ -2760,7 +2881,10 @@
                 onEnd: function() {
                     tutorSending = false;
                     if (typingEl.parentNode) {
-                        typingEl.querySelector('.tutoring-bubble').innerHTML = marked.parse(fullContent);
+                        var tutBubble = typingEl.querySelector('.tutoring-bubble');
+                        tutBubble.innerHTML = marked.parse(fullContent);
+                        renderMermaid(tutBubble);
+                        renderBilibiliVideos(tutBubble);
                         var container = document.getElementById('tutor-messages');
                         if (container.scrollTop + container.clientHeight >= container.scrollHeight - 60) {
                             container.scrollTop = container.scrollHeight;
@@ -2951,7 +3075,10 @@
             var title = lines[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim() || '资源详情';
             document.getElementById('modal-title').textContent = title;
             try {
-                document.getElementById('modal-body').innerHTML = marked.parse(section);
+                var modalBody = document.getElementById('modal-body');
+                modalBody.innerHTML = marked.parse(section);
+                renderMermaid(modalBody);
+                renderBilibiliVideos(modalBody);
             } catch(e) {
                 document.getElementById('modal-body').innerHTML = '<pre style="white-space:pre-wrap;">' + section.replace(/</g,'&lt;') + '</pre>';
             }
@@ -2963,6 +3090,100 @@
             if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
             document.getElementById('resource-modal').classList.remove('open');
             document.body.style.overflow = '';
+        }
+
+        // ========== Mermaid 初始化 ==========
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+        }
+
+        function renderMermaid(containerEl) {
+            if (typeof mermaid === 'undefined') return;
+            var codeBlocks = containerEl.querySelectorAll('pre code.language-mermaid');
+            codeBlocks.forEach(function(codeBlock) {
+                var pre = codeBlock.parentElement;
+                var code = codeBlock.textContent.trim();
+                if (!code) return;
+                var id = 'mermaid-' + Math.random().toString(36).slice(2, 10);
+                try {
+                    mermaid.render(id, code).then(function(result) {
+                        var wrapper = document.createElement('div');
+                        wrapper.className = 'mermaid-container';
+                        wrapper.innerHTML = result.svg;
+                        if (pre && pre.parentNode) {
+                            pre.parentNode.replaceChild(wrapper, pre);
+                        }
+                    }).catch(function(err) {
+                        console.error('Mermaid 渲染失败:', err);
+                        if (pre) {
+                            pre.style.borderLeft = '3px solid #ef4444';
+                            pre.style.padding = '12px 16px';
+                            pre.style.background = '#fef2f2';
+                        }
+                    });
+                } catch(e) {
+                    console.error('Mermaid 异常:', e);
+                    if (pre) {
+                        pre.style.borderLeft = '3px solid #ef4444';
+                        pre.style.padding = '12px 16px';
+                        pre.style.background = '#fef2f2';
+                    }
+                }
+            });
+        }
+
+        // ========== Bilibili 视频渲染 ==========
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        function toggleBilibiliPlayer(btn, bvid) {
+            var card = btn.closest('.bilibili-video-card');
+            var existing = card.querySelector('.bilibili-iframe-wrapper');
+            if (existing) {
+                existing.remove();
+                btn.textContent = '▶ 播放';
+                return;
+            }
+            var wrapper = document.createElement('div');
+            wrapper.className = 'bilibili-iframe-wrapper';
+            wrapper.innerHTML = '<iframe src="https://player.bilibili.com/player.html?bvid=' + encodeURIComponent(bvid) + '&page=1&high_quality=1&danmaku=0" allowfullscreen></iframe>';
+            card.appendChild(wrapper);
+            btn.textContent = '⏸ 收起';
+        }
+
+        function renderBilibiliVideos(containerEl) {
+            var walker = document.createTreeWalker(containerEl, NodeFilter.SHOW_COMMENT, null, false);
+            var commentNodes = [];
+            while (walker.nextNode()) {
+                var node = walker.currentNode;
+                if (node.nodeValue && node.nodeValue.trim().startsWith('BILIBILI_VIDEO ')) {
+                    commentNodes.push(node);
+                }
+            }
+            commentNodes.forEach(function(comment) {
+                var jsonStr = comment.nodeValue.trim().slice('BILIBILI_VIDEO '.length);
+                try {
+                    var video = JSON.parse(jsonStr);
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'bilibili-video-card';
+                    wrapper.innerHTML =
+                        '<img class="bilibili-cover" src="' + escapeHtml(video.pic || '') + '" alt="封面" loading="lazy" ' +
+                        'onerror="this.style.display=\'none\'">' +
+                        '<div class="bilibili-info">' +
+                            '<div class="bilibili-title">' + escapeHtml(video.title || '') + '</div>' +
+                            '<div class="bilibili-meta">UP主: ' + escapeHtml(video.author || '') + ' | ' + (video.play || 0) + ' 播放</div>' +
+                            '<button class="bilibili-play-btn" onclick="toggleBilibiliPlayer(this, \'' + escapeHtml(video.bvid || '') + '\')">▶ 播放</button>' +
+                            '<div class="bilibili-fallback">或 <a href="https://www.bilibili.com/video/' + escapeHtml(video.bvid || '') + '" target="_blank" rel="noopener">在B站打开</a></div>' +
+                        '</div>';
+                    comment.parentNode.replaceChild(wrapper, comment);
+                } catch(e) {
+                    console.error('Bilibili 视频解析失败:', e);
+                }
+            });
         }
 
         // ========== Toast ==========

@@ -85,7 +85,7 @@
 └─────────────────────────────────────┼────────┼──┘
                                       │        │
 ┌─────────────────────────────────────▼────────▼──┐
-│             讯飞星火大模型 API (Spark X1)         │
+│             DeepSeek 大模型 API (deepseek-chat)    │
 │             课程知识库 (course_knowledge_base.json) │
 └─────────────────────────────────────────────────┘
 ```
@@ -143,11 +143,10 @@
 - 条件路由根据意图标签分发到不同节点
 - 资源生成阶段使用5个智能体协作（规划→内容→多模态→案例→合并）
 
-### 4.2 讯飞星火 API（科大讯飞）
-- 模型：Spark X1（支持在线搜索）
-- 流式模式：`stream=True`
-- 网络搜索：内置 `web_search` 工具
-- 思维链输出：`reasoning_content` 字段
+### 4.2 DeepSeek API
+- 模型：deepseek-chat（OpenAI 兼容格式）
+- 流式模式：`stream=True`（SSE）
+- 标准 OpenAI 响应格式，简洁高效
 
 ### 4.3 SSE 实时推送
 - `sse-starlette` 实现 Server-Sent Events
@@ -176,14 +175,18 @@
 
 ```
 A3/
-├── graph_demo.py               # 控制台版多智能体系统
-├── graph_web.py                # Web版多智能体封装（完整事件推送）
-├── app.py                      # FastAPI Web服务（SSE流式）
-├── index.html                  # 前端页面
+├── core.py                      # 公共核心模块（配置、知识库、LLM调用、安全过滤、状态定义）
+├── graph_demo.py                # 控制台版多智能体系统（LangGraph StateGraph）
+├── graph_web.py                 # Web版多智能体封装（生成器流式事件推送）
+├── app.py                       # FastAPI Web服务（SSE流式 + 静态文件）
+├── index.html                   # 前端页面（TailwindCSS 风格）
+├── static/                      # 前端静态资源（本地化）
+│   └── marked.min.js            # Markdown 渲染库（离线可用）
 ├── course_knowledge_base.json  # 《数据结构与算法》课程知识库
 ├── main.py                     # 控制台版快捷入口
 ├── requirements.txt            # 依赖清单
-├── .env                        # API Key 配置
+├── pyproject.toml              # 项目配置
+├── .env.example                # API Key 配置模板
 ├── AI_TOOLS.md                 # AI 编程工具说明
 ├── SYSTEM_DESIGN.md            # 系统设计说明书
 └── TEST_REPORT.md              # 测试说明书
@@ -203,5 +206,5 @@ A3/
 | TailwindCSS | 前端样式 | MIT License |
 | marked.js | Markdown渲染 | MIT License |
 | highlight.js | 代码高亮 | BSD License |
-| **科大讯飞星火大模型** | 核心AI能力 | 科大讯飞开发者平台 |
+| **DeepSeek 大模型** | 核心AI能力 | DeepSeek API |
 | **Claude Code (Anthropic)** | AI辅助编程 | Anthropic |

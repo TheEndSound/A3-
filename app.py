@@ -10,6 +10,7 @@ import json
 import asyncio
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from sse_starlette.sse import EventSourceResponse
 from dotenv import load_dotenv
 from graph_web import process_message
@@ -17,6 +18,11 @@ from graph_web import process_message
 load_dotenv()
 
 app = FastAPI(title="AI智学 - 个性化学习多智能体系统")
+
+# 挂载静态文件目录
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+if os.path.isdir(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 # 从 index.html 加载前端页面
 _INDEX_HTML = None

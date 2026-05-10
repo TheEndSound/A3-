@@ -7,9 +7,9 @@
 | 操作系统 | Windows 11 Pro / Ubuntu 22.04 |
 | Python版本 | 3.10+ |
 | 内存 | 16GB+ |
-| 网络 | 需访问讯飞星火API（spark-api-open.xf-yun.com） |
+| 网络 | 需访问 DeepSeek API（api.deepseek.com） |
 | 依赖安装 | pip install -r requirements.txt |
-| API Key | .env 文件中配置 XF_API_KEY |
+| API Key | .env 文件中配置 DEEPSEEK_API_KEY |
 
 ## 2. 功能测试用例
 
