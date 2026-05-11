@@ -621,21 +621,48 @@
 
         .agent-card {
             flex: 1;
-            padding: 16px;
+            padding: 20px 16px;
             background: var(--bg-secondary);
             border-radius: var(--radius-md);
             text-align: center;
             border: 2px solid transparent;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
         }
 
         .agent-card.active {
             border-color: var(--accent);
             background: var(--accent-light);
+            box-shadow: 0 0 16px rgba(234,88,12,0.15);
         }
 
         .agent-card.done {
             border-color: var(--success);
+            background: #f0fdf4;
+        }
+
+        .agent-icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 10px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card.active .agent-icon-circle {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 12px rgba(234,88,12,0.2);
+        }
+
+        .agent-card.done .agent-icon-circle {
+            border-color: var(--success);
+            background: #dcfce7;
         }
 
         .agent-name {
@@ -648,12 +675,33 @@
         .agent-desc {
             font-size: 11px;
             color: var(--text-muted);
+            margin-bottom: 8px;
         }
 
         .agent-status {
             font-size: 11px;
-            margin-top: 8px;
             color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .agent-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .agent-dot.pulse {
+            background: var(--accent);
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        .agent-card.done .agent-dot {
+            background: var(--success);
         }
 
         .agent-card.active .agent-status {
@@ -664,43 +712,145 @@
             color: var(--success);
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
         .arrow {
             font-size: 18px;
             color: var(--text-muted);
         }
 
+        /* --- 生成控制栏 --- */
         .gen-controls {
             display: flex;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
+            align-items: center;
         }
 
         .gen-btn {
-            flex: 1;
-            padding: 14px 20px;
+            padding: 14px 24px;
             border-radius: var(--radius-md);
             font-size: 14px;
             font-weight: 500;
             border: none;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.2s ease;
         }
 
         .gen-btn.primary {
-            background: var(--accent);
+            flex: 2;
+            background: linear-gradient(135deg, #f97316, #ea580c);
             color: white;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(234,88,12,0.25);
         }
 
-        .gen-btn.primary:hover {
-            background: var(--accent-hover);
+        .gen-btn.primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+            box-shadow: 0 4px 14px rgba(234,88,12,0.35);
+            transform: scale(1.02);
+        }
+
+        .gen-btn.primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
 
         .gen-btn.secondary {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
+            flex: 0 0 auto;
+            background: transparent;
+            color: var(--text-muted);
             border: 1px solid var(--border);
+            padding: 14px 18px;
+            font-size: 13px;
         }
 
+        .gen-btn.secondary:hover {
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+        }
+
+        .gen-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            padding-left: 4px;
+        }
+
+        /* --- 状态栏 --- */
+        .gen-status-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            min-height: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .gen-status-bar.preparing { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+        .gen-status-bar.running { background: var(--accent-light); border-color: var(--accent-subtle); color: var(--accent); }
+        .gen-status-bar.done { background: #f0fdf4; border-color: #bbf7d0; color: var(--success); }
+        .gen-status-bar.error { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+
+        /* --- 流式预览 --- */
+        .stream-preview {
+            display: none;
+            background: var(--accent-light);
+            border: 1px solid #fed7aa;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .stream-preview h2, .stream-preview h3 {
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+        }
+
+        .stream-preview p {
+            margin-bottom: 0.8em;
+        }
+
+        .stream-preview code {
+            background: rgba(0,0,0,0.06);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .stream-preview pre {
+            background: rgba(0,0,0,0.05);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, #fed7aa 25%, #fff7ed 50%, #fed7aa 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: var(--radius-sm);
+            height: 18px;
+            margin: 8px 0;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* --- 资源网格 --- */
         .resource-list {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -708,6 +858,130 @@
             padding: 24px;
         }
 
+        .stats-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stats-panel .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .resource-grid {
+                grid-template-columns: 1fr;
+            }
+            .agents-row {
+                flex-wrap: wrap;
+            }
+        }
+
+        .resource-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: default;
+            transition: all 0.2s ease;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            border-color: var(--accent-subtle);
+        }
+
+        .resource-type-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .resource-type-badge.doc { background: #dbeafe; }
+        .resource-type-badge.exercise { background: #dcfce7; }
+        .resource-type-badge.mindmap { background: #ede9fe; }
+        .resource-type-badge.video { background: #fce7f3; }
+        .resource-type-badge.case { background: #fff7ed; }
+
+        .resource-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .resource-card-type {
+            font-size: 11px;
+            color: var(--accent);
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+
+        .resource-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .resource-card-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .resource-card-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .resource-card-arrow:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* 保留 resource-item 为回退（非生成资源列表的其他用途） */
         .resource-item {
             display: flex;
             align-items: center;
@@ -733,48 +1007,6 @@
 
         .resource-info {
             flex: 1;
-        }
-
-        .resource-type {
-            font-size: 11px;
-            color: var(--accent);
-            margin-bottom: 2px;
-        }
-
-        .resource-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .resource-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .resource-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: var(--radius-sm);
-            border: none;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .action-btn.primary {
-            background: var(--accent);
-            color: white;
-        }
-
-        .action-btn.secondary {
-            background: var(--bg-secondary);
-            color: var(--text-secondary);
         }
 
         /* ========== 学习路径页面 ========== */
@@ -1762,47 +1994,55 @@
             </div>
 
             <div class="gen-controls">
-                <button class="gen-btn primary" id="gen-btn" onclick="startGen()">开始生成</button>
-                <button class="gen-btn secondary" onclick="resetGen()">重置</button>
+                <button class="gen-btn primary" id="gen-btn" onclick="startGen()"><span style="margin-right:4px;">✨</span>开始生成</button>
+                <button class="gen-btn secondary" onclick="resetGen()"><span style="margin-right:4px;">↺</span>重置</button>
             </div>
+            <div class="gen-hint">基于你的学习画像和薄弱点，自动生成个性化学习内容</div>
 
             <!-- 状态显示 -->
-            <div id="gen-status-bar" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 16px; margin-bottom:16px; font-size:13px; color:var(--text-secondary); min-height:20px; transition:all 0.2s;"></div>
+            <div id="gen-status-bar" class="gen-status-bar" style="display:none;"></div>
 
             <div class="workflow-panel">
-                <div class="workflow-title">智能工作流</div>
+                <div class="workflow-title">🤖 智能体工作流</div>
                 <div class="agents-row">
                     <div class="agent-card" id="agent-1">
+                        <div class="agent-icon-circle">🔍</div>
                         <div class="agent-name">需求分析</div>
                         <div class="agent-desc">理解学习目标</div>
-                        <div class="agent-status">等待</div>
+                        <div class="agent-status"><span class="agent-dot"></span>等待</div>
                     </div>
                     <div class="arrow">→</div>
                     <div class="agent-card" id="agent-2">
+                        <div class="agent-icon-circle">📋</div>
                         <div class="agent-name">内容规划</div>
                         <div class="agent-desc">制定生成方案</div>
-                        <div class="agent-status">等待</div>
+                        <div class="agent-status"><span class="agent-dot"></span>等待</div>
                     </div>
                     <div class="arrow">→</div>
                     <div class="agent-card" id="agent-3">
+                        <div class="agent-icon-circle">⚡</div>
                         <div class="agent-name">资源创作</div>
                         <div class="agent-desc">生成学习材料</div>
-                        <div class="agent-status">等待</div>
+                        <div class="agent-status"><span class="agent-dot"></span>等待</div>
                     </div>
                     <div class="arrow">→</div>
                     <div class="agent-card" id="agent-4">
+                        <div class="agent-icon-circle">✅</div>
                         <div class="agent-name">质量审核</div>
                         <div class="agent-desc">优化完善内容</div>
-                        <div class="agent-status">等待</div>
+                        <div class="agent-status"><span class="agent-dot"></span>等待</div>
                     </div>
                 </div>
             </div>
 
             <div class="resource-list">
                 <div class="section-header" style="margin-bottom: 16px;">
-                    <h2 class="section-title">生成内容</h2>
+                    <h2 class="section-title">📦 生成资源</h2>
                 </div>
-                <div id="gen-streaming" style="display: none; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 20px; margin-bottom: 16px; max-height: 400px; overflow-y: auto; font-size: 14px; line-height: 1.7;"></div>
+                <div id="gen-stats-panel" class="stats-panel" style="display:none;"></div>
+                <div id="gen-streaming" class="stream-preview">
+                    <div style="color: var(--text-muted);">正在等待模型响应...</div>
+                </div>
                 <div id="resource-items">
                     <!-- 由 startGen() 动态生成 -->
                 </div>
@@ -1904,7 +2144,7 @@
                     <div class="score-label">分</div>
                 </div>
                 <div id="eval-placeholder" style="color: var(--text-muted); font-size: 14px; padding: 20px 0;">
-                    在「辅导」页面输入"评估我的学习效果"以生成评估报告
+                    在「辅导」页面输入"评估我的学习效果"，评估完成后此处将自动展示数据
                 </div>
             </div>
 
@@ -1960,7 +2200,18 @@
             learningPlan: {steps: [], summary: ''},
             resourceCount: 0,
             messageCount: 0,
-            evalScores: []
+            evalScores: (function() {
+                try {
+                    var saved = localStorage.getItem('evalScores');
+                    return saved ? JSON.parse(saved) : [];
+                } catch(e) { return []; }
+            })(),
+            lastEval: (function() {
+                try {
+                    var saved = localStorage.getItem('lastEval');
+                    return saved ? JSON.parse(saved) : null;
+                } catch(e) { return null; }
+            })()
         };
 
         // ========== 导航 ==========
@@ -1981,12 +2232,19 @@
             if (name === 'profile') drawRadar();
             if (name === 'path') drawPath();
             if (name === 'eval') {
+                populateEvalUI();
                 animateScore();
-                drawTrend();
             }
         }
 
         // ========== 会话管理 ==========
+        function saveEvalData() {
+            try {
+                localStorage.setItem('evalScores', JSON.stringify(window.appState.evalScores));
+                localStorage.setItem('lastEval', JSON.stringify(window.appState.lastEval));
+            } catch(e) {}
+        }
+
         function getSessionId() {
             let sid = localStorage.getItem('session_id');
             if (!sid) {
@@ -2051,6 +2309,16 @@
                                                     window.appState.learningPlan = planData;
                                                 }
                                                 if (typeof callbacks.onPlan === 'function') callbacks.onPlan(window.appState.learningPlan);
+                                            } else if (payload.type === 'eval') {
+                                                window.appState.lastEval = payload.data;
+                                                if (payload.data.overall_score != null) {
+                                                    window.appState.evalScores.push(payload.data.overall_score);
+                                                    if (window.appState.evalScores.length > 20) {
+                                                        window.appState.evalScores = window.appState.evalScores.slice(-20);
+                                                    }
+                                                }
+                                                saveEvalData();
+                                                if (typeof callbacks.onEval === 'function') callbacks.onEval(payload.data);
                                             }
                                         } catch(e) {}
                                     } else if (data.type === 'end' && callbacks.onEnd) {
@@ -2355,15 +2623,20 @@
             isGenerating = true;
             var btn = document.getElementById('gen-btn');
             btn.disabled = true;
-            btn.textContent = '生成中...';
+            btn.innerHTML = '<span style="margin-right:4px;">⏳</span>生成中...';
 
             document.querySelectorAll('.agent-card').forEach(function(c) {
                 c.classList.remove('active', 'done');
-                c.querySelector('.agent-status').textContent = '等待';
+                var dot = c.querySelector('.agent-dot');
+                dot.classList.remove('pulse');
+                c.querySelector('.agent-status').childNodes.forEach(function(n) {
+                    if (n.nodeType === 3) n.textContent = '等待';
+                });
             });
 
             // 清除旧的资源项
             document.getElementById('resource-items').innerHTML = '';
+            document.getElementById('gen-stats-panel').style.display = 'none';
 
             var content = '';
             var agents = ['agent-1', 'agent-2', 'agent-3', 'agent-4'];
@@ -2371,30 +2644,45 @@
 
             function setAgentActive(idx) {
                 if (idx > 0) {
-                    document.getElementById(agents[idx - 1]).classList.remove('active');
-                    document.getElementById(agents[idx - 1]).classList.add('done');
-                    document.getElementById(agents[idx - 1]).querySelector('.agent-status').textContent = '完成';
+                    var prev = document.getElementById(agents[idx - 1]);
+                    prev.classList.remove('active');
+                    prev.classList.add('done');
+                    var prevDot = prev.querySelector('.agent-dot');
+                    prevDot.classList.remove('pulse');
+                    prev.querySelector('.agent-status').childNodes.forEach(function(n) {
+                        if (n.nodeType === 3) n.textContent = '完成';
+                    });
                 }
                 if (idx < agents.length) {
-                    document.getElementById(agents[idx]).classList.add('active');
-                    document.getElementById(agents[idx]).querySelector('.agent-status').textContent = '运行中';
+                    var cur = document.getElementById(agents[idx]);
+                    cur.classList.add('active');
+                    var curDot = cur.querySelector('.agent-dot');
+                    curDot.classList.add('pulse');
+                    cur.querySelector('.agent-status').childNodes.forEach(function(n) {
+                        if (n.nodeType === 3) n.textContent = '运行中';
+                    });
                 }
             }
 
             // 显示状态栏
             var statusBar = document.getElementById('gen-status-bar');
             statusBar.style.display = 'block';
-            statusBar.textContent = '⏳ 正在准备生成...';
+            statusBar.className = 'gen-status-bar preparing';
+            statusBar.textContent = '⏳ 准备中 — 正在初始化生成流程...';
 
             // 显示流式预览区域
             var streamArea = document.getElementById('gen-streaming');
             streamArea.style.display = 'block';
-            streamArea.innerHTML = '<div style="color: var(--text-muted);">正在等待模型响应...</div>';
+            streamArea.innerHTML = '<div style="color: var(--text-muted);">正在等待模型响应...</div>' +
+                '<div class="shimmer" style="width:80%;"></div>' +
+                '<div class="shimmer" style="width:60%;"></div>' +
+                '<div class="shimmer" style="width:70%;"></div>';
 
             streamChat('帮我生成学习资源', {
                 onStatus: function(status) {
-                    // 在状态栏显示最新状态
-                    statusBar.textContent = status;
+                    // 在状态栏显示最新状态，带图标
+                    statusBar.textContent = '🔄 ' + status;
+                    statusBar.className = 'gen-status-bar running';
                     // 检查是否匹配智能体关键词
                     for (var i = 0; i < agentKeywords.length; i++) {
                         if (status.indexOf(agentKeywords[i]) !== -1) {
@@ -2420,60 +2708,127 @@
                 },
                 onEnd: function() {
                     // 所有代理标记完成
-                    document.getElementById(agents[agents.length - 1]).classList.remove('active');
-                    document.getElementById(agents[agents.length - 1]).classList.add('done');
-                    document.getElementById(agents[agents.length - 1]).querySelector('.agent-status').textContent = '完成';
+                    var lastAgent = document.getElementById(agents[agents.length - 1]);
+                    lastAgent.classList.remove('active');
+                    lastAgent.classList.add('done');
+                    var lastDot = lastAgent.querySelector('.agent-dot');
+                    lastDot.classList.remove('pulse');
+                    lastAgent.querySelector('.agent-status').childNodes.forEach(function(n) {
+                        if (n.nodeType === 3) n.textContent = '完成';
+                    });
 
                     // 状态栏显示完成
                     statusBar.textContent = '✅ 资源生成完成！';
-                    setTimeout(function() { statusBar.style.display = 'none'; }, 3000);
+                    statusBar.className = 'gen-status-bar done';
+                    setTimeout(function() { statusBar.style.display = 'none'; }, 4000);
 
                     isGenerating = false;
                     btn.disabled = false;
-                    btn.textContent = '再次生成';
+                    btn.innerHTML = '<span style="margin-right:4px;">✨</span>再次生成';
 
                     updateHomeStats();
 
                     // 显示生成的资源
                     if (content) {
                         var items = document.getElementById('resource-items');
-                        var sections = content.split(/(?:^|\n)#{1,3}\s+/).filter(function(s) { return s.trim().length > 0; });
-                        if (sections.length === 0) sections = [content];
-                        // 存储完整内容供"查看"使用
-                        window._resourceSections = sections;
-                        var shownCount = 0;
-                        sections.forEach(function(section, idx) {
-                            var lines = section.split('\n');
-                            var title = lines[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
-                            if (!title) return;
-                            var desc = lines.slice(1).join(' ').replace(/\*\*/g, '').trim().slice(0, 100);
-                            if (!desc) desc = '点击查看详细内容';
 
-                            var icon = '文档';
-                            if (/(导图|思维|图谱|脑图)/.test(title)) icon = '导图';
-                            else if (/(练习|习题|题目|试题|测验)/.test(title)) icon = '练习';
-                            else if (/(视频|脚本|动画|影片)/.test(title)) icon = '视频';
-                            else if (/(案例|实操|实践|项目|实战)/.test(title)) icon = '案例';
-                            else if (/(讲解|文档|概念|原理|笔记)/.test(title)) icon = '文档';
+                        // 提取标题及其位置，构造 {title, body} 结构化 sections
+                        var headingPattern = /^#{1,3}\s+(.+)$/gm;
+                        var headings = [];
+                        var m;
+                        while ((m = headingPattern.exec(content)) !== null) {
+                            headings.push({title: m[1].replace(/\*\*/g, '').trim(), pos: m.index, end: m.index + m[0].length});
+                        }
+                        var rawSections = [];
+                        if (headings.length === 0) {
+                            rawSections = [{title: '资源详情', body: content}];
+                        } else {
+                            for (var i = 0; i < headings.length; i++) {
+                                var bodyStart = headings[i].end;
+                                var bodyEnd = i + 1 < headings.length ? headings[i + 1].pos : content.length;
+                                var body = content.substring(bodyStart, bodyEnd).trim();
+                                rawSections.push({title: headings[i].title, body: body});
+                            }
+                        }
+                        // 扫描每个 section body 中是否包含 Mermaid 代码块
+                        var mermaidBlockRe = /```mermaid\s*([\s\S]*?)```/g;
+                        rawSections.forEach(function(sec) {
+                            var codes = [];
+                            var m;
+                            while ((m = mermaidBlockRe.exec(sec.body)) !== null) {
+                                codes.push(m[1].trim());
+                            }
+                            if (codes.length > 0) {
+                                sec.mermaidCodes = codes;
+                                // 如果标题不含 导图/思维/图谱/脑图，尝试从 body 文本推断
+                                var titleLower = sec.title.toLowerCase();
+                                if (!/(导图|思维|图谱|脑图|mind.?map|mermaid)/.test(titleLower)) {
+                                    // 标题没有明确说明是导图，但从 body 中提取描述
+                                    sec._inferredMindmap = true;
+                                }
+                            }
+                        });
+
+                        window._resourceSections = rawSections;
+
+                        // 将 resource-items 设为 grid 容器
+                        items.className = 'resource-grid';
+
+                        // 统计各类型数量
+                        var typeCounts = {doc: 0, exercise: 0, mindmap: 0, video: 0, case: 0};
+                        var iconMap = {doc: '📘', exercise: '📝', mindmap: '🗺️', video: '🎬', case: '💻'};
+                        var labelMap = {doc: '文档', exercise: '练习', mindmap: '导图', video: '视频', case: '案例'};
+                        var typeBadgeMap = {doc: 'doc', exercise: 'exercise', mindmap: 'mindmap', video: 'video', case: 'case'};
+                        var typeIconBadge = {doc: '📄', exercise: '✏️', mindmap: '🧠', video: '▶️', case: '🔬'};
+
+                        var shownCount = 0;
+                        rawSections.forEach(function(sec, idx) {
+                            var title = sec.title;
+                            if (!title) return;
+                            // 如果 section 包含 Mermaid 代码，优先归类为导图
+                            var isMindmap = sec.mermaidCodes && sec.mermaidCodes.length > 0;
+                            var desc = sec.body.replace(/\*\*/g, '').replace(/#{1,3}\s+/g, '').replace(/```\w*\n[\s\S]*?```/g, '').replace(/\n+/g, ' ').trim().slice(0, 100);
+                            if (!desc) desc = isMindmap ? '包含思维导图，点击查看详情' : '点击查看详细内容';
+
+                            var resType = 'doc';
+                            if (isMindmap) resType = 'mindmap';
+                            else if (/(导图|思维|图谱|脑图)/.test(title)) resType = 'mindmap';
+                            else if (/(练习|习题|题目|试题|测验)/.test(title)) resType = 'exercise';
+                            else if (/(视频|脚本|动画|影片|资源)/.test(title)) resType = 'video';
+                            else if (/(案例|实操|实践|项目|实战)/.test(title)) resType = 'case';
+                            else if (/(讲解|文档|概念|原理|笔记)/.test(title)) resType = 'doc';
+
+                            typeCounts[resType]++;
 
                             var div = document.createElement('div');
-                            div.className = 'resource-item gen-item';
+                            div.className = 'resource-card';
                             div.style.opacity = '0';
+                            div.style.transition = 'opacity 0.3s ease';
                             div.innerHTML =
-                                '<div class="resource-icon">' + icon + '</div>' +
-                                '<div class="resource-info">' +
-                                    '<div class="resource-type">' + title.slice(0, 20) + '</div>' +
-                                    '<div class="resource-title">' + title.slice(0, 30) + '</div>' +
-                                    '<div class="resource-desc">' + desc.slice(0, 80) + '</div>' +
+                                '<div class="resource-type-badge ' + typeBadgeMap[resType] + '">' + typeIconBadge[resType] + '</div>' +
+                                '<div class="resource-card-info">' +
+                                    '<div class="resource-card-type">' + labelMap[resType] + '</div>' +
+                                    '<div class="resource-card-title">' + title.slice(0, 30) + '</div>' +
+                                    '<div class="resource-card-desc">' + desc.slice(0, 80) + '</div>' +
                                 '</div>' +
-                                '<div class="resource-actions">' +
-                                    '<button class="action-btn primary" onclick="showResourceDetail(' + idx + ')">查看</button>' +
-                                '</div>';
+                                '<div class="resource-card-arrow" onclick="showResourceDetail(' + idx + ')" title="查看详情">→</div>';
                             items.appendChild(div);
                             shownCount++;
                             setTimeout(function() { div.style.opacity = '1'; }, idx * 150);
                         });
-                        // 更新资源计数
+
+                        // 渲染统计小面板
+                        var statsPanel = document.getElementById('gen-stats-panel');
+                        var statsHtml = '';
+                        for (var k in typeCounts) {
+                            if (typeCounts[k] > 0) {
+                                statsHtml += '<div class="stat-chip">' + iconMap[k] + ' ' + typeCounts[k] + ' ' + labelMap[k] + '</div>';
+                            }
+                        }
+                        if (statsHtml) {
+                            statsPanel.innerHTML = statsHtml;
+                            statsPanel.style.display = 'flex';
+                        }
                         window.appState.resourceCount = shownCount;
                         updateHomeStats();
                     }
@@ -2485,8 +2840,9 @@
                 onError: function(err) {
                     isGenerating = false;
                     btn.disabled = false;
-                    btn.textContent = '重新生成';
+                    btn.textContent = '✨ 重新生成';
                     statusBar.textContent = '❌ 生成出错：' + err;
+                    statusBar.className = 'gen-status-bar error';
                     showToast('生成出错：' + err);
                 }
             });
@@ -2499,15 +2855,26 @@
         function resetGen() {
             document.querySelectorAll('.agent-card').forEach(function(c) {
                 c.classList.remove('active', 'done');
-                c.querySelector('.agent-status').textContent = '等待';
+                var dot = c.querySelector('.agent-dot');
+                dot.classList.remove('pulse');
+                c.querySelector('.agent-status').childNodes.forEach(function(n) {
+                    if (n.nodeType === 3) n.textContent = '等待';
+                });
             });
-            document.getElementById('resource-items').innerHTML = '';
+            var items = document.getElementById('resource-items');
+            items.innerHTML = '';
+            items.className = '';
             document.getElementById('gen-streaming').style.display = 'none';
             document.getElementById('gen-streaming').innerHTML = '';
-            document.getElementById('gen-status-bar').style.display = 'none';
-            document.getElementById('gen-status-bar').innerHTML = '';
-            document.getElementById('gen-btn').disabled = false;
-            document.getElementById('gen-btn').textContent = '开始生成';
+            document.getElementById('gen-stats-panel').style.display = 'none';
+            document.getElementById('gen-stats-panel').innerHTML = '';
+            var sb = document.getElementById('gen-status-bar');
+            sb.style.display = 'none';
+            sb.textContent = '';
+            sb.className = 'gen-status-bar';
+            var btn = document.getElementById('gen-btn');
+            btn.disabled = false;
+            btn.innerHTML = '<span style="margin-right:4px;">✨</span>开始生成';
             isGenerating = false;
         }
 
@@ -2806,7 +3173,8 @@
             var foundIdx = -1;
 
             for (var i = 0; i < sections.length; i++) {
-                var header = sections[i].split('\n')[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
+                var sec = sections[i];
+                var header = (sec.title || (typeof sec === 'string' ? sec.split('\n')[0] : '')).replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
                 for (var k = 0; k < keywords.length; k++) {
                     if (header.indexOf(keywords[k]) !== -1) {
                         foundIdx = i;
@@ -2878,6 +3246,9 @@
                 onPlan: function(plan) {
                     // already set in SSE handler
                 },
+                onEval: function(evalData) {
+                    populateEvalUI();
+                },
                 onEnd: function() {
                     tutorSending = false;
                     if (typingEl.parentNode) {
@@ -2921,33 +3292,95 @@
         function animateScore() {
             const circle = document.getElementById('score-circle');
             const num = document.getElementById('score-num');
-            // 从 appState 或默认值获取分数
-            var target = 72;
-            var evalMsgs = document.querySelectorAll('#tutor-messages .tutoring-msg:not(.user) .tutoring-bubble');
-            if (evalMsgs.length > 0) {
-                var lastEval = evalMsgs[evalMsgs.length - 1].textContent;
-                var scoreMatch = lastEval.match(/(\d+)\s*[分%]/);
-                if (scoreMatch) target = parseInt(scoreMatch[1]);
+            const placeholder = document.getElementById('eval-placeholder');
+
+            // 从 appState.lastEval 读取结构化数据
+            if (window.appState.lastEval && window.appState.lastEval.overall_score != null) {
+                var target = window.appState.lastEval.overall_score;
+                if (placeholder) placeholder.style.display = 'none';
+
+                const circumference = 251;
+                let current = 0;
+
+                const offset = circumference - (target / 100) * circumference;
+                setTimeout(function() {
+                    circle.style.strokeDashoffset = offset;
+                }, 100);
+
+                const interval = setInterval(function() {
+                    current++;
+                    num.textContent = current;
+                    if (current >= target) clearInterval(interval);
+                }, 15);
+            } else {
+                // 无数据时保持占位符
+                circle.style.strokeDashoffset = 251;
+                num.textContent = '--';
+                if (placeholder) placeholder.style.display = '';
             }
-            // 保存到历史趋势
-            window.appState.evalScores.push(target);
-            if (window.appState.evalScores.length > 10) {
-                window.appState.evalScores = window.appState.evalScores.slice(-10);
+        }
+
+        function populateEvalUI() {
+            var evalData = window.appState.lastEval;
+            if (!evalData) return;
+
+            // 显示分数区域
+            document.querySelector('.score-ring').style.display = '';
+            document.querySelector('.score-label').style.display = '';
+            var placeholder = document.getElementById('eval-placeholder');
+            if (placeholder) placeholder.style.display = 'none';
+
+            // 填充 4 张指标卡片
+            var knowledgeEl = document.getElementById('eval-knowledge');
+            var knowledgeNote = document.getElementById('eval-knowledge-note');
+            if (knowledgeEl && evalData.knowledge_level) {
+                knowledgeEl.textContent = evalData.knowledge_level;
+                knowledgeNote.textContent = '知识掌握度';
             }
 
-            const circumference = 251;
-            let current = 0;
+            var efficiencyEl = document.getElementById('eval-efficiency');
+            var efficiencyNote = document.getElementById('eval-efficiency-note');
+            if (efficiencyEl && evalData.efficiency_level) {
+                efficiencyEl.textContent = evalData.efficiency_level;
+                efficiencyNote.textContent = '学习效率评估';
+            }
 
-            const offset = circumference - (target / 100) * circumference;
-            setTimeout(() => {
-                circle.style.strokeDashoffset = offset;
-            }, 100);
+            var weaknessEl = document.getElementById('eval-weakness');
+            var weaknessNote = document.getElementById('eval-weakness-note');
+            if (weaknessEl && evalData.weak_points_list) {
+                weaknessEl.textContent = evalData.weak_points_list.length > 0
+                    ? evalData.weak_points_list.length + ' 项'
+                    : '无';
+                weaknessNote.textContent = evalData.weak_points_list.length > 0
+                    ? evalData.weak_points_list.join('、')
+                    : '暂未发现薄弱点';
+            }
 
-            const interval = setInterval(() => {
-                current++;
-                num.textContent = current;
-                if (current >= target) clearInterval(interval);
-            }, 15);
+            var progressEl = document.getElementById('eval-progress');
+            var progressNote = document.getElementById('eval-progress-note');
+            if (progressEl && evalData.progress_summary) {
+                progressEl.textContent = evalData.progress_summary.length > 10
+                    ? evalData.progress_summary.slice(0, 10) + '...'
+                    : evalData.progress_summary;
+                progressNote.textContent = evalData.progress_summary;
+            }
+
+            // 填充洞察区
+            var insightsEl = document.getElementById('eval-insights');
+            if (insightsEl) {
+                var insights = [];
+                if (evalData.suggestions) insights.push('<strong>学习建议：</strong>' + evalData.suggestions);
+                if (evalData.pace_recommendation) insights.push('<strong>节奏建议：</strong>' + evalData.pace_recommendation);
+                if (insights.length > 0) {
+                    insightsEl.innerHTML = insights.map(function(s) { return '<p>' + s + '</p>'; }).join('');
+                    insightsEl.style.color = '';
+                    insightsEl.style.textAlign = 'left';
+                    insightsEl.style.paddingTop = '';
+                }
+            }
+
+            // 绘制趋势图
+            drawTrend();
         }
 
         function drawTrend() {
@@ -2955,7 +3388,7 @@
             if (!canvas) return;
 
             var scores = window.appState.evalScores;
-            if (!scores || scores.length < 2) {
+            if (!scores || scores.length === 0) {
                 // 无数据时显示提示
                 const ctx = canvas.getContext('2d');
                 canvas.width = canvas.offsetWidth * 2;
@@ -2977,7 +3410,6 @@
             const pad = 30;
             var data = scores;
             var labels = scores.map(function(_, i) { return '#' + (i + 1); });
-            var stepX = data.length > 1 ? (w - pad * 2) / (data.length - 1) : 0;
 
             // 网格
             ctx.strokeStyle = '#e7e5e4';
@@ -2988,6 +3420,35 @@
                 ctx.lineTo(w - pad, y);
                 ctx.stroke();
             }
+
+            if (data.length === 1) {
+                // 单点：绘制一个大圆点在中心区域
+                const cx = w / 2;
+                const cy = pad + (100 - data[0]) / 100 * (h - pad * 2);
+
+                ctx.beginPath();
+                ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#ea580c';
+                ctx.fill();
+
+                // 在旁边显示分数
+                ctx.fillStyle = '#44403c';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(data[0] + ' 分', cx, cy - 16);
+                ctx.textAlign = 'start';
+
+                // 底部标签
+                ctx.fillStyle = '#a8a29e';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('#1', cx, h - pad + 16);
+                ctx.textAlign = 'start';
+
+                return;
+            }
+
+            var stepX = (w - pad * 2) / (data.length - 1);
 
             // 渐变
             const grad = ctx.createLinearGradient(0, pad, 0, h - pad);
@@ -3070,20 +3531,79 @@
                 showToast('内容暂不可用');
                 return;
             }
-            var section = sections[idx];
-            var lines = section.split('\n');
-            var title = lines[0].replace(/\*\*/g, '').replace(/^#+\s*/, '').trim() || '资源详情';
+            var sec = sections[idx];
+            var title = sec.title || '资源详情';
+            var body = sec.body || sec;  // 兼容旧格式（纯字符串）
             document.getElementById('modal-title').textContent = title;
-            try {
-                var modalBody = document.getElementById('modal-body');
-                modalBody.innerHTML = marked.parse(section);
-                renderMermaid(modalBody);
-                renderBilibiliVideos(modalBody);
-            } catch(e) {
-                document.getElementById('modal-body').innerHTML = '<pre style="white-space:pre-wrap;">' + section.replace(/</g,'&lt;') + '</pre>';
-            }
+
+            var modalBody = document.getElementById('modal-body');
+
+            // 先显示 loading
+            modalBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--text-muted);">' +
+                '<div style="font-size:32px;margin-bottom:12px;">🔄</div>' +
+                '<div style="font-size:14px;">正在渲染内容...</div>' +
+                '<div class="shimmer" style="width:80%;margin:12px auto;"></div>' +
+                '<div class="shimmer" style="width:60%;margin:8px auto;"></div>' +
+                '<div class="shimmer" style="width:70%;margin:8px auto;"></div>' +
+                '</div>';
+
+            // 打开模态框
             document.getElementById('resource-modal').classList.add('open');
             document.body.style.overflow = 'hidden';
+
+            // 渲染 markdown 和 Mermaid
+            try {
+                var hasMermaid = sec.mermaidCodes && sec.mermaidCodes.length > 0;
+
+                // 构建最终内容
+                var finalHtml = '';
+                if (hasMermaid) {
+                    // 先为每张思维导图生成占位容器，渲染后替换为 SVG 图片
+                    finalHtml += '<div style="margin-bottom:20px;">';
+                    sec.mermaidCodes.forEach(function(mc, mi) {
+                        finalHtml += '<div id="mermaid-render-' + mi + '" style="text-align:center;padding:16px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;color:#94a3b8;font-size:13px;">🔄 正在渲染思维导图...</div>';
+                    });
+                    finalHtml += '</div>';
+                    // 正文内容（移除 Mermaid 代码块）
+                    var textBody = body.replace(/```mermaid\s*[\s\S]*?```/g, '').trim();
+                    if (textBody) {
+                        finalHtml += marked.parse(textBody);
+                    }
+                } else {
+                    finalHtml = marked.parse(body);
+                }
+
+                modalBody.innerHTML = finalHtml;
+                renderBilibiliVideos(modalBody);
+
+                if (hasMermaid) {
+                    // 用 Mermaid 库渲染每张思维导图为 SVG 图片
+                    sec.mermaidCodes.forEach(function(mc, mi) {
+                        var placeholder = document.getElementById('mermaid-render-' + mi);
+                        if (!placeholder || typeof mermaid === 'undefined') return;
+                        var id = 'mermaid-modal-' + mi + '-' + Math.random().toString(36).slice(2, 6);
+                        mermaid.render(id, mc).then(function(result) {
+                            var wrapper = document.createElement('div');
+                            wrapper.className = 'mermaid-container';
+                            wrapper.style.cssText = 'text-align:center;margin:12px 0;';
+                            wrapper.innerHTML = result.svg;
+                            if (placeholder && placeholder.parentNode) {
+                                placeholder.parentNode.replaceChild(wrapper, placeholder);
+                            }
+                        }).catch(function(err) {
+                            console.error('Mermaid 渲染失败:', err);
+                            if (placeholder) {
+                                placeholder.innerHTML = '❌ 思维导图渲染失败';
+                                placeholder.style.color = '#ef4444';
+                                placeholder.style.background = '#fef2f2';
+                                placeholder.style.borderColor = '#fecaca';
+                            }
+                        });
+                    });
+                }
+            } catch(e) {
+                modalBody.innerHTML = '<pre style="white-space:pre-wrap;">' + (typeof body === 'string' ? body.replace(/</g,'&lt;') : String(body)) + '</pre>';
+            }
         }
 
         function closeResourceModal(e) {
@@ -3105,31 +3625,81 @@
                 var code = codeBlock.textContent.trim();
                 if (!code) return;
                 var id = 'mermaid-' + Math.random().toString(36).slice(2, 10);
+                // 先在代码块位置放一个 loading 占位
+                var loadingEl = document.createElement('div');
+                loadingEl.className = 'mermaid-loading';
+                loadingEl.style.cssText = 'text-align:center;padding:24px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;color:#94a3b8;font-size:13px;';
+                loadingEl.innerHTML = '🔄 正在渲染思维导图...';
+                if (pre && pre.parentNode) {
+                    pre.parentNode.replaceChild(loadingEl, pre);
+                }
                 try {
                     mermaid.render(id, code).then(function(result) {
                         var wrapper = document.createElement('div');
                         wrapper.className = 'mermaid-container';
                         wrapper.innerHTML = result.svg;
-                        if (pre && pre.parentNode) {
-                            pre.parentNode.replaceChild(wrapper, pre);
+                        if (loadingEl && loadingEl.parentNode) {
+                            loadingEl.parentNode.replaceChild(wrapper, loadingEl);
                         }
                     }).catch(function(err) {
                         console.error('Mermaid 渲染失败:', err);
-                        if (pre) {
-                            pre.style.borderLeft = '3px solid #ef4444';
-                            pre.style.padding = '12px 16px';
-                            pre.style.background = '#fef2f2';
+                        if (loadingEl && loadingEl.parentNode) {
+                            loadingEl.innerHTML = '❌ 思维导图渲染失败';
+                            loadingEl.style.color = '#ef4444';
+                            loadingEl.style.background = '#fef2f2';
+                            loadingEl.style.borderColor = '#fecaca';
                         }
                     });
                 } catch(e) {
                     console.error('Mermaid 异常:', e);
-                    if (pre) {
-                        pre.style.borderLeft = '3px solid #ef4444';
-                        pre.style.padding = '12px 16px';
-                        pre.style.background = '#fef2f2';
+                    if (loadingEl && loadingEl.parentNode) {
+                        loadingEl.innerHTML = '❌ 思维导图渲染失败';
+                        loadingEl.style.color = '#ef4444';
+                        loadingEl.style.background = '#fef2f2';
+                        loadingEl.style.borderColor = '#fecaca';
                     }
                 }
             });
+        }
+
+        // 返回 Promise 的异步版本，用于需要等待渲染完成的场景（如模态框）
+        function renderMermaidAsync(containerEl) {
+            if (typeof mermaid === 'undefined') return null;
+            var codeBlocks = containerEl.querySelectorAll('pre code.language-mermaid');
+            if (codeBlocks.length === 0) return null;
+            var promises = [];
+            codeBlocks.forEach(function(codeBlock) {
+                var pre = codeBlock.parentElement;
+                var code = codeBlock.textContent.trim();
+                if (!code) return;
+                var id = 'mermaid-' + Math.random().toString(36).slice(2, 10);
+                // 替换为 loading 占位
+                var loadingEl = document.createElement('div');
+                loadingEl.className = 'mermaid-loading';
+                loadingEl.style.cssText = 'text-align:center;padding:24px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;color:#94a3b8;font-size:13px;';
+                loadingEl.innerHTML = '<div style="font-size:24px;margin-bottom:8px;">🔄</div>正在渲染思维导图...';
+                if (pre && pre.parentNode) {
+                    pre.parentNode.replaceChild(loadingEl, pre);
+                }
+                var p = mermaid.render(id, code).then(function(result) {
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'mermaid-container';
+                    wrapper.innerHTML = result.svg;
+                    if (loadingEl && loadingEl.parentNode) {
+                        loadingEl.parentNode.replaceChild(wrapper, loadingEl);
+                    }
+                }).catch(function(err) {
+                    console.error('Mermaid 渲染失败:', err);
+                    if (loadingEl && loadingEl.parentNode) {
+                        loadingEl.innerHTML = '<div style="font-size:24px;margin-bottom:8px;">❌</div>思维导图渲染失败';
+                        loadingEl.style.color = '#ef4444';
+                        loadingEl.style.background = '#fef2f2';
+                        loadingEl.style.borderColor = '#fecaca';
+                    }
+                });
+                promises.push(p);
+            });
+            return Promise.all(promises);
         }
 
         // ========== Bilibili 视频渲染 ==========

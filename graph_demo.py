@@ -157,6 +157,23 @@ def evaluation_node(state: AgentState) -> Dict[str, Any]:
     print("\n📊 [学习效果评估节点] 正在生成评估报告...\n")
     answer = call_llm_console([{"role": "user", "content": prompt}])
     answer = output_safety_filter(answer)
+
+    # 尝试提取结构化评估数据并打印
+    eval_data = extract_json(answer)
+    if eval_data and "overall_score" in eval_data:
+        print("=" * 50)
+        print("📊 学习效果评估结果")
+        print("=" * 50)
+        print(f"  综合分数：{eval_data.get('overall_score', '--')}/100")
+        print(f"  知识掌握度：{eval_data.get('knowledge_level', '--')}")
+        print(f"  学习效率：{eval_data.get('efficiency_level', '--')}")
+        weak_pts = eval_data.get('weak_points_list', [])
+        print(f"  薄弱点：{', '.join(weak_pts) if weak_pts else '无'}")
+        print(f"  进步情况：{eval_data.get('progress_summary', '--')}")
+        print(f"  学习建议：{eval_data.get('suggestions', '--')}")
+        print(f"  节奏建议：{eval_data.get('pace_recommendation', '--')}")
+        print("=" * 50)
+
     return {"messages": [AIMessage(content=answer)]}
 
 

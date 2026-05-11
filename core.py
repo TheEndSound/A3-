@@ -383,7 +383,13 @@ def search_bilibili_videos(keyword: str, count: int = 3) -> List[Dict[str, Any]]
             "keyword": keyword,
             "page": 1,
         }
-        resp = requests.get(url, params=params, timeout=10)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+            "Referer": "https://www.bilibili.com/",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+        }
+        resp = requests.get(url, params=params, headers=headers, timeout=10)
         resp.raise_for_status()
         data = resp.json()
         if data.get("code") != 0:
@@ -497,8 +503,8 @@ def build_tutor_prompt(last_question: str, profile: Optional[dict], course_ctx: 
 
 
 def build_evaluation_prompt(profile: Optional[dict], history_text: str) -> str:
-    """构建学习效果评估 prompt。"""
-    return f"""你是一个学习效果评估专家。根据以下对话历史和画像，生成一份评估报告。
+    """构建学习效果评估 prompt（要求 JSON 输出）。"""
+    return f"""你是一个学习效果评估专家。根据以下对话历史和画像，生成一份结构化的学习效果评估。
 
 学生画像：
 - 知识基础：{profile.get('knowledge_base', '初级') if profile else '初级'}
@@ -508,14 +514,16 @@ def build_evaluation_prompt(profile: Optional[dict], history_text: str) -> str:
 最近对话历史（含练习记录）：
 {history_text}
 
-请输出评估报告，包含以下部分：
-1. **知识掌握度**：评估学生对知识点的掌握程度（百分比估算）
-2. **薄弱环节**：指出仍然存在的薄弱知识点
-3. **进步情况**：与之前相比的进步
-4. **学习建议**：下一步重点学习方向和建议
-5. **推荐调整**：是否需要调整学习节奏或方法
+请输出 JSON 对象，包含以下字段：
+1. "overall_score": 整数 0-100，综合评估分数
+2. "knowledge_level": 知识掌握度百分比，如 "75%"
+3. "efficiency_level": 学习效率描述，如 "较高"、"中等"、"偏低"
+4. "weak_points_list": 薄弱知识点数组，如 ["变量作用域", "递归"]
+5. "progress_summary": 进步情况简述
+6. "suggestions": 学习建议
+7. "pace_recommendation": 节奏调整建议
 
-在回复前标注 **[学习效果评估]**，要求内容具体、有针对性。"""
+只输出JSON对象，不要有任何其他解释或标记。"""
 
 
 def build_plan_prompt(profile: Optional[dict], course_ctx: str) -> str:

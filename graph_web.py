@@ -186,6 +186,12 @@ def evaluation_node_gen(state: AgentState):
             answer += evt[1]
         yield evt
     answer = output_safety_filter(answer)
+
+    # 尝试提取结构化评估数据
+    eval_data = extract_json(answer)
+    if eval_data and "overall_score" in eval_data:
+        yield ("data", json.dumps({"type": "eval", "data": eval_data}))
+
     yield ("_result", {"messages": [AIMessage(content=answer)]})
 
 
@@ -289,7 +295,16 @@ def multimodal_generator_gen(state: AgentState):
     try:
         rp_raw = state.get("resource_plan", "")
         plan = extract_json(rp_raw) if rp_raw else {}
-        topic = plan.get("topic", "") if plan else ""
+        topic = plan.get("topic", "") if isinstance(plan, dict) else ""
+        # 回退：尝试从 resource_plan 字符串中正则提取 topic
+        if not topic:
+            import re
+            m = re.search(r'"topic"\s*:\s*"([^"]+)"', rp_raw) if rp_raw else None
+            topic = m.group(1) if m else ""
+        # 再次回退：使用用户提问中的关键词
+        if not topic:
+            last_msg = state["messages"][-1].content if state["messages"] else ""
+            topic = last_msg[:50]  # 截取前50字符作为搜索词
         if topic:
             videos = search_bilibili_videos(topic)
             if videos:
