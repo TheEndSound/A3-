@@ -1,16 +1,24 @@
 [project]
 name = "a3"
 version = "0.2.0"
+description = "多智能体个性化学习系统 — AI 智学"
 requires-python = ">=3.10"
 dependencies = [
+    # Web Framework
     "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "sse-starlette>=2.0.0",
+    # LLM & Agent
     "langgraph>=0.0.20",
     "langchain-core>=0.1.0",
-    "python-dotenv>=1.0.0",
+    # HTTP & Utils
     "requests>=2.31.0",
-    "sse-starlette>=2.0.0",
-    "uvicorn>=0.29.0",
+    "python-dotenv>=1.0.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [[tool.uv.index]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
