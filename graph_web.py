@@ -16,12 +16,15 @@ from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 
 from core import (
     get_course_context,
+    get_user_documents_context,
     extract_json,
     content_safety_check,
     output_safety_filter,
     call_llm_stream,
     call_llm_sync,
     search_bilibili_videos,
+    search_web,
+    format_search_context,
     build_profile_prompt,
     build_intent_prompt,
     build_greeting_prompt,
@@ -35,6 +38,14 @@ from core import (
     AgentState,
     RESOURCE_HEADERS,
     logger,
+    _is_news_query,
+)
+from database import (
+    upsert_session as db_upsert_session,
+    insert_message as db_insert_message,
+    update_session_preview as db_update_session_preview,
+    get_session_messages as db_get_session_messages,
+    save_profile as db_save_profile,
 )
 
 
@@ -138,9 +149,10 @@ def chat_node_gen(state: AgentState):
 
     answer = output_safety_filter(answer)
 
-    # 追加学习路径推荐
+    # 追加学习路径推荐（新闻/资讯模式下跳过）
     plan = state.get("learning_plan")
-    if plan:
+    is_news = "信息摘要助手" in course_ctx
+    if plan and not is_news:
         pt = "\n\n📌 **推荐学习路径：**\n" + "\n".join(
             f"{i + 1}. {s.get('title', str(s))}" for i, s in enumerate(plan)
         )
@@ -426,11 +438,23 @@ def run_graph(state: AgentState):
 
     intent = state["user_intent"]
 
+    # 新闻/资讯模式：强制走 chat 通道，阻止资源生成管线
+    course_ctx = state.get("course_context", "")
+    if "信息摘要助手" in course_ctx and intent == "resource":
+        intent = "chat"
+        state["user_intent"] = "chat"
+        yield ("status", "📰 检测到资讯查询，切换为信息摘要模式")
+
     # 阶段3：按意图路由
     if intent == "greeting":
         for evt in greeting_node_gen(state):
             if evt[0] == "_result":
-                state.update(evt[1])
+                result_data = evt[1]
+                if "messages" in result_data:
+                    state["messages"].extend(result_data["messages"])
+                for k, v in result_data.items():
+                    if k != "messages":
+                        state[k] = v
             elif evt[0] == "_llm_done":
                 pass
             else:
@@ -489,7 +513,12 @@ def run_graph(state: AgentState):
     elif intent == "tutor":
         for evt in tutor_node_gen(state):
             if evt[0] == "_result":
-                state.update(evt[1])
+                result_data = evt[1]
+                if "messages" in result_data:
+                    state["messages"].extend(result_data["messages"])
+                for k, v in result_data.items():
+                    if k != "messages":
+                        state[k] = v
             elif evt[0] == "_llm_done":
                 pass
             else:
@@ -498,7 +527,12 @@ def run_graph(state: AgentState):
     elif intent == "evaluation":
         for evt in evaluation_node_gen(state):
             if evt[0] == "_result":
-                state.update(evt[1])
+                result_data = evt[1]
+                if "messages" in result_data:
+                    state["messages"].extend(result_data["messages"])
+                for k, v in result_data.items():
+                    if k != "messages":
+                        state[k] = v
             elif evt[0] == "_llm_done":
                 pass
             else:
@@ -507,7 +541,12 @@ def run_graph(state: AgentState):
     else:  # chat
         for evt in chat_node_gen(state):
             if evt[0] == "_result":
-                state.update(evt[1])
+                result_data = evt[1]
+                if "messages" in result_data:
+                    state["messages"].extend(result_data["messages"])
+                for k, v in result_data.items():
+                    if k != "messages":
+                        state[k] = v
             elif evt[0] == "_llm_done":
                 pass
             else:
@@ -547,21 +586,113 @@ def _trim_messages(state: AgentState):
 
 # ================== 对外接口 ==================
 
-def process_message(session_id: str, user_message: str):
+def _image_gen_node_gen(user_message: str):
+    """Image generation fast path: skip all agents, generate Mermaid code directly."""
+    yield ("status", "🎨 正在生成图像...")
+    system_prompt = (
+        "You are a Mermaid diagram generator. Your ONLY job is to output a Mermaid code block.\n\n"
+        "CRITICAL RULES (violation = failure):\n"
+        "1. Output ONLY one ```mermaid code block. No text outside the code block.\n"
+        "2. No greetings, no introductions, no explanations, no summaries.\n"
+        "3. No phrases like 'Here is', 'This is', 'Below is', etc.\n"
+        "4. Pick the best diagram type: mindmap/flowchart/sequenceDiagram/classDiagram/gantt.\n"
+        "5. Content must be complete and well-structured. For mindmap: 3+ top branches, 2+ sub-nodes each.\n\n"
+        "Example output:\n"
+        "```mermaid\nmindmap\n  root((Topic))\n    Branch1\n      SubNode\n    Branch2\n      SubNode\n```\n\n"
+        "Remember: ONLY the code block. Nothing else."
+    )
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_message},
+    ]
+    answer = ""
+    for evt in call_llm_stream(messages, temperature=0):
+        if evt[0] == "chunk":
+            answer += evt[1]
+        yield evt
+    answer = output_safety_filter(answer)
+    yield ("_result", {"messages": [AIMessage(content=answer)]})
+
+
+def process_message(session_id: str, user_message: str, image_mode: bool = False, web_search: bool = False):
     """处理用户消息，实时 yield 流式事件供 SSE 推送。"""
+    logger.info("process_message: session=%s, image_mode=%s, web_search=%s, msg=%s",
+                 session_id[:12], image_mode, web_search, user_message[:60])
     with _session_lock:
         if session_id not in sessions:
-            sessions[session_id] = {
-                "messages": [],
-                "user_intent": "",
-                "profile": None,
-                "learning_plan": None,
-                "course_context": "",
-                "resource_plan": "",
-            }
+            # 尝试从数据库恢复会话历史
+            db_msgs = db_get_session_messages(session_id)
+            if db_msgs:
+                msgs = []
+                # 加载最近的消息用于对话上下文（最多40条）
+                for m in db_msgs[-40:]:
+                    if m["role"] == "human":
+                        msgs.append(HumanMessage(content=m["content"]))
+                    else:
+                        msgs.append(AIMessage(content=m["content"]))
+                sessions[session_id] = {
+                    "messages": msgs,
+                    "user_intent": "",
+                    "profile": None,
+                    "learning_plan": None,
+                    "course_context": "",
+                    "resource_plan": "",
+                    "_next_seq": len(db_msgs),
+                }
+            else:
+                sessions[session_id] = {
+                    "messages": [],
+                    "user_intent": "",
+                    "profile": None,
+                    "learning_plan": None,
+                    "course_context": "",
+                    "resource_plan": "",
+                    "_next_seq": 0,
+                }
         _session_times[session_id] = time.time()
         _evict_oldest_session()
         state = sessions[session_id]
+        if "_next_seq" not in state:
+            state["_next_seq"] = len(db_get_session_messages(session_id))
+
+    # 图像模式：快速通道，跳过所有智能体
+    if image_mode:
+        # 保存用户消息到数据库
+        db_upsert_session(session_id)
+        db_insert_message(session_id, "human", user_message, state["_next_seq"])
+        db_update_session_preview(session_id, "human", user_message)
+        state["_next_seq"] += 1
+        state["messages"].append(HumanMessage(content=user_message))
+        pre_msg_count = len(state["messages"])
+
+        try:
+            for evt in _image_gen_node_gen(user_message):
+                if evt[0] == "_result":
+                    # 不能直接 state.update() —— 会覆盖 messages 列表导致丢消息
+                    # 必须手动 extend messages 以保持 pre_msg_count 切片正确
+                    result_data = evt[1]
+                    if "messages" in result_data:
+                        state["messages"].extend(result_data["messages"])
+                    # 更新其他 state 字段
+                    for k, v in result_data.items():
+                        if k != "messages":
+                            state[k] = v
+                elif evt[0] == "_llm_done":
+                    pass
+                else:
+                    yield evt
+
+            new_msgs = [m for m in state["messages"][pre_msg_count:] if isinstance(m, AIMessage)]
+            for m in new_msgs:
+                db_insert_message(session_id, "ai", m.content, state["_next_seq"])
+                db_update_session_preview(session_id, "ai", m.content)
+                state["_next_seq"] += 1
+            yield ("end", "")
+        except Exception as e:
+            logger.error("图像生成出错: %s", e)
+            yield ("status", f"❌ 图像生成出错：{e}")
+            yield ("error", str(e))
+        return
 
     # 输入安全过滤
     hit = content_safety_check(user_message)
@@ -575,14 +706,65 @@ def process_message(session_id: str, user_message: str):
     if course_ctx:
         state["course_context"] = course_ctx
 
-    _trim_messages(state)
-    state["messages"].append(HumanMessage(content=user_message))
+    # 加载用户知识库文档并追加到课程上下文
+    user_docs_ctx = get_user_documents_context(session_id)
+    if user_docs_ctx:
+        if state.get("course_context"):
+            state["course_context"] += "\n\n" + user_docs_ctx
+        else:
+            state["course_context"] = user_docs_ctx
 
+    # 联网搜索：调用 open-webSearch 本地服务（多引擎，免费）
+    search_context = ""
+    if web_search:
+        yield ("status", "🌐 正在联网搜索...")
+        search_results = search_web(user_message)
+        if search_results:
+            search_context = format_search_context(search_results, user_message)
+            # 注入 course_context（供系统提示词使用）
+            if state.get("course_context"):
+                state["course_context"] = search_context + "\n" + state["course_context"]
+            else:
+                state["course_context"] = search_context
+            yield ("status", f"🌐 已获取 {len(search_results)} 条搜索结果")
+        else:
+            yield ("status", "🌐 搜索无结果，请稍后重试")
+
+    # 保存用户消息到数据库（原始消息，不含搜索上下文）
+    db_upsert_session(session_id)
+    db_insert_message(session_id, "human", user_message, state["_next_seq"])
+    db_update_session_preview(session_id, "human", user_message)
+    state["_next_seq"] += 1
+
+    _trim_messages(state)
+
+    # 构建发给 LLM 的消息：如果有搜索结果，直接嵌入用户消息
+    llm_message = user_message
+    if search_context:
+        # 新闻模式：清理用户问题中的歧义词（如"昨天"会被 LLM 误解为泰剧名）
+        safe_query = user_message
+        if _is_news_query(user_message):
+            import datetime
+            today = datetime.date.today()
+            day_before_yesterday = (today - datetime.timedelta(days=2)).strftime("%Y年%m月%d日")
+            yesterday = (today - datetime.timedelta(days=1)).strftime("%Y年%m月%d日")
+            today_str = today.strftime("%Y年%m月%d日")
+            safe_query = safe_query.replace("前天", f"前天({day_before_yesterday})")
+            safe_query = safe_query.replace("昨天", f"昨天({yesterday})")
+            safe_query = safe_query.replace("今天", f"今天({today_str})")
+        llm_message = f"{search_context}\n---\n用户问题: {safe_query}"
+    state["messages"].append(HumanMessage(content=llm_message))
+
+    # 记录执行前的消息数，用于追踪 AI 生成的新消息
+    pre_msg_count = len(state["messages"])
+
+    saved_ai_count = 0
     try:
         for evt in run_graph(state):
             if evt[0] == "_done":
                 break
             yield evt
+
         yield ("end", "")
     except Exception as e:
         # 异常时回滚已添加的 HumanMessage
@@ -593,3 +775,23 @@ def process_message(session_id: str, user_message: str):
         logger.error("处理消息时出错: %s", e)
         yield ("status", f"❌ 处理出错：{e}")
         yield ("error", str(e))
+    finally:
+        # 无论正常结束、LLM异常、还是客户端断连，都确保持久化 AI 消息
+        new_msgs = [m for m in state["messages"][pre_msg_count:] if isinstance(m, AIMessage)]
+        for m in new_msgs:
+            try:
+                db_insert_message(session_id, "ai", m.content, state["_next_seq"])
+                db_update_session_preview(session_id, "ai", m.content)
+                state["_next_seq"] += 1
+                saved_ai_count += 1
+            except Exception as save_err:
+                logger.error("保存AI消息失败: %s", save_err)
+        # 保存画像
+        profile = state.get("profile")
+        if profile:
+            try:
+                db_save_profile(session_id, profile)
+            except Exception:
+                pass
+        if saved_ai_count > 0:
+            logger.info("持久化 %d 条AI消息 (session=%s)", saved_ai_count, session_id[:20])

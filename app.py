@@ -10,6 +10,7 @@ import io as _io
 import json
 import re as _re
 import asyncio
+import subprocess
 import tempfile
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, FileResponse, Response
@@ -70,6 +71,9 @@ async def chat_stream(request: Request):
     data = await request.json()
     user_message = data.get("message", "")
     session_id = data.get("session_id", "default")
+    image_mode = data.get("image_mode", False)
+    web_search = data.get("web_search", False)
+    print(f"[DEBUG chat_stream] web_search={web_search} image_mode={image_mode} msg={user_message[:40]}", flush=True)
 
     # 输入验证
     if not user_message or not user_message.strip():
@@ -89,17 +93,21 @@ async def chat_stream(request: Request):
         return EventSourceResponse(bad_session_response())
 
     async def event_generator():
+        gen = process_message(session_id, user_message, image_mode=image_mode, web_search=web_search)
         ended = False
         try:
-            for event_type, content in process_message(session_id, user_message):
+            for event_type, content in gen:
                 if await request.is_disconnected():
+                    # 关闭 generator 以触发其 finally 块（持久化AI消息）
+                    gen.close()
                     break
                 yield {"data": json.dumps({"type": event_type, "content": content})}
                 if event_type == "end":
                     ended = True
         except asyncio.CancelledError:
-            pass
+            gen.close()
         except Exception as e:
+            gen.close()
             yield {"data": json.dumps({"type": "error", "content": str(e)})}
         finally:
             if not ended:
@@ -537,6 +545,60 @@ async def export_resource_docx(request: Request):
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={"Content-Disposition": f'attachment; filename="{safe_filename}.docx"'}
     )
+
+
+@app.post("/api/render-image")
+async def render_mermaid_image(request: Request):
+    """服务端渲染 Mermaid 代码为 JPG 图片。"""
+    data = await request.json()
+    code = data.get("code", "").strip()
+    if not code:
+        raise HTTPException(status_code=400, detail="缺少 mermaid 代码")
+    if len(code) > 10000:
+        raise HTTPException(status_code=400, detail="代码过长")
+
+    script = os.path.join(os.path.dirname(__file__), "render_mermaid.cjs")
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "node", script,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(input=code.encode("utf-8")), timeout=30
+        )
+        if proc.returncode != 0:
+            err_msg = stderr.decode("utf-8", errors="replace")[:200]
+            raise HTTPException(status_code=500, detail=f"渲染失败: {err_msg}")
+        svg = stdout.decode("utf-8", errors="replace")
+
+        # SVG → PNG → JPG 转换
+        import cairosvg
+        from PIL import Image
+
+        png_data = cairosvg.svg2png(bytestring=svg.encode("utf-8"))
+        img = Image.open(_io.BytesIO(png_data))
+        if img.mode in ("RGBA", "P"):
+            bg = Image.new("RGB", img.size, (255, 255, 255))
+            if img.mode == "RGBA":
+                bg.paste(img, mask=img.split()[3])
+            else:
+                bg.paste(img)
+            img = bg
+        elif img.mode != "RGB":
+            img = img.convert("RGB")
+
+        jpg_buf = _io.BytesIO()
+        img.save(jpg_buf, format="JPEG", quality=90)
+        jpg_buf.seek(0)
+        return Response(content=jpg_buf.getvalue(), media_type="image/jpeg")
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="渲染超时")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

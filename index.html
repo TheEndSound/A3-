@@ -241,6 +241,24 @@ body {
 
 .chat-msg-meta { font-size: 11px; color: var(--main-muted); margin-top: 4px; }
 
+/* AI消息底部操作按钮 */
+.msg-actions {
+    display: flex; gap: 8px; margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.06); opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.chat-msg:hover .msg-actions,
+.chat-msg.typing-msg .msg-actions { opacity: 1; }
+
+.msg-action-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 12px; border: 1px solid var(--border); border-radius: 14px;
+    background: #fff; color: var(--main-secondary); font-size: 12px;
+    cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+}
+.msg-action-btn:hover { background: var(--accent-light); border-color: var(--accent-subtle); color: var(--accent); }
+.msg-action-btn.copied { background: #dcfce7; border-color: #86efac; color: #16a34a; }
+
 /* 输入区域 */
 .chat-input-area {
     padding: 16px 24px 20px; flex-shrink: 0;
@@ -264,13 +282,17 @@ body {
 .chat-input-tools { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
 .tool-btn {
-    width: 34px; height: 34px; border-radius: 50%; border: none; background: transparent;
-    cursor: pointer; font-size: 16px; color: var(--main-muted);
-    display: flex; align-items: center; justify-content: center;
+    height: 32px; border-radius: 20px; border: 1px solid var(--border);
+    background: #fff; cursor: pointer; font-size: 13px; color: var(--main-secondary);
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 0 10px; white-space: nowrap;
     transition: all 0.15s ease;
 }
-.tool-btn:hover { background: var(--chat-ai-bg); color: var(--main-secondary); }
-.tool-btn.active { background: var(--accent-light); color: var(--accent); }
+.tool-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.tool-btn.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.tool-btn.icon-only { width: 32px; padding: 0; border-radius: 50%; border: none; background: transparent; font-size: 16px; justify-content: center; }
+.tool-btn.icon-only:hover { background: var(--chat-ai-bg); border: none; }
+.tool-btn.icon-only.active { background: var(--accent-light); border: none; }
 
 .btn-send {
     width: 36px; height: 36px; border-radius: 50%; border: none;
@@ -313,6 +335,26 @@ body {
 
 /* ========== 隐藏模板 ========== */
 #feature-templates { display: none; }
+
+/* ========== 知识库面板 ========== */
+.kb-section { background: var(--main-card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
+.kb-section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.kb-upload-zone { border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 32px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.kb-upload-zone:hover, .kb-upload-zone.drag-over { border-color: var(--accent); background: var(--accent-light); }
+.kb-upload-zone-icon { font-size: 36px; margin-bottom: 8px; }
+.kb-upload-zone-text { font-size: 13px; color: var(--main-muted); }
+.kb-doc-list { list-style: none; padding: 0; margin: 0; }
+.kb-doc-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; transition: background 0.1s; }
+.kb-doc-item:hover { background: var(--chat-ai-bg); }
+.kb-doc-info { flex: 1; min-width: 0; }
+.kb-doc-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kb-doc-meta { font-size: 11px; color: var(--main-muted); margin-top: 2px; }
+.kb-doc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.kb-doc-btn { font-size: 11px; padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--main-card-bg); cursor: pointer; color: var(--main-text); transition: all 0.1s; }
+.kb-doc-btn:hover { background: var(--chat-ai-bg); }
+.kb-doc-btn.danger { color: #ef4444; border-color: #fecaca; }
+.kb-doc-btn.danger:hover { background: #fef2f2; }
+.kb-empty { text-align: center; padding: 32px 16px; color: var(--main-muted); font-size: 13px; }
 
 /* ========== 功能页面样式(保留) ========== */
 .page-header { margin-bottom: 24px; }
@@ -580,6 +622,32 @@ body {
 
 /* 会话列表空状态 */
 .conv-empty { text-align: center; padding: 20px 12px; font-size: 12px; color: var(--sidebar-muted); }
+
+.tool-btn.recording { background: #ef4444; color: #fff; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } }
+
+/* Mermaid 可点击放大 */
+.mermaid-container { cursor: pointer; position: relative; }
+.mermaid-container:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(99,102,241,0.12); }
+.mermaid-container:hover::after { content: '🔍 点击放大'; position: absolute; top: 8px; right: 12px; font-size: 11px; color: var(--accent); background: var(--accent-light); padding: 2px 8px; border-radius: 10px; }
+
+/* 图片查看模态框 */
+.image-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; align-items: center; justify-content: center; overflow: hidden; }
+.image-modal-overlay.open { display: flex; }
+.image-modal-viewport { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: grab; }
+.image-modal-viewport.grabbing { cursor: grabbing; }
+.image-modal-viewport img { display: block; max-width: 90vw; max-height: 85vh; object-fit: contain; transform-origin: center center; transition: transform 0.1s ease; user-select: none; -webkit-user-drag: none; }
+.image-modal-actions { position: fixed; bottom: 24px; right: 24px; display: flex; gap: 10px; z-index: 3001; }
+.image-modal-zoom-controls { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 3001; background: rgba(0,0,0,0.6); border-radius: 24px; padding: 5px; }
+.image-modal-btn { padding: 10px 20px; border: none; border-radius: 20px; font-size: 14px; cursor: pointer; color: #fff; transition: all 0.15s ease; }
+.image-modal-btn.zoom { padding: 8px 14px; border-radius: 20px; background: transparent; color: #fff; font-size: 18px; line-height: 1; }
+.image-modal-btn.zoom:hover { background: rgba(255,255,255,0.2); }
+.image-modal-btn.zoom:disabled { opacity: 0.4; cursor: default; }
+.image-modal-btn.download { background: #6366f1; }
+.image-modal-btn.download:hover { background: #4f46e5; }
+.image-modal-btn.close { background: #6b7280; }
+.image-modal-btn.close:hover { background: #4b5563; }
+
 </style>
 </head>
 <body>
@@ -618,6 +686,9 @@ body {
                 <button class="sidebar-func-item" data-feature="eval" onclick="openFeaturePanel('eval')">
                     <span class="sidebar-func-icon">📈</span> 学习评估
                 </button>
+                <button class="sidebar-func-item" data-feature="knowledge" onclick="openFeaturePanel('knowledge')">
+                    <span class="sidebar-func-icon">📚</span> 知识库
+                </button>
             </div>
             <div class="sidebar-user">
                 <div class="sidebar-user-avatar">智</div>
@@ -649,13 +720,19 @@ body {
             <!-- 输入区域 -->
             <div class="chat-input-area">
                 <div class="chat-input-wrapper">
+                    <div class="chat-input-tools">
+                        <button class="tool-btn icon-only" id="upload-btn" title="上传文件" onclick="document.getElementById('upload-file-input').click()">➕</button>
+                        <input type="file" id="upload-file-input" style="display:none" accept=".txt,.md,.pdf,.docx,.doc,.json,.csv,.html,.py,.js,.css,.xml,.yaml,.log,.png,.jpg,.jpeg,.gif,.webp" onchange="handleUploadFile(event)">
+                        <button class="tool-btn" id="web-search-btn" title="联网搜索" onclick="toggleWebSearch()">🌐 联网搜索</button>
+                        <button class="tool-btn" id="image-gen-btn" title="图像生成" onclick="toggleImageMode()">📐 图像生成</button>
+                    </div>
                     <textarea class="chat-input" id="main-chat-input"
                         placeholder="输入你的问题..."
                         rows="1"
                         onkeydown="handleMainChatKey(event)"
                         oninput="autoResizeInput(this)"></textarea>
                     <div class="chat-input-tools">
-                        <button class="tool-btn" id="web-search-btn" title="联网搜索" onclick="toggleWebSearch()">🌐</button>
+                        <button class="tool-btn" id="voice-btn" title="语音输入" onclick="toggleVoiceInput()">🎤 语音输入</button>
                     </div>
                     <button class="btn-send" id="main-send-btn" onclick="sendMainMsg()" title="发送">
                         <span style="font-size:14px;">↑</span>
@@ -862,10 +939,57 @@ body {
     </div>
 </div>
 
+<!-- 知识库管理 -->
+<div id="tpl-knowledge">
+    <div class="page-header">
+        <h1 class="page-title">知识库管理</h1>
+        <p class="page-subtitle">上传文档到当前会话的知识库，AI 将基于这些文档为你提供更精准的回答</p>
+    </div>
+
+    <div class="kb-section">
+        <div class="kb-section-title">文件上传</div>
+        <div class="kb-upload-zone" id="kb-upload-zone" onclick="document.getElementById('kb-file-input').click()">
+            <div class="kb-upload-zone-icon">📤</div>
+            <div class="kb-upload-zone-text">点击上传或拖拽文件到此处</div>
+            <div style="font-size:11px;color:var(--main-muted);margin-top:4px;">支持 TXT / MD / PDF / DOCX / DOC / JSON / CSV / 代码文件，最大 10MB</div>
+        </div>
+        <input type="file" id="kb-file-input" style="display:none" accept=".txt,.md,.pdf,.docx,.doc,.json,.csv,.html,.py,.js,.css,.xml,.yaml,.log" onchange="handleKbFileSelect(event)">
+    </div>
+
+    <div class="kb-section">
+        <div class="kb-section-title">文本导入</div>
+        <input type="text" id="kb-text-title" placeholder="输入文档标题..." style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-md);font-size:14px;margin-bottom:10px;background:var(--main-card-bg);color:var(--main-text);box-sizing:border-box;">
+        <textarea id="kb-text-content" placeholder="输入或粘贴文档内容..." style="width:100%;height:120px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-md);font-size:13px;resize:vertical;font-family:inherit;background:var(--main-card-bg);color:var(--main-text);box-sizing:border-box;"></textarea>
+        <button id="kb-import-text-btn" onclick="importKbText()" style="margin-top:10px;padding:8px 20px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;border-radius:var(--radius-md);font-size:13px;cursor:pointer;">导入文本</button>
+    </div>
+
+    <div class="kb-section">
+        <div class="kb-section-title">已导入文档 <span id="kb-doc-count" style="font-weight:400;color:var(--main-muted);font-size:12px;"></span></div>
+        <ul class="kb-doc-list" id="kb-doc-list">
+            <li class="kb-empty">加载中...</li>
+        </ul>
+    </div>
+</div>
+
+
 </div><!-- /feature-templates -->
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- 图片查看模态框 -->
+<div class="image-modal-overlay" id="image-modal">
+    <div class="image-modal-viewport" id="image-modal-viewport"></div>
+    <div class="image-modal-zoom-controls">
+        <button class="image-modal-btn zoom" id="zoom-out-btn" onclick="zoomImage(-0.5)">−</button>
+        <button class="image-modal-btn zoom" id="zoom-reset-btn" onclick="resetImageZoom()">1:1</button>
+        <button class="image-modal-btn zoom" id="zoom-in-btn" onclick="zoomImage(0.5)">+</button>
+    </div>
+    <div class="image-modal-actions">
+        <button class="image-modal-btn download" onclick="downloadImageJPG()">⬇ 下载图片</button>
+        <button class="image-modal-btn close" onclick="closeImageModal()">✕ 关闭</button>
+    </div>
+</div>
 
 <!-- 资源详情模态框 -->
 <div id="resource-modal" class="modal-overlay" onclick="closeResourceModal(event)">
@@ -944,7 +1068,7 @@ function switchSession(sid) {
             if (messages.length > 0) {
                 document.getElementById('chat-welcome').style.display = 'none';
                 messages.forEach(function(m) {
-                    if (m.role === 'user') {
+                    if (m.role === 'human') {
                         addMainMsg('user', m.content);
                     } else {
                         addMainMsg('ai', m.content);
@@ -989,15 +1113,18 @@ function renderConversationList(sessions) {
     var html = '';
     sessions.forEach(function(s) {
         var sid = s.session_id;
-        var title = s.title || '新对话';
+        var title = s.first_message_preview || s.last_message_preview || '新对话';
         if (title.length > 18) title = title.slice(0, 18) + '...';
         var time = '';
-        if (s.updated_at) {
-            var d = new Date(s.updated_at);
+        var timeStr = s.last_active;
+        if (timeStr) {
+            var d = new Date(timeStr);
             var now = new Date();
-            var isToday = d.toDateString() === now.toDateString();
-            time = isToday ? d.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) :
-                (d.getMonth()+1) + '/' + d.getDate();
+            if (!isNaN(d.getTime())) {
+                var isToday = d.toDateString() === now.toDateString();
+                time = isToday ? d.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) :
+                    (d.getMonth()+1) + '/' + d.getDate();
+            }
         }
         var activeClass = sid === curId ? ' active' : '';
         html += '<div class="conv-item' + activeClass + '" onclick="switchSession(\'' + escapeHtmlAttr(sid) + '\')">' +
@@ -1038,7 +1165,7 @@ function openFeaturePanel(name) {
     // 将模板内容移入面板 (模板本身是 wrapper div，取子节点)
     while (clone.firstChild) { panelBody.appendChild(clone.firstChild); }
 
-    var titles = {profile: '画像分析', generate: '资源生成', path: '路径规划', eval: '学习评估'};
+    var titles = {profile: '画像分析', generate: '资源生成', path: '路径规划', eval: '学习评估', knowledge: '知识库'};
     document.getElementById('feature-panel-title').textContent = titles[name] || '功能面板';
 
     document.getElementById('chat-view').style.display = 'none';
@@ -1050,6 +1177,7 @@ function openFeaturePanel(name) {
     if (name === 'profile') { drawRadar(); }
     if (name === 'path') { drawPath(); bindPathCanvasClick(); }
     if (name === 'eval') { populateEvalUI(); animateScore(); }
+    if (name === 'knowledge') { initKbPanel(); }
 
     // 窗口 resize 时刷新当前功能
     window._featureResizeHandler = function() {
@@ -1074,6 +1202,164 @@ function closeFeaturePanel() {
     }
 }
 
+// ========== 知识库管理 ==========
+var _kbUploading = false;
+
+function initKbPanel() {
+    loadKnowledgeList();
+    // 拖拽上传
+    var zone = document.getElementById('kb-upload-zone');
+    if (!zone) return;
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        var files = e.dataTransfer.files;
+        if (files.length > 0) uploadKbFile(files[0]);
+    });
+}
+
+function getActiveSessionId() {
+    return window.appState && window.appState.currentSessionId ? window.appState.currentSessionId : 'default';
+}
+
+function loadKnowledgeList() {
+    var sid = getActiveSessionId();
+    fetch('/knowledge/' + encodeURIComponent(sid))
+        .then(function(r) { return r.json(); })
+        .then(function(docs) {
+            var list = document.getElementById('kb-doc-list');
+            var count = document.getElementById('kb-doc-count');
+            if (!list) return;
+            if (!docs || docs.length === 0) {
+                list.innerHTML = '<li class="kb-empty">暂无文档，上传文件或导入文本开始构建知识库</li>';
+                if (count) count.textContent = '';
+                return;
+            }
+            if (count) count.textContent = '(' + docs.length + ')';
+            var html = '';
+            for (var i = 0; i < docs.length; i++) {
+                var doc = docs[i];
+                var typeLabel = doc.content_type || 'file';
+                var sizeStr = doc.file_size ? formatFileSize(doc.file_size) : '';
+                var icon = fileTypeIcon(doc.content_type);
+                html += '<li class="kb-doc-item">' +
+                    '<div class="kb-doc-info">' +
+                        '<div class="kb-doc-name">' + icon + ' ' + escapeHtml(doc.title) + '</div>' +
+                        '<div class="kb-doc-meta">' + typeLabel.toUpperCase() + (sizeStr ? ' · ' + sizeStr : '') + ' · ' + (doc.created_at || '') + '</div>' +
+                    '</div>' +
+                    '<div class="kb-doc-actions">' +
+                        '<button class="kb-doc-btn danger" onclick="deleteKbDoc(' + doc.id + ')">删除</button>' +
+                    '</div>' +
+                '</li>';
+            }
+            list.innerHTML = html;
+        })
+        .catch(function(err) {
+            var list = document.getElementById('kb-doc-list');
+            if (list) list.innerHTML = '<li class="kb-empty">加载失败: ' + escapeHtml(err.message) + '</li>';
+        });
+}
+
+function handleKbFileSelect(event) {
+    var file = event.target.files[0];
+    if (file) uploadKbFile(file);
+    event.target.value = '';
+}
+
+function uploadKbFile(file) {
+    if (_kbUploading) return;
+    var maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) { showToast('文件过大（最大10MB），当前 ' + formatFileSize(file.size)); return; }
+
+    _kbUploading = true;
+    var btn = document.getElementById('kb-import-text-btn');
+    var origText = btn ? btn.textContent : '';
+
+    var formData = new FormData();
+    formData.append('file', file);
+    formData.append('session_id', getActiveSessionId());
+
+    showToast('正在上传并解析文件...');
+    fetch('/knowledge/upload', { method: 'POST', body: formData })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(e) { throw new Error(e.detail || '上传失败'); });
+            return r.json();
+        })
+        .then(function(data) {
+            showToast('已导入: ' + escapeHtml(data.title || file.name));
+            loadKnowledgeList();
+            // 清空文本导入区域
+            var titleInput = document.getElementById('kb-text-title');
+            var contentInput = document.getElementById('kb-text-content');
+            if (titleInput) titleInput.value = '';
+            if (contentInput) contentInput.value = '';
+        })
+        .catch(function(err) { showToast('导入失败: ' + escapeHtml(err.message)); })
+        .finally(function() { _kbUploading = false; });
+}
+
+function importKbText() {
+    if (_kbUploading) return;
+    var titleInput = document.getElementById('kb-text-title');
+    var contentInput = document.getElementById('kb-text-content');
+    if (!titleInput || !contentInput) return;
+    var title = titleInput.value.trim();
+    var content = contentInput.value.trim();
+    if (!title) { showToast('请输入文档标题'); return; }
+    if (!content) { showToast('请输入文档内容'); return; }
+    if (content.length > 2 * 1024 * 1024) { showToast('内容过长（最大2MB）'); return; }
+
+    _kbUploading = true;
+    showToast('正在导入文本...');
+    fetch('/knowledge/import-text', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({session_id: getActiveSessionId(), title: title, content: content})
+    })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(e) { throw new Error(e.detail || '导入失败'); });
+            return r.json();
+        })
+        .then(function() {
+            showToast('文本已导入: ' + escapeHtml(title));
+            titleInput.value = '';
+            contentInput.value = '';
+            loadKnowledgeList();
+        })
+        .catch(function(err) { showToast('导入失败: ' + escapeHtml(err.message)); })
+        .finally(function() { _kbUploading = false; });
+}
+
+function deleteKbDoc(docId) {
+    if (!confirm('确定要删除该文档吗？')) return;
+    fetch('/knowledge/' + encodeURIComponent(docId), { method: 'DELETE' })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(e) { throw new Error(e.detail || '删除失败'); });
+            return r.json();
+        })
+        .then(function() { showToast('文档已删除'); loadKnowledgeList(); })
+        .catch(function(err) { showToast('删除失败: ' + escapeHtml(err.message)); });
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function fileTypeIcon(type) {
+    var icons = {pdf: '📕', docx: '📘', doc: '📘', txt: '📄', md: '📝', json: '📋', csv: '📊', html: '🌐', py: '🐍', js: '💛', css: '🎨', xml: '📰', yaml: '⚙️'};
+    return icons[(type || '').toLowerCase()] || '📎';
+}
+
+function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
 // ========== 主聊天 ==========
 var mainSending = false;
 
@@ -1084,15 +1370,33 @@ function autoResizeInput(el) {
 
 function toggleWebSearch() {
     window.appState.webSearchEnabled = !window.appState.webSearchEnabled;
+    localStorage.setItem('webSearchEnabled', window.appState.webSearchEnabled ? '1' : '0');
     var btn = document.getElementById('web-search-btn');
     if (window.appState.webSearchEnabled) {
         btn.classList.add('active');
         btn.title = '联网搜索已开启';
+        btn.textContent = '🌐 联网搜索 ✓';
+        showToast('✅ 联网搜索已开启');
     } else {
         btn.classList.remove('active');
         btn.title = '联网搜索';
+        btn.textContent = '🌐 联网搜索';
+        showToast('联网搜索已关闭');
     }
 }
+
+// 页面加载时恢复联网搜索状态
+(function() {
+    if (localStorage.getItem('webSearchEnabled') === '1') {
+        window.appState.webSearchEnabled = true;
+        var btn = document.getElementById('web-search-btn');
+        if (btn) {
+            btn.classList.add('active');
+            btn.title = '联网搜索已开启';
+            btn.textContent = '🌐 联网搜索 ✓';
+        }
+    }
+})();
 
 function handleMainChatKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1106,13 +1410,16 @@ function sendMainMsg(msg) {
     var input = document.getElementById('main-chat-input');
     var text = msg || input.value.trim();
     if (!text) return;
+    var displayText = text;
+
+    // 图像模式：后端快速通道处理，前端只传原始消息
 
     mainSending = true;
     if (!msg) { input.value = ''; input.style.height = 'auto'; }
     document.getElementById('main-send-btn').disabled = true;
 
     document.getElementById('chat-welcome').style.display = 'none';
-    addMainMsg('user', text);
+    addMainMsg('user', displayText);
 
     var typingEl = document.createElement('div');
     typingEl.className = 'chat-msg ai typing-msg';
@@ -1125,10 +1432,15 @@ function sendMainMsg(msg) {
         onChunk: function(chunk) {
             fullContent += chunk;
             if (typingEl.parentNode) {
-                try {
-                    typingEl.querySelector('.chat-bubble').innerHTML = marked.parse(fullContent + '▌');
-                } catch(e) {
-                    typingEl.querySelector('.chat-bubble').innerHTML = escapeHtml(fullContent) + '▌';
+                if (_currentChartMode !== 'chat') {
+                    // 图像模式：不显示生文过程，只显示状态提示
+                    typingEl.querySelector('.chat-bubble').innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--main-muted);font-size:14px;"><span>🎨</span> 正在生成图像...</div>';
+                } else {
+                    try {
+                        typingEl.querySelector('.chat-bubble').innerHTML = marked.parse(fullContent + '▌');
+                    } catch(e) {
+                        typingEl.querySelector('.chat-bubble').innerHTML = escapeHtml(fullContent) + '▌';
+                    }
                 }
                 scrollMainChat();
             }
@@ -1150,17 +1462,31 @@ function sendMainMsg(msg) {
             document.getElementById('main-send-btn').disabled = false;
             if (typingEl.parentNode) {
                 if (fullContent) {
-                    try {
-                        typingEl.querySelector('.chat-bubble').innerHTML = marked.parse(fullContent);
-                        renderMermaid(typingEl.querySelector('.chat-bubble'));
-                        renderBilibiliVideos(typingEl.querySelector('.chat-bubble'));
-                    } catch(e) {
-                        typingEl.querySelector('.chat-bubble').innerHTML = escapeHtml(fullContent);
+                    if (_currentChartMode !== 'chat') {
+                        // 图像模式：提取 mermaid 代码并渲染为 JPG
+                        var code = extractMermaidCode(fullContent);
+                        if (code) {
+                            var bubble = typingEl.querySelector('.chat-bubble');
+                            bubble.innerHTML = '<div class="mermaid-container" style="cursor:pointer;" onclick="openImageModal(this)"></div>';
+                            renderMermaidToJpg(code, bubble.querySelector('.mermaid-container'));
+                        } else {
+                            typingEl.querySelector('.chat-bubble').innerHTML = '<div class="mermaid-error">AI 未生成有效图像代码，请重试</div>';
+                        }
+                    } else {
+                        try {
+                            typingEl.querySelector('.chat-bubble').innerHTML = marked.parse(fullContent);
+                            renderMermaid(typingEl.querySelector('.chat-bubble'));
+                            renderBilibiliVideos(typingEl.querySelector('.chat-bubble'));
+                        } catch(e) {
+                            typingEl.querySelector('.chat-bubble').innerHTML = escapeHtml(fullContent);
+                        }
                     }
                 } else {
                     typingEl.querySelector('.chat-bubble').innerHTML = '（无响应内容）';
                 }
                 typingEl.classList.remove('typing-msg');
+                var endedBubble = typingEl.querySelector('.chat-bubble');
+                if (endedBubble) _attachMsgActions(endedBubble);
             }
             window.appState.messageCount++;
             loadConversationList();
@@ -1180,19 +1506,50 @@ function addMainMsg(type, text) {
     var div = document.createElement('div');
     div.className = 'chat-msg ' + type;
     var avatar = type === 'user' ? '我' : '助';
-    var html;
+
     if (type === 'user') {
-        html = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
+        div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
+        container.appendChild(div);
     } else {
+        // ★ 核心方案：在 marked.parse() 之前提取 mermaid 代码块，
+        //    替换为占位符，parse 后再把占位符替换为渲染好的图片。
+        var mermaidBlocks = [];
+        var phPrefix = 'mermaid_ph_' + Math.random().toString(36).slice(2, 8) + '_';
+        var processedText = text.replace(/```\s*mermaid\s*\n([\s\S]*?)```/gi, function(match, code) {
+            var idx = mermaidBlocks.length;
+            mermaidBlocks.push(code.trim());
+            return '<div id="' + phPrefix + idx + '"></div>';
+        });
+
         try {
-            html = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + marked.parse(text) + '</div></div>';
+            div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + marked.parse(processedText) + '</div></div>';
         } catch(e) {
-            html = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
+            div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
         }
+        container.appendChild(div);
+
+        // 将占位符替换为 mermaid 渲染容器
+        for (var i = 0; i < mermaidBlocks.length; i++) {
+            (function(idx, code) {
+                var ph = document.getElementById(phPrefix + idx);
+                if (ph && ph.parentNode) {
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'mermaid-container';
+                    wrapper.style.cursor = 'pointer';
+                    wrapper.onclick = function() { openImageModal(this); };
+                    ph.parentNode.replaceChild(wrapper, ph);
+                    renderMermaidToJpg(code, wrapper);
+                }
+            })(i, mermaidBlocks[i]);
+        }
+
+        // 兜底：如果占位符方案没匹配到（比如 marked 改变了 HTML），
+        // 仍然尝试通过 renderMermaid 查找 code.language-mermaid
+        var bubble = div.querySelector('.chat-bubble');
+        if (bubble) renderMermaid(bubble);
+        // 附加操作按钮
+        if (bubble) _attachMsgActions(bubble);
     }
-    div.innerHTML = html;
-    container.appendChild(div);
-    renderMermaid(div.querySelector('.chat-bubble'));
     renderBilibiliVideos(div.querySelector('.chat-bubble'));
     scrollMainChat();
 }
@@ -1209,6 +1566,7 @@ function streamChat(message, callbacks) {
     var sessionId = getSessionId();
     var body = { message: message, session_id: sessionId };
     if (window.appState.webSearchEnabled) body.web_search = true;
+    if (_currentChartMode !== 'chat') body.image_mode = true;
 
     fetch('/chat/stream', {
         method: 'POST',
@@ -2085,6 +2443,57 @@ function closeResourceModal(e) {
 // ========== Mermaid 渲染 ==========
 if (typeof mermaid !== 'undefined') { mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' }); }
 
+// 从文本中提取 mermaid 代码
+function extractMermaidCode(text) {
+    var re = /```\s*mermaid\s*\n?([\s\S]*?)```/i;
+    var match = text.match(re);
+    if (match && match[1]) return match[1].trim();
+    var fallbackRe = /(?:mindmap|flowchart\s+(?:TD|LR|TB|RL)|sequenceDiagram|classDiagram|gantt|graph\s+(?:TD|LR|TB|RL))[\s\S]*/i;
+    var fbMatch = text.match(fallbackRe);
+    return fbMatch ? fbMatch[0].trim() : '';
+}
+
+// 将 mermaid 代码渲染为 JPG 图片插入容器
+function renderMermaidToJpg(code, containerEl) {
+    _currentMermaidCode = code;
+    var id = 'mermaid-' + Math.random().toString(36).slice(2, 10);
+    containerEl.innerHTML = '';
+    var loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = 'text-align:center;padding:24px;color:var(--main-muted);';
+    loadingDiv.textContent = '🔄 正在渲染图像...';
+    containerEl.appendChild(loadingDiv);
+    mermaid.render(id, code).then(function(result) {
+        var svg = result.svg;
+        _currentSvg = svg;
+        // 直接显示 SVG（矢量图，无限缩放不模糊）
+        containerEl.innerHTML = svg;
+        _currentMermaidUrl = 'data:image/svg+xml,' + encodeURIComponent(svg);
+        // 后台生成 JPG 仅用于下载
+        var canvas = document.createElement('canvas');
+        var tmpImg = new Image();
+        var svgBlob = new Blob([svg], {type: 'image/svg+xml;charset=utf-8'});
+        var svgUrl = URL.createObjectURL(svgBlob);
+        tmpImg.onload = function() {
+            var scale = 3;
+            canvas.width = (tmpImg.naturalWidth || 800) * scale;
+            canvas.height = (tmpImg.naturalHeight || 600) * scale;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tmpImg, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(svgUrl);
+            _currentMermaidUrl = canvas.toDataURL('image/jpeg', 0.95);
+        };
+        tmpImg.onerror = function() {
+            URL.revokeObjectURL(svgUrl);
+            _currentMermaidUrl = svgUrl;
+        };
+        tmpImg.src = svgUrl;
+    }).catch(function(err) {
+        containerEl.innerHTML = '<div class="mermaid-error">渲染失败: ' + escapeHtml(err.message || String(err)) + '</div>';
+    });
+}
+
 function renderMermaid(containerEl) {
     if (typeof mermaid === 'undefined' || !containerEl) return;
     var codeBlocks = containerEl.querySelectorAll('pre code.language-mermaid');
@@ -2092,20 +2501,13 @@ function renderMermaid(containerEl) {
         var pre = codeBlock.parentElement;
         var code = codeBlock.textContent.trim();
         if (!code) return;
-        var id = 'mermaid-'+Math.random().toString(36).slice(2,10);
-        var loadingEl = document.createElement('div');
-        loadingEl.className = 'mermaid-loading';
-        loadingEl.style.cssText = 'text-align:center;padding:24px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;color:#94a3b8;font-size:13px;';
-        loadingEl.innerHTML = '🔄 正在渲染思维导图...';
-        if (pre && pre.parentNode) pre.parentNode.replaceChild(loadingEl, pre);
-        try {
-            mermaid.render(id, code).then(function(result) {
-                var wrapper = document.createElement('div'); wrapper.className = 'mermaid-container'; wrapper.innerHTML = result.svg;
-                if (loadingEl && loadingEl.parentNode) loadingEl.parentNode.replaceChild(wrapper, loadingEl);
-            }).catch(function(err) {
-                if (loadingEl && loadingEl.parentNode) { loadingEl.innerHTML = '❌ 思维导图渲染失败'; loadingEl.style.color='#ef4444'; loadingEl.style.background='#fef2f2'; loadingEl.style.borderColor='#fecaca'; }
-            });
-        } catch(e) { if (loadingEl && loadingEl.parentNode) { loadingEl.innerHTML = '❌ 思维导图渲染失败'; loadingEl.style.color='#ef4444'; loadingEl.style.background='#fef2f2'; loadingEl.style.borderColor='#fecaca'; } }
+        // 用 JPG 渲染替换整个 <pre> 块
+        var wrapper = document.createElement('div');
+        wrapper.className = 'mermaid-container';
+        wrapper.style.cursor = 'pointer';
+        wrapper.onclick = function() { openImageModal(this); };
+        if (pre && pre.parentNode) pre.parentNode.replaceChild(wrapper, pre);
+        renderMermaidToJpg(code, wrapper);
     });
 }
 
@@ -2133,6 +2535,449 @@ function renderBilibiliVideos(containerEl) {
             comment.parentNode.replaceChild(wrapper, comment);
         } catch(e) { console.error('Bilibili 视频解析失败:', e); }
     });
+}
+
+// ========== 模式选择器 ==========
+var _currentChartMode = 'chat';
+
+function toggleImageMode() {
+    if (_currentChartMode !== 'chat') {
+        _currentChartMode = 'chat';
+    } else {
+        _currentChartMode = 'image';
+    }
+    var btn = document.getElementById('image-gen-btn');
+    var input = document.getElementById('main-chat-input');
+    if (_currentChartMode !== 'chat') {
+        btn.classList.add('active');
+        input.placeholder = '输入主题，AI 将生成图像...';
+    } else {
+        btn.classList.remove('active');
+        input.placeholder = '输入你的问题...';
+    }
+    input.focus();
+}
+
+// ========== 文件上传 ==========
+function handleUploadFile(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var ext = '.' + file.name.split('.').pop().toLowerCase();
+    var imageExts = ['.png','.jpg','.jpeg','.gif','.webp'];
+
+    if (imageExts.indexOf(ext) !== -1) {
+        // 图片文件：转为 base64 插入到输入框
+        showToast('正在处理图片...');
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var input = document.getElementById('main-chat-input');
+            var mdImg = '\n![图片](data:image/' + ext.slice(1) + ';base64,' + e.target.result.split(',')[1] + ')\n';
+            input.value += mdImg;
+            autoResizeInput(input);
+            input.focus();
+            showToast('图片已插入输入框');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // 文档文件：上传到知识库
+        showToast('正在上传文件...');
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('session_id', getSessionId());
+        fetch('/knowledge/upload', {method: 'POST', body: formData})
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.status === 'ok') {
+                    showToast('文件已导入知识库: ' + data.title);
+                } else {
+                    showToast('上传失败: ' + (data.detail || '未知错误'));
+                }
+            })
+            .catch(function(e) { showToast('上传失败: ' + e.message); });
+    }
+    // 重置 input 以允许重复上传同一文件
+    event.target.value = '';
+}
+
+// ========== 语音输入 ==========
+var _voiceRecognition = null;
+
+function toggleVoiceInput() {
+    var btn = document.getElementById('voice-btn');
+    if (_voiceRecognition) {
+        stopVoiceInput();
+        return;
+    }
+
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        showToast('您的浏览器不支持语音输入');
+        return;
+    }
+
+    _voiceRecognition = new SpeechRecognition();
+    _voiceRecognition.lang = 'zh-CN';
+    _voiceRecognition.interimResults = true;
+    _voiceRecognition.continuous = true;
+
+    _voiceRecognition.onresult = function(event) {
+        var transcript = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+        var input = document.getElementById('main-chat-input');
+        // 保存已有文本，追加语音识别结果
+        if (!window._voiceBaseText) window._voiceBaseText = input.value;
+        input.value = window._voiceBaseText + transcript;
+        autoResizeInput(input);
+    };
+
+    _voiceRecognition.onerror = function(event) {
+        if (event.error === 'no-speech') return;
+        showToast('语音识别错误: ' + event.error);
+        stopVoiceInput();
+    };
+
+    _voiceRecognition.onend = function() {
+        // 如果用户没有手动停止，自动重启
+        if (_voiceRecognition) {
+            try { _voiceRecognition.start(); } catch(e) {}
+        }
+    };
+
+    _voiceRecognition.start();
+    btn.classList.add('recording');
+    window._voiceBaseText = document.getElementById('main-chat-input').value;
+    showToast('正在聆听...');
+}
+
+function stopVoiceInput() {
+    if (_voiceRecognition) {
+        _voiceRecognition.onend = null;
+        _voiceRecognition.stop();
+        _voiceRecognition = null;
+    }
+    var btn = document.getElementById('voice-btn');
+    btn.classList.remove('recording');
+    window._voiceBaseText = null;
+}
+
+// ========== 图片查看模态框 (支持自由缩放与拖拽) ==========
+var _currentMermaidCode = '';
+var _currentMermaidUrl = '';
+var _currentSvg = '';
+var _imageZoomState = { scale: 1, x: 0, y: 0, img: null, dragging: false, lastX: 0, lastY: 0 };
+
+function openImageModal(el) {
+    if (!el) return;
+    var viewport = document.getElementById('image-modal-viewport');
+
+    // 重置缩放状态
+    _imageZoomState = { scale: 1, x: 0, y: 0, img: null, dragging: false, lastX: 0, lastY: 0 };
+    viewport.innerHTML = '';
+
+    var clone;
+    // 如果 el 本身就是 svg 或 img 元素
+    if (el.tagName === 'SVG' || el.tagName === 'svg') {
+        clone = el.cloneNode(true);
+        _imageZoomState.img = clone;
+    } else if (el.tagName === 'IMG') {
+        clone = el.cloneNode(true);
+        _imageZoomState.img = clone;
+    } else {
+        // 在容器内查找：优先 SVG（矢量，无损缩放）
+        var svgEl = el.querySelector('svg');
+        var imgEl = el.querySelector('img');
+        if (svgEl) {
+            clone = svgEl.cloneNode(true);
+            _imageZoomState.img = clone;
+        } else if (imgEl) {
+            clone = imgEl.cloneNode(true);
+            _imageZoomState.img = clone;
+        } else {
+            viewport.innerHTML = el.innerHTML;
+            var firstSvg = viewport.querySelector('svg');
+            if (firstSvg) _imageZoomState.img = firstSvg;
+            if (!_imageZoomState.img) {
+                var firstImg = viewport.querySelector('img');
+                if (firstImg) _imageZoomState.img = firstImg;
+            }
+            updateZoomButtons();
+            document.getElementById('image-modal').classList.add('open');
+            return;
+        }
+    }
+
+    if (clone) {
+        clone.style.cssText = 'display:block;max-width:90vw;max-height:85vh;object-fit:contain;transform:scale(1) translate(0px,0px);user-select:none;-webkit-user-drag:none;';
+        if (clone.tagName === 'SVG' || clone.tagName === 'svg') {
+            clone.style.width = 'auto';
+            clone.style.height = 'auto';
+        }
+        viewport.appendChild(clone);
+    }
+    updateZoomButtons();
+    document.getElementById('image-modal').classList.add('open');
+}
+
+function closeImageModal() {
+    document.getElementById('image-modal').classList.remove('open');
+    _imageZoomState.img = null;
+}
+
+function applyImageTransform() {
+    var s = _imageZoomState;
+    if (!s.img) return;
+    s.img.style.transform = 'scale(' + s.scale + ') translate(' + s.x + 'px, ' + s.y + 'px)';
+}
+
+function zoomImage(delta) {
+    var s = _imageZoomState;
+    if (!s.img) return;
+    var newScale = Math.max(0.2, Math.min(10, s.scale + delta));
+    // 缩放时保持中心不变
+    var scaleRatio = newScale / s.scale;
+    s.x = s.x * scaleRatio;
+    s.y = s.y * scaleRatio;
+    s.scale = newScale;
+    applyImageTransform();
+    updateZoomButtons();
+}
+
+function resetImageZoom() {
+    _imageZoomState.scale = 1;
+    _imageZoomState.x = 0;
+    _imageZoomState.y = 0;
+    applyImageTransform();
+    updateZoomButtons();
+}
+
+function updateZoomButtons() {
+    var s = _imageZoomState.scale;
+    document.getElementById('zoom-out-btn').disabled = s <= 0.2;
+    document.getElementById('zoom-in-btn').disabled = s >= 10;
+    document.getElementById('zoom-reset-btn').textContent = Math.round(s * 100) + '%';
+}
+
+// 鼠标滚轮缩放
+document.getElementById('image-modal-viewport').addEventListener('wheel', function(e) {
+    if (!_imageZoomState.img) return;
+    e.preventDefault();
+    var s = _imageZoomState;
+    var delta = e.deltaY > 0 ? -0.3 : 0.3;
+    var newScale = Math.max(0.2, Math.min(10, s.scale + delta));
+
+    // 以鼠标位置为中心缩放
+    var rect = s.img.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var scaleRatio = newScale / s.scale;
+    s.x = s.x * scaleRatio - (mx * scaleRatio - mx) / s.scale;
+    s.y = s.y * scaleRatio - (my * scaleRatio - my) / s.scale;
+    s.scale = newScale;
+    applyImageTransform();
+    updateZoomButtons();
+}, { passive: false });
+
+// 拖拽平移
+var viewportEl = document.getElementById('image-modal-viewport');
+viewportEl.addEventListener('mousedown', function(e) {
+    if (!_imageZoomState.img || e.button !== 0) return;
+    // 双击不拖
+    if (e.detail > 1) return;
+    _imageZoomState.dragging = true;
+    _imageZoomState.lastX = e.clientX;
+    _imageZoomState.lastY = e.clientY;
+    viewportEl.classList.add('grabbing');
+    e.preventDefault();
+});
+
+window.addEventListener('mousemove', function(e) {
+    var s = _imageZoomState;
+    if (!s.dragging || !s.img) return;
+    var dx = (e.clientX - s.lastX) / s.scale;
+    var dy = (e.clientY - s.lastY) / s.scale;
+    s.x += dx;
+    s.y += dy;
+    s.lastX = e.clientX;
+    s.lastY = e.clientY;
+    applyImageTransform();
+});
+
+window.addEventListener('mouseup', function() {
+    if (_imageZoomState.dragging) {
+        _imageZoomState.dragging = false;
+        viewportEl.classList.remove('grabbing');
+    }
+});
+
+// 双击切换缩放 (1x ↔ 2x)
+viewportEl.addEventListener('dblclick', function(e) {
+    if (!_imageZoomState.img) return;
+    e.preventDefault();
+    if (_imageZoomState.scale < 1.5) {
+        _imageZoomState.scale = 2;
+        _imageZoomState.x = 0;
+        _imageZoomState.y = 0;
+    } else {
+        _imageZoomState.scale = 1;
+        _imageZoomState.x = 0;
+        _imageZoomState.y = 0;
+    }
+    applyImageTransform();
+    updateZoomButtons();
+});
+
+// 点击遮罩空白区关闭
+document.getElementById('image-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeImageModal();
+});
+
+// 触摸支持
+viewportEl.addEventListener('touchstart', function(e) {
+    var s = _imageZoomState;
+    if (!s.img) return;
+    if (e.touches.length === 1) {
+        s.dragging = true;
+        s.lastX = e.touches[0].clientX;
+        s.lastY = e.touches[0].clientY;
+    } else if (e.touches.length === 2) {
+        // 双指缩放
+        s.dragging = false;
+        s._pinchDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+        s._pinchScale = s.scale;
+    }
+}, { passive: false });
+
+viewportEl.addEventListener('touchmove', function(e) {
+    var s = _imageZoomState;
+    if (!s.img) return;
+    if (e.touches.length === 1 && s.dragging) {
+        var dx = (e.touches[0].clientX - s.lastX) / s.scale;
+        var dy = (e.touches[0].clientY - s.lastY) / s.scale;
+        s.x += dx; s.y += dy;
+        s.lastX = e.touches[0].clientX;
+        s.lastY = e.touches[0].clientY;
+        applyImageTransform();
+    } else if (e.touches.length === 2 && s._pinchDist) {
+        e.preventDefault();
+        var dist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+        var newScale = Math.max(0.2, Math.min(10, s._pinchScale * (dist / s._pinchDist)));
+        s.scale = newScale;
+        applyImageTransform();
+        updateZoomButtons();
+    }
+}, { passive: false });
+
+viewportEl.addEventListener('touchend', function() {
+    _imageZoomState.dragging = false;
+    _imageZoomState._pinchDist = null;
+});
+
+function downloadImageJPG() {
+    if (!_currentMermaidCode) { showToast('没有可下载的图像'); return; }
+    // 客户端重新渲染 + canvas转JPG
+    var id = 'mermaid-dl-' + Date.now();
+    mermaid.render(id, _currentMermaidCode).then(function(result) {
+        var svg = result.svg;
+        var canvas = document.createElement('canvas');
+        var tmpImg = new Image();
+        var svgBlob = new Blob([svg], {type: 'image/svg+xml;charset=utf-8'});
+        var svgUrl = URL.createObjectURL(svgBlob);
+        tmpImg.onload = function() {
+            var scale = 2;
+            canvas.width = (tmpImg.naturalWidth || 800) * scale;
+            canvas.height = (tmpImg.naturalHeight || 600) * scale;
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tmpImg, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(svgUrl);
+            var jpgUrl = canvas.toDataURL('image/jpeg', 0.92);
+            var a = document.createElement('a');
+            a.href = jpgUrl; a.download = 'image.jpg';
+            document.body.appendChild(a); a.click();
+            document.body.removeChild(a);
+            showToast('图片已下载');
+        };
+        tmpImg.onerror = function() {
+            URL.revokeObjectURL(svgUrl);
+            var a = document.createElement('a');
+            a.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+            a.download = 'image.svg';
+            document.body.appendChild(a); a.click();
+            document.body.removeChild(a);
+            showToast('SVG 已下载');
+        };
+        tmpImg.src = svgUrl;
+    }).catch(function() { showToast('下载失败'); });
+}
+
+// ESC 关闭模态框
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeImageModal();
+});
+
+// ========== 消息操作按钮 ==========
+
+function _getMsgText(bubble) {
+    // 克隆 bubble，移除操作按钮区域后提取纯文本
+    var clone = bubble.cloneNode(true);
+    var actions = clone.querySelector('.msg-actions');
+    if (actions) actions.remove();
+    return clone.textContent.trim();
+}
+
+function copyMessage(btn) {
+    var bubble = btn.closest('.chat-bubble');
+    var text = _getMsgText(bubble);
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(function() {
+        btn.classList.add('copied');
+        btn.innerHTML = '✅ 已复制';
+        showToast('已复制到剪贴板');
+        setTimeout(function() {
+            btn.classList.remove('copied');
+            btn.innerHTML = '📋 复制';
+        }, 2000);
+    }).catch(function() {
+        showToast('复制失败');
+    });
+}
+
+function regenerateMessage(btn) {
+    var aiMsg = btn.closest('.chat-msg');
+    // 找到前面最近的一条用户消息
+    var prev = aiMsg.previousElementSibling;
+    while (prev) {
+        if (prev.classList.contains('user')) break;
+        prev = prev.previousElementSibling;
+    }
+    if (!prev) { showToast('未找到原始问题'); return; }
+    var userBubble = prev.querySelector('.chat-bubble');
+    if (!userBubble) { showToast('未找到原始问题'); return; }
+    var userText = userBubble.textContent.trim();
+    if (!userText) { showToast('原始问题为空'); return; }
+    // 移除当前的AI回复
+    aiMsg.remove();
+    // 重新发送
+    sendMainMsg(userText);
+}
+
+function _attachMsgActions(bubble) {
+    // 避免重复添加
+    if (bubble.querySelector('.msg-actions')) return;
+    var actions = document.createElement('div');
+    actions.className = 'msg-actions';
+    actions.innerHTML = '<button class="msg-action-btn" onclick="copyMessage(this)" title="复制内容">📋 复制</button>'
+        + '<button class="msg-action-btn" onclick="regenerateMessage(this)" title="重新生成">🔄 重新生成</button>';
+    bubble.appendChild(actions);
 }
 
 // ========== Toast ==========
