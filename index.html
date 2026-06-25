@@ -215,31 +215,124 @@ body {
 .chat-msg.user .chat-msg-avatar { background: var(--chat-user-bg); color: #fff; }
 
 .chat-msg-content { max-width: 75%; min-width: 0; }
-.chat-msg.user .chat-msg-content { display: flex; flex-direction: column; align-items: flex-end; }
+.chat-msg.user .chat-msg-content { display: flex; flex-direction: column; align-items: flex-end; max-width: 75%; }
+.chat-msg:not(.user) .chat-msg-content { max-width: 85%; }
 
 .chat-bubble {
     padding: 12px 16px; border-radius: var(--radius-lg);
     font-size: 14px; line-height: 1.65;
     word-break: break-word;
 }
-.chat-bubble p { margin-bottom: 8px; }
-.chat-bubble p:last-child { margin-bottom: 0; }
-.chat-bubble pre {
-    background: rgba(0,0,0,0.06); padding: 12px; border-radius: var(--radius-sm);
-    overflow-x: auto; font-size: 13px; margin: 8px 0;
-}
-.chat-bubble code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
-.chat-bubble pre code { padding: 0; background: none; }
-.chat-bubble ul, .chat-bubble ol { padding-left: 20px; margin: 8px 0; }
-.chat-bubble li { margin-bottom: 4px; }
-.chat-bubble table { border-collapse: collapse; margin: 8px 0; width: 100%; }
-.chat-bubble th, .chat-bubble td { border: 1px solid #d4d4d8; padding: 6px 10px; font-size: 13px; }
-.chat-bubble th { background: #f4f4f5; }
 
-.chat-msg:not(.user) .chat-bubble { background: var(--chat-ai-bg); color: var(--chat-ai-text); }
+.chat-msg:not(.user) .chat-bubble {
+    background: transparent; color: var(--chat-ai-text);
+    padding: 0; border-radius: 0;
+    font-size: 15px; line-height: 1.8;
+}
 .chat-msg.user .chat-bubble { background: var(--chat-user-bg); color: var(--chat-user-text); }
 
+/* ===== AI消息 Markdown 排版（DeepSeek / 豆包 风格） ===== */
+.chat-msg:not(.user) .chat-bubble h1 { font-size: 1.5em; font-weight: 700; margin: 1.2em 0 0.5em; line-height: 1.35; }
+.chat-msg:not(.user) .chat-bubble h2 { font-size: 1.3em; font-weight: 700; margin: 1.1em 0 0.4em; padding-bottom: 0.3em; border-bottom: 1px solid #e5e7eb; line-height: 1.4; }
+.chat-msg:not(.user) .chat-bubble h3 { font-size: 1.15em; font-weight: 600; margin: 1em 0 0.3em; line-height: 1.45; }
+.chat-msg:not(.user) .chat-bubble h4 { font-size: 1em; font-weight: 600; margin: 0.8em 0 0.2em; }
+.chat-msg:not(.user) .chat-bubble p { margin-bottom: 0.8em; }
+.chat-msg:not(.user) .chat-bubble p:last-child { margin-bottom: 0; }
+.chat-msg:not(.user) .chat-bubble ul,
+.chat-msg:not(.user) .chat-bubble ol { padding-left: 1.5em; margin: 0.6em 0; }
+.chat-msg:not(.user) .chat-bubble li { margin-bottom: 0.3em; }
+.chat-msg:not(.user) .chat-bubble ul ul,
+.chat-msg:not(.user) .chat-bubble ol ol { margin: 0.2em 0; }
+.chat-msg:not(.user) .chat-bubble code {
+    background: rgba(0,0,0,0.055); color: #e0436d;
+    padding: 2px 7px; border-radius: 4px; font-size: 0.88em;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
+}
+.chat-msg:not(.user) .chat-bubble pre {
+    background: #1e1e2e; color: #cdd6f4;
+    padding: 16px 18px; border-radius: 10px; overflow-x: auto;
+    margin: 1em 0; font-size: 13px; line-height: 1.6;
+}
+.chat-msg:not(.user) .chat-bubble pre code {
+    background: none; color: inherit; padding: 0; border-radius: 0; font-size: inherit;
+}
+.chat-msg:not(.user) .chat-bubble blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 8px 16px; margin: 0.8em 0;
+    background: var(--accent-light); border-radius: 0 6px 6px 0;
+    color: var(--main-secondary);
+}
+.chat-msg:not(.user) .chat-bubble blockquote p { margin-bottom: 0.4em; }
+.chat-msg:not(.user) .chat-bubble a {
+    color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(99,102,241,0.3);
+}
+.chat-msg:not(.user) .chat-bubble a:hover { border-bottom-color: var(--accent); }
+.chat-msg:not(.user) .chat-bubble hr { border: none; border-top: 1px solid var(--border); margin: 1.2em 0; }
+.chat-msg:not(.user) .chat-bubble strong { font-weight: 600; color: #111827; }
+.chat-msg:not(.user) .chat-bubble em { font-style: italic; color: #374151; }
+.chat-msg:not(.user) .chat-bubble table {
+    border-collapse: collapse; margin: 0.8em 0; width: 100%;
+    font-size: 14px; overflow-x: auto; display: block;
+}
+.chat-msg:not(.user) .chat-bubble th,
+.chat-msg:not(.user) .chat-bubble td {
+    border: 1px solid #d4d4d8; padding: 8px 14px; text-align: left;
+}
+.chat-msg:not(.user) .chat-bubble th { background: #f9fafb; font-weight: 600; }
+.chat-msg:not(.user) .chat-bubble img { max-width: 100%; border-radius: 8px; margin: 0.5em 0; }
+
+/* 用户消息保持气泡风格，内部 markdown 适配 */
+.chat-msg.user .chat-bubble p { margin-bottom: 4px; }
+.chat-msg.user .chat-bubble p:last-child { margin-bottom: 0; }
+.chat-msg.user .chat-bubble code { background: rgba(255,255,255,0.2); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; color: #fff; }
+.chat-msg.user .chat-bubble pre { background: rgba(0,0,0,0.15); padding: 10px; border-radius: 6px; overflow-x: auto; font-size: 12px; margin: 6px 0; }
+.chat-msg.user .chat-bubble pre code { background: none; padding: 0; }
+.chat-msg.user .chat-bubble ul, .chat-msg.user .chat-bubble ol { padding-left: 18px; margin: 4px 0; }
+.chat-msg.user .chat-bubble a { color: #fff; text-decoration: underline; }
+
 .chat-msg-meta { font-size: 11px; color: var(--main-muted); margin-top: 4px; }
+
+/* ===== 深度思考面板（DeepSeek 风格） ===== */
+.deep-thinking-block {
+    margin-bottom: 18px;
+    border: 1px solid #d8b4fe;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #faf5ff;
+}
+.deep-thinking-summary {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    cursor: pointer; user-select: none;
+    font-size: 13px; font-weight: 500; color: #7c3aed;
+    transition: background 0.15s;
+}
+.deep-thinking-summary:hover { background: linear-gradient(135deg, #f3e8ff, #ede0ff); }
+.deep-thinking-summary::-webkit-details-marker { display: none; }
+.deep-thinking-summary::before { content: '🔍'; font-size: 14px; }
+.deep-thinking-summary::after {
+    content: '▾'; margin-left: auto; font-size: 12px;
+    transition: transform 0.2s;
+}
+details.deep-thinking-block[open] .deep-thinking-summary::after {
+    transform: rotate(180deg);
+}
+.deep-thinking-content {
+    padding: 12px 18px;
+    font-size: 13.5px; line-height: 1.75;
+    color: #6b21a8;
+    border-top: 1px solid #e9d5ff;
+    max-height: 460px; overflow-y: auto;
+    white-space: pre-wrap;
+}
+.deep-thinking-content p { margin-bottom: 0.5em; }
+.deep-thinking-content ul, .deep-thinking-content ol { padding-left: 1.5em; margin: 0.3em 0; }
+.deep-thinking-content li { margin-bottom: 0.2em; }
+.deep-thinking-content code {
+    background: rgba(139,92,246,0.08); color: #7c3aed;
+    padding: 1px 6px; border-radius: 3px; font-size: 0.9em;
+}
 
 /* AI消息底部操作按钮 */
 .msg-actions {
@@ -300,6 +393,26 @@ body {
     font-size: 16px; display: flex; align-items: center; justify-content: center;
     transition: all 0.15s ease; flex-shrink: 0;
 }
+
+/* 文件附件标签 */
+.file-chips {
+    max-width: 800px; margin: 8px auto 0;
+    display: flex; flex-wrap: wrap; gap: 8px;
+}
+.file-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--accent-light); border: 1px solid #c7d2fe;
+    border-radius: 8px; padding: 6px 10px; font-size: 13px;
+    color: var(--accent); max-width: 220px;
+}
+.file-chip .file-chip-name {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.file-chip .file-chip-remove {
+    cursor: pointer; font-size: 16px; line-height: 1;
+    opacity: 0.6; flex-shrink: 0;
+}
+.file-chip .file-chip-remove:hover { opacity: 1; }
 .btn-send:hover { background: var(--accent-hover); transform: scale(1.05); }
 .btn-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
@@ -719,12 +832,14 @@ body {
 
             <!-- 输入区域 -->
             <div class="chat-input-area">
+                <div class="file-chips" id="file-chips" style="display:none"></div>
                 <div class="chat-input-wrapper">
                     <div class="chat-input-tools">
-                        <button class="tool-btn icon-only" id="upload-btn" title="上传文件" onclick="document.getElementById('upload-file-input').click()">➕</button>
+                        <button class="tool-btn icon-only upload-file-btn" id="upload-btn" title="上传文件到对话" onclick="document.getElementById('upload-file-input').click()">➕</button>
                         <input type="file" id="upload-file-input" style="display:none" accept=".txt,.md,.pdf,.docx,.doc,.json,.csv,.html,.py,.js,.css,.xml,.yaml,.log,.png,.jpg,.jpeg,.gif,.webp" onchange="handleUploadFile(event)">
                         <button class="tool-btn" id="web-search-btn" title="联网搜索" onclick="toggleWebSearch()">🌐 联网搜索</button>
                         <button class="tool-btn" id="image-gen-btn" title="图像生成" onclick="toggleImageMode()">📐 图像生成</button>
+                        <button class="tool-btn" id="deep-think-btn" title="深度思考" onclick="toggleDeepThinking()">🔍 深度思考</button>
                     </div>
                     <textarea class="chat-input" id="main-chat-input"
                         placeholder="输入你的问题..."
@@ -1003,6 +1118,30 @@ body {
 </div>
 
 <script>
+// ========== marked.js 配置（DeepSeek/豆包 标准 Markdown 渲染） ==========
+(function() {
+    var opts = { gfm: true, breaks: true, headerIds: false, mangle: false };
+    try {
+        if (typeof marked.use === 'function') marked.use(opts);
+        else if (typeof marked.setOptions === 'function') marked.setOptions(opts);
+    } catch(e) {}
+    // 链接在新标签页打开
+    try {
+        var renderer = (typeof marked.Renderer === 'function') ? new marked.Renderer() : null;
+        if (!renderer && typeof marked.defaults !== 'undefined') {
+            // fallback: no renderer customization, use bare
+        }
+        if (renderer) {
+            renderer.link = function(href, title, text) {
+                var t = title ? ' title="' + title + '"' : '';
+                return '<a href="' + href + '" target="_blank" rel="noopener noreferrer"' + t + '>' + text + '</a>';
+            };
+            if (typeof marked.use === 'function') marked.use({ renderer: renderer });
+            else if (typeof marked.setOptions === 'function') marked.setOptions({ renderer: renderer });
+        }
+    } catch(e) {}
+})();
+
 // ========== 全局状态管理 ==========
 window.appState = {
     profile: null,
@@ -1018,7 +1157,8 @@ window.appState = {
         catch(e) { return null; }
     })(),
     currentSessionId: null,
-    webSearchEnabled: false
+    webSearchEnabled: false,
+    deepThinkingEnabled: false
 };
 
 // ========== 会话管理 ==========
@@ -1396,7 +1536,33 @@ function toggleWebSearch() {
             btn.textContent = '🌐 联网搜索 ✓';
         }
     }
+    if (localStorage.getItem('deepThinkingEnabled') === '1') {
+        window.appState.deepThinkingEnabled = true;
+        var dtBtn = document.getElementById('deep-think-btn');
+        if (dtBtn) {
+            dtBtn.classList.add('active');
+            dtBtn.title = '深度思考已开启';
+            dtBtn.textContent = '🔍 深度思考 ✓';
+        }
+    }
 })();
+
+function toggleDeepThinking() {
+    window.appState.deepThinkingEnabled = !window.appState.deepThinkingEnabled;
+    localStorage.setItem('deepThinkingEnabled', window.appState.deepThinkingEnabled ? '1' : '0');
+    var btn = document.getElementById('deep-think-btn');
+    if (window.appState.deepThinkingEnabled) {
+        btn.classList.add('active');
+        btn.title = '深度思考已开启';
+        btn.textContent = '🔍 深度思考 ✓';
+        showToast('🔍 深度思考已开启 — AI 将先展示推理过程');
+    } else {
+        btn.classList.remove('active');
+        btn.title = '深度思考';
+        btn.textContent = '🔍 深度思考';
+        showToast('深度思考已关闭');
+    }
+}
 
 function handleMainChatKey(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -1405,12 +1571,57 @@ function handleMainChatKey(e) {
     }
 }
 
+// ========== 深度思考内容渲染 ==========
+function renderWithThinking(text, isStreaming) {
+    var thinkOpen = text.indexOf('<深度思考>');
+    if (thinkOpen === -1) {
+        // 无思考标签，普通渲染
+        var html = isStreaming ? marked.parse(text + '▌') : marked.parse(text);
+        return html;
+    }
+
+    var thinkClose = text.indexOf('</深度思考>');
+    var thinkingHtml = '';
+    var answerHtml = '';
+    var cursor = isStreaming ? '▌' : '';
+
+    if (thinkClose === -1) {
+        // 思考进行中（标签未闭合）
+        var thinking = text.substring(thinkOpen + 6).trim();
+        thinkingHtml = '<details class="deep-thinking-block" open>' +
+            '<summary class="deep-thinking-summary">🔍 深度思考中...</summary>' +
+            '<div class="deep-thinking-content">' + escapeHtml(thinking) + cursor + '</div></details>';
+    } else {
+        // 思考已完成
+        var thinking = text.substring(thinkOpen + 6, thinkClose).trim();
+        var afterThinking = text.substring(thinkClose + 7).trim();
+        thinkingHtml = '<details class="deep-thinking-block" open>' +
+            '<summary class="deep-thinking-summary">🔍 深度思考过程</summary>' +
+            '<div class="deep-thinking-content">' + escapeHtml(thinking) + '</div></details>';
+        if (afterThinking) {
+            try {
+                answerHtml = isStreaming ? marked.parse(afterThinking + cursor) : marked.parse(afterThinking);
+            } catch(e) {
+                answerHtml = '<p>' + escapeHtml(afterThinking) + cursor + '</p>';
+            }
+        } else if (isStreaming) {
+            answerHtml = marked.parse(cursor);
+        }
+    }
+
+    return thinkingHtml + answerHtml;
+}
+
 function sendMainMsg(msg) {
     if (mainSending) return;
     var input = document.getElementById('main-chat-input');
     var text = msg || input.value.trim();
-    if (!text) return;
+    if (!text && _pendingFiles.length === 0) return;
+    if (!text) text = '';
     var displayText = text;
+    if (!displayText && _pendingFiles.length > 0) {
+        displayText = _pendingFiles.map(function(f) { return '📎' + f.name; }).join(' ');
+    }
 
     // 图像模式：后端快速通道处理，前端只传原始消息
 
@@ -1437,7 +1648,7 @@ function sendMainMsg(msg) {
                     typingEl.querySelector('.chat-bubble').innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--main-muted);font-size:14px;"><span>🎨</span> 正在生成图像...</div>';
                 } else {
                     try {
-                        typingEl.querySelector('.chat-bubble').innerHTML = marked.parse(fullContent + '▌');
+                        typingEl.querySelector('.chat-bubble').innerHTML = renderWithThinking(fullContent, true);
                     } catch(e) {
                         typingEl.querySelector('.chat-bubble').innerHTML = escapeHtml(fullContent) + '▌';
                     }
@@ -1474,7 +1685,7 @@ function sendMainMsg(msg) {
                         }
                     } else {
                         try {
-                            typingEl.querySelector('.chat-bubble').innerHTML = marked.parse(fullContent);
+                            typingEl.querySelector('.chat-bubble').innerHTML = renderWithThinking(fullContent, false);
                             renderMermaid(typingEl.querySelector('.chat-bubble'));
                             renderBilibiliVideos(typingEl.querySelector('.chat-bubble'));
                         } catch(e) {
@@ -1511,20 +1722,34 @@ function addMainMsg(type, text) {
         div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
         container.appendChild(div);
     } else {
-        // ★ 核心方案：在 marked.parse() 之前提取 mermaid 代码块，
-        //    替换为占位符，parse 后再把占位符替换为渲染好的图片。
+        // ★ 先提取深度思考块，再提取 mermaid，最后 markdown 渲染
+        var thinkingHtml = '';
+        var cleanText = text;
+        var thinkOpen = text.indexOf('<深度思考>');
+        if (thinkOpen !== -1) {
+            var thinkClose = text.indexOf('</深度思考>');
+            if (thinkClose !== -1) {
+                var thinkingContent = text.substring(thinkOpen + 6, thinkClose).trim();
+                thinkingHtml = '<details class="deep-thinking-block" open>' +
+                    '<summary class="deep-thinking-summary">🔍 深度思考过程</summary>' +
+                    '<div class="deep-thinking-content">' + escapeHtml(thinkingContent) + '</div></details>';
+                cleanText = text.substring(0, thinkOpen) + text.substring(thinkClose + 7);
+            }
+        }
+
+        // 提取 mermaid 代码块，替换为占位符
         var mermaidBlocks = [];
         var phPrefix = 'mermaid_ph_' + Math.random().toString(36).slice(2, 8) + '_';
-        var processedText = text.replace(/```\s*mermaid\s*\n([\s\S]*?)```/gi, function(match, code) {
+        var processedText = cleanText.replace(/```\s*mermaid\s*\n([\s\S]*?)```/gi, function(match, code) {
             var idx = mermaidBlocks.length;
             mermaidBlocks.push(code.trim());
             return '<div id="' + phPrefix + idx + '"></div>';
         });
 
         try {
-            div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + marked.parse(processedText) + '</div></div>';
+            div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + thinkingHtml + marked.parse(processedText) + '</div></div>';
         } catch(e) {
-            div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
+            div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + thinkingHtml + escapeHtml(cleanText) + '</div></div>';
         }
         container.appendChild(div);
 
@@ -1567,6 +1792,12 @@ function streamChat(message, callbacks) {
     var body = { message: message, session_id: sessionId };
     if (window.appState.webSearchEnabled) body.web_search = true;
     if (_currentChartMode !== 'chat') body.image_mode = true;
+    if (window.appState.deepThinkingEnabled) body.deep_thinking = true;
+    if (_pendingFiles.length > 0) {
+        body.files = _pendingFiles.slice();
+        _pendingFiles = [];
+        renderFileChips();
+    }
 
     fetch('/chat/stream', {
         method: 'POST',
@@ -2558,42 +2789,115 @@ function toggleImageMode() {
     input.focus();
 }
 
-// ========== 文件上传 ==========
+// ========== 文件上传（多模态对话） ==========
+var _pendingFiles = [];
+
+function renderFileChips() {
+    var container = document.getElementById('file-chips');
+    if (!container) return;
+    if (_pendingFiles.length === 0) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        return;
+    }
+    container.style.display = 'flex';
+    var html = '';
+    for (var i = 0; i < _pendingFiles.length; i++) {
+        var f = _pendingFiles[i];
+        var icon = f.type === 'image' ? '🖼' : '📄';
+        html += '<div class="file-chip">' +
+            '<span>' + icon + '</span>' +
+            '<span class="file-chip-name" title="' + escapeHtml(f.name) + '">' + escapeHtml(f.name) + '</span>' +
+            '<span class="file-chip-remove" onclick="removeFileChip(' + i + ')" title="移除">✕</span>' +
+            '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function removeFileChip(index) {
+    _pendingFiles.splice(index, 1);
+    renderFileChips();
+    // 如果全部移除了，同时清空输入框中可能残留的半截文本
+    if (_pendingFiles.length === 0) {
+        var input = document.getElementById('main-chat-input');
+        if (input && input.value.trim() === '') {
+            input.value = '';
+            autoResizeInput(input);
+            input.focus();
+        }
+    }
+}
+
 function handleUploadFile(event) {
     var file = event.target.files[0];
     if (!file) return;
     var ext = '.' + file.name.split('.').pop().toLowerCase();
     var imageExts = ['.png','.jpg','.jpeg','.gif','.webp'];
+    var textExts = ['.txt','.md','.json','.csv','.html','.py','.js','.css','.xml','.yaml','.log'];
+    var binaryExts = ['.pdf','.docx','.doc'];
+
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('文件过大（最大 5MB），当前 ' + (file.size / 1024 / 1024).toFixed(1) + 'MB');
+        event.target.value = '';
+        return;
+    }
 
     if (imageExts.indexOf(ext) !== -1) {
-        // 图片文件：转为 base64 插入到输入框
+        // 图片：转 base64，作为附件随消息发送
         showToast('正在处理图片...');
         var reader = new FileReader();
         reader.onload = function(e) {
-            var input = document.getElementById('main-chat-input');
-            var mdImg = '\n![图片](data:image/' + ext.slice(1) + ';base64,' + e.target.result.split(',')[1] + ')\n';
-            input.value += mdImg;
-            autoResizeInput(input);
-            input.focus();
-            showToast('图片已插入输入框');
+            var base64 = e.target.result.split(',')[1];
+            _pendingFiles.push({
+                name: file.name,
+                type: 'image',
+                ext: ext,
+                content: base64,
+                mime: 'image/' + ext.slice(1).replace('jpg','jpeg')
+            });
+            renderFileChips();
+            showToast('图片已附加到对话');
+        };
+        reader.readAsDataURL(file);
+    } else if (textExts.indexOf(ext) !== -1) {
+        // 文本文件：直接读取内容
+        showToast('正在读取 ' + file.name + '...');
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            _pendingFiles.push({
+                name: file.name,
+                type: 'text',
+                ext: ext,
+                content: e.target.result
+            });
+            renderFileChips();
+            showToast('文件已附加到对话');
+        };
+        reader.onerror = function() {
+            showToast('读取文件失败');
+        };
+        reader.readAsText(file);
+    } else if (binaryExts.indexOf(ext) !== -1) {
+        // 二进制文档：转 base64 由后端解析
+        showToast('正在处理 ' + file.name + '...');
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var base64 = e.target.result.split(',')[1];
+            _pendingFiles.push({
+                name: file.name,
+                type: 'binary',
+                ext: ext,
+                content: base64
+            });
+            renderFileChips();
+            showToast('文件已附加到对话');
+        };
+        reader.onerror = function() {
+            showToast('读取文件失败');
         };
         reader.readAsDataURL(file);
     } else {
-        // 文档文件：上传到知识库
-        showToast('正在上传文件...');
-        var formData = new FormData();
-        formData.append('file', file);
-        formData.append('session_id', getSessionId());
-        fetch('/knowledge/upload', {method: 'POST', body: formData})
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.status === 'ok') {
-                    showToast('文件已导入知识库: ' + data.title);
-                } else {
-                    showToast('上传失败: ' + (data.detail || '未知错误'));
-                }
-            })
-            .catch(function(e) { showToast('上传失败: ' + e.message); });
+        showToast('不支持的文件类型: ' + ext);
     }
     // 重置 input 以允许重复上传同一文件
     event.target.value = '';
@@ -2601,9 +2905,20 @@ function handleUploadFile(event) {
 
 // ========== 语音输入 ==========
 var _voiceRecognition = null;
+var _voiceSilenceTimer = null;
+var _voiceBaseText = '';
+var _voiceFinalText = '';
+
+function resetVoiceSilenceTimer() {
+    if (_voiceSilenceTimer) clearTimeout(_voiceSilenceTimer);
+    _voiceSilenceTimer = setTimeout(function() {
+        // 10秒无语音输入，自动停止
+        showToast('⏰ 长时间未检测到语音，已自动停止');
+        stopVoiceInput();
+    }, 10000);
+}
 
 function toggleVoiceInput() {
-    var btn = document.getElementById('voice-btn');
     if (_voiceRecognition) {
         stopVoiceInput();
         return;
@@ -2611,7 +2926,7 @@ function toggleVoiceInput() {
 
     var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-        showToast('您的浏览器不支持语音输入');
+        showToast('⚠️ 当前浏览器不支持语音输入，请使用 Chrome 或 Edge');
         return;
     }
 
@@ -2619,47 +2934,97 @@ function toggleVoiceInput() {
     _voiceRecognition.lang = 'zh-CN';
     _voiceRecognition.interimResults = true;
     _voiceRecognition.continuous = true;
+    _voiceRecognition.maxAlternatives = 1;
+
+    var input = document.getElementById('main-chat-input');
+    _voiceBaseText = input.value;       // 录音前的已有文本
+    _voiceFinalText = '';               // 本次录音已确认的最终文本
+    var oldPlaceholder = input.placeholder;
+    input.placeholder = '🎤 正在聆听...';
+    input.focus();
 
     _voiceRecognition.onresult = function(event) {
-        var transcript = '';
+        resetVoiceSilenceTimer();
+
+        var interim = '';
         for (var i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
+            var result = event.results[i];
+            if (result.isFinal) {
+                _voiceFinalText += result[0].transcript;
+            } else {
+                interim += result[0].transcript;
+            }
         }
-        var input = document.getElementById('main-chat-input');
-        // 保存已有文本，追加语音识别结果
-        if (!window._voiceBaseText) window._voiceBaseText = input.value;
-        input.value = window._voiceBaseText + transcript;
+        // 输入框 = 原有文本 + 已确认语音 + 当前临时语音
+        input.value = _voiceBaseText + _voiceFinalText + interim;
         autoResizeInput(input);
     };
 
     _voiceRecognition.onerror = function(event) {
-        if (event.error === 'no-speech') return;
-        showToast('语音识别错误: ' + event.error);
+        if (event.error === 'no-speech') {
+            resetVoiceSilenceTimer();
+            return;
+        }
+        if (event.error === 'aborted') return;
+        var messages = {
+            'network': '网络连接异常，请检查网络',
+            'audio-capture': '未检测到麦克风，请检查权限',
+            'not-allowed': '麦克风权限被拒绝，请在浏览器设置中允许',
+            'service-not-allowed': '语音服务不可用',
+            'bad-grammar': '语音识别语法错误',
+            'language-not-supported': '不支持当前语言'
+        };
+        showToast('🎤 ' + (messages[event.error] || '语音识别出错: ' + event.error));
         stopVoiceInput();
     };
 
     _voiceRecognition.onend = function() {
-        // 如果用户没有手动停止，自动重启
         if (_voiceRecognition) {
-            try { _voiceRecognition.start(); } catch(e) {}
+            try { _voiceRecognition.start(); } catch(e) {
+                // 重启失败，可能是权限问题
+                stopVoiceInput();
+            }
         }
     };
 
-    _voiceRecognition.start();
+    try {
+        _voiceRecognition.start();
+    } catch(e) {
+        showToast('🎤 启动语音失败: ' + e.message);
+        stopVoiceInput();
+        return;
+    }
+
+    var btn = document.getElementById('voice-btn');
     btn.classList.add('recording');
-    window._voiceBaseText = document.getElementById('main-chat-input').value;
-    showToast('正在聆听...');
+    btn.title = '点击停止语音输入';
+    resetVoiceSilenceTimer();
+    showToast('🎤 正在聆听...');
 }
 
 function stopVoiceInput() {
+    if (_voiceSilenceTimer) { clearTimeout(_voiceSilenceTimer); _voiceSilenceTimer = null; }
     if (_voiceRecognition) {
         _voiceRecognition.onend = null;
-        _voiceRecognition.stop();
+        _voiceRecognition.onerror = null;
+        try { _voiceRecognition.stop(); } catch(e) {}
         _voiceRecognition = null;
     }
     var btn = document.getElementById('voice-btn');
-    btn.classList.remove('recording');
-    window._voiceBaseText = null;
+    if (btn) {
+        btn.classList.remove('recording');
+        btn.title = '语音输入';
+    }
+    var input = document.getElementById('main-chat-input');
+    if (input) {
+        input.placeholder = '输入你的问题...';
+        // 将最终语音结果合并到基础文本
+        if (_voiceFinalText) {
+            input.value = _voiceBaseText + _voiceFinalText;
+        }
+    }
+    _voiceBaseText = '';
+    _voiceFinalText = '';
 }
 
 // ========== 图片查看模态框 (支持自由缩放与拖拽) ==========

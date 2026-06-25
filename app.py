@@ -66,6 +66,49 @@ async def index():
     )
 
 
+def _decode_base64_file(content_b64: str, ext: str) -> str:
+    """将前端发来的 base64 文件内容解码并解析为文本。"""
+    import base64
+    try:
+        raw = base64.b64decode(content_b64)
+    except Exception:
+        raise HTTPException(status_code=400, detail="文件 base64 解码失败")
+    if ext == ".pdf":
+        return _parse_pdf(raw)
+    elif ext == ".docx":
+        return _parse_docx(raw)
+    elif ext == ".doc":
+        return _parse_doc(raw)
+    else:
+        # fallback: try UTF-8
+        try:
+            return raw.decode("utf-8")
+        except UnicodeDecodeError:
+            try:
+                return raw.decode("gbk")
+            except UnicodeDecodeError:
+                raise HTTPException(status_code=400, detail="无法解码文件内容")
+
+
+def _build_file_context(files: list) -> str:
+    """将前端 files 数组格式化为消息前缀。"""
+    lines = ["[用户上传了以下文件]\n"]
+    for i, f in enumerate(files):
+        fname = f.get("name", f"file_{i}")
+        ftype = f.get("type", "text")
+        ext = f.get("ext", "")
+        content = f.get("content", "")
+        if ftype == "image":
+            lines.append(f"📷 图片 {fname}: data:{f.get('mime','image/png')};base64,{content[:80]}...")
+        elif ftype == "text":
+            lines.append(f"📄 文件 {fname}:\n```\n{content}\n```")
+        elif ftype == "binary":
+            parsed = _decode_base64_file(content, ext)
+            lines.append(f"📄 文件 {fname}:\n```\n{parsed}\n```")
+    lines.append("[文件内容结束]\n")
+    return "\n".join(lines)
+
+
 @app.post("/chat/stream")
 async def chat_stream(request: Request):
     data = await request.json()
@@ -73,10 +116,12 @@ async def chat_stream(request: Request):
     session_id = data.get("session_id", "default")
     image_mode = data.get("image_mode", False)
     web_search = data.get("web_search", False)
-    print(f"[DEBUG chat_stream] web_search={web_search} image_mode={image_mode} msg={user_message[:40]}", flush=True)
+    deep_thinking = data.get("deep_thinking", False)
+    files = data.get("files", [])
+    print(f"[DEBUG chat_stream] web_search={web_search} image_mode={image_mode} deep_thinking={deep_thinking} files={len(files)} msg={user_message[:40]}", flush=True)
 
     # 输入验证
-    if not user_message or not user_message.strip():
+    if (not user_message or not user_message.strip()) and not files:
         async def empty_response():
             yield {"data": json.dumps({"type": "status", "content": "⚠️ 消息不能为空，请输入学习相关问题。"})}
             yield {"data": json.dumps({"type": "end"})}
@@ -92,8 +137,14 @@ async def chat_stream(request: Request):
             yield {"data": json.dumps({"type": "end"})}
         return EventSourceResponse(bad_session_response())
 
+    # 构建多模态消息
+    full_message = user_message
+    if files:
+        file_context = _build_file_context(files)
+        full_message = file_context + "\n" + (user_message or "请帮我分析上传的文件内容")
+
     async def event_generator():
-        gen = process_message(session_id, user_message, image_mode=image_mode, web_search=web_search)
+        gen = process_message(session_id, full_message, image_mode=image_mode, web_search=web_search, deep_thinking=deep_thinking)
         ended = False
         try:
             for event_type, content in gen:
@@ -191,8 +242,11 @@ def _parse_pdf(raw: bytes) -> str:
 
 def _parse_doc(raw: bytes) -> str:
     """通过 Word COM 自动化从旧版 .doc 提取文本。"""
-    import pythoncom
-    from win32com.client import Dispatch
+    try:
+        import pythoncom
+        from win32com.client import Dispatch
+    except ImportError:
+        raise HTTPException(status_code=500, detail="pywin32 库未安装，无法解析 .doc 文件，请转换为 .docx 格式后重试")
 
     # 将 bytes 写入临时文件（COM 需要文件路径）
     tmp_path = None

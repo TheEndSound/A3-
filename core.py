@@ -558,12 +558,17 @@ def _search_bing_web(query: str, count: int = 5) -> List[Dict[str, str]]:
 
 # ================== 搜索查询优化 ==================
 
-# 新闻/资讯类关键词 — 说明用户在找实时信息而非学习内容
+# 新闻/资讯类关键词 — 明确在查询新闻、热点、实时动态
+# 注意："今天/昨天/前天/后天" 不在此列 —— 它们只是时间指代，不应触发新闻模式
 _NEWS_KEYWORDS = [
-    "新闻", "热点", "最新", "今天", "昨天", "前天", "后天",
-    "近日", "本周", "最近发生", "大事", "动态", "资讯", "消息", "报道",
-    "热搜", "头条", "趋势", "实时", "刚刚",
+    "新闻", "热点", "热搜", "头条", "资讯", "报道", "动态",
+    "大事", "最新消息", "实时", "刚刚",
 ]
+
+# 时间指代词 — 需要转换为具体日期以避免搜索引擎歧义（如"昨天"→泰剧）
+# 但与新闻无关，不应触发信息摘要模式
+_TIME_KEYWORDS = ["今天", "昨天", "前天", "后天", "明天",
+                  "近日", "本周", "最近", "最近发生"]
 
 # 搜索噪声词 — 从查询中移除（会干扰搜索引擎的动词/虚词）
 _SEARCH_NOISE = ["有什么", "有哪些", "帮我查", "帮我搜", "帮我找", "帮我",
@@ -573,21 +578,26 @@ _SEARCH_NOISE = ["有什么", "有哪些", "帮我查", "帮我搜", "帮我找"
                   "是什么", "什么是", "有没有", "能不能",
                   "告诉我", "的"]
 
-# 纯日期模式 — 用户直接给了日期，不需要再搜索确认
+# 纯日期模式
 _DATE_PATTERN = r'\d{4}年\d{1,2}月\d{1,2}日'
 
 
 def _is_news_query(query: str) -> bool:
-    """判断用户是否在查询新闻/实时信息"""
+    """判断用户是否在明确查询新闻/实时资讯（包含新闻/热点/头条等关键词）"""
     return any(kw in query for kw in _NEWS_KEYWORDS)
 
 
-def optimize_search_query(query: str) -> str:
+def _has_time_reference(query: str) -> bool:
+    """判断查询是否包含时间指代词（今天/昨天/最近等）"""
+    return any(kw in query for kw in _TIME_KEYWORDS)
+
+
+def optimize_search_query(query: str, force_time_replace: bool = True) -> str:
     """
     优化搜索查询，提升搜索精度：
-    - 检测新闻/实时类查询，附加日期上下文
+    - 时间词 → 具体日期（避免搜到同名影视作品）
     - 去除噪声词，提炼核心关键词
-    - 中文时间词 → 具体日期
+    - 新闻查询追加语境
     """
     import datetime
     import re
@@ -601,29 +611,30 @@ def optimize_search_query(query: str) -> str:
     optimized = re.sub(r'\s+', ' ', optimized).strip()
     optimized = optimized.strip("，。！？、的了吗呢")
 
-    # 新闻/实时类查询：附加日期避免歧义
-    if _is_news_query(query):
+    # 时间词 → 日期替换（无论是否新闻查询，都做，避免搜到同名影视作品）
+    if force_time_replace or _has_time_reference(query):
         today = datetime.date.today()
-        date_tag = today.strftime("%Y年%m月%d日")
-        # 替换中文时间词为具体日期，避免搜到同名影视作品
         optimized = optimized.replace("前天",
                                        (today - datetime.timedelta(days=2)).strftime("%Y年%m月%d日"))
         optimized = optimized.replace("昨天",
                                        (today - datetime.timedelta(days=1)).strftime("%Y年%m月%d日"))
-        optimized = optimized.replace("今天", date_tag)
+        optimized = optimized.replace("今天", today.strftime("%Y年%m月%d日"))
         optimized = optimized.replace("明天",
                                        (today + datetime.timedelta(days=1)).strftime("%Y年%m月%d日"))
         optimized = optimized.replace("后天",
                                        (today + datetime.timedelta(days=2)).strftime("%Y年%m月%d日"))
-        # 追加"新闻"确保搜索引擎理解意图
+
+    # 明确新闻查询：追加语境
+    if _is_news_query(query):
         if "新闻" not in optimized:
             optimized = f"{optimized} 新闻"
 
     # 纯日期查询（日期后没有具体主题词）→ 补充搜索语境
-    _TOPIC_WORDS = ["新闻", "热点", "资讯", "动态", "科技", "财经", "体育", "娱乐", "要闻"]
+    _TOPIC_WORDS = ["新闻", "热点", "资讯", "动态", "科技", "财经", "体育", "娱乐", "要闻",
+                    "节日", "纪念日", "日子", "是什么", "事件"]
     has_topic = any(tw in optimized for tw in _TOPIC_WORDS)
-    if re.search(_DATE_PATTERN, optimized) and len(optimized) < 20 and not has_topic:
-        optimized = f"{optimized} 要闻 热点"
+    if re.search(_DATE_PATTERN, optimized) and len(optimized.replace(" ", "")) < 15 and not has_topic:
+        optimized = f"{optimized} 大事件 节日"
 
     logger.info("搜索查询优化: '%s' → '%s'", query, optimized)
     return optimized
@@ -660,7 +671,7 @@ def search_web(query: str, count: int = 5) -> List[Dict[str, str]]:
 def format_search_context(results: List[Dict[str, str]],
                           user_query: str = "") -> str:
     """将搜索结果格式化为注入 LLM 的上下文字符串。
-    根据用户原始查询判断意图，给出针对性的指令。"""
+    三种模式：新闻摘要 / 搜索增强对话 / 无搜索"""
     if not results:
         return ""
     import datetime
@@ -674,7 +685,7 @@ def format_search_context(results: List[Dict[str, str]],
     ]
 
     if is_news:
-        # 新闻/资讯模式：要求简洁摘要，不要展开教学
+        # 新闻/资讯模式：角色切换为「信息摘要助手」，禁止展开教学
         lines += [
             "⚠️ 你是一个**信息摘要助手**（不是教学专家）。用户正在查询实时资讯。",
             "你必须：",
@@ -688,13 +699,15 @@ def format_search_context(results: List[Dict[str, str]],
             "",
         ]
     else:
-        # 学习模式：允许展开讲解，但基于事实
+        # 搜索增强模式：搜索结果作为辅助参考，非强制性
+        # 适用于：学习类查询 + 通用知识查询（如"今天是什么日子"）
         lines += [
-            "⚠️ 以下是搜索引擎返回的真实信息。你的回答必须：",
-            "  1. 只陈述搜索结果中实际存在的内容",
-            "  2. 引用具体来源",
-            "  3. 如果搜索结果不包含用户问题的答案，直接说「搜索结果中未找到相关信息」，禁止编造",
-            "  4. 禁止编造任何数字、日期、人名、事件名，除非搜索结果中明确提到",
+            "⚠️ 以下是从搜索引擎获取的实时信息，可作为辅助参考：",
+            "  1. 优先参考搜索结果中的事实性信息（日期、数据、事件等）",
+            "  2. 在回答中自然融入相关信息，必要时引用来源",
+            "  3. 如果搜索结果是相关的，就如实引用；如果不够充分，可以结合你的知识补充",
+            "  4. 禁止编造搜索结果中不存在的具体数字、日期、人名、事件名",
+            "  5. 如有帮助可以引用来源链接",
             "",
         ]
 
@@ -795,46 +808,47 @@ def build_intent_prompt(last_message: str) -> str:
 
 def build_chat_system_prompt(profile: Optional[dict], course_ctx: str) -> str:
     """构建普通对话的系统 prompt。
-    当搜索结果中包含新闻/资讯指令时，自动切换为信息摘要模式。"""
+    三模式：信息摘要（新闻查询）/ 搜索增强对话 / 纯学习助手"""
     style_guide = get_style_guide(profile)
     has_search = "[联网搜索结果" in course_ctx
     is_news_mode = "信息摘要助手" in course_ctx
-    search_note = ""
-    if has_search:
-        if is_news_mode:
-            search_note = (
-                "\n⚠️ 重要：你当前处于**信息摘要模式**。"
-                "\n你的任务是对搜索结果进行简洁归纳，不是生成教学材料。"
-                "\n禁止生成：讲解文档、练习题、思维导图、视频脚本、实操案例等教学格式。\n"
-            )
-        else:
-            search_note = (
-                "\n⚠️ 重要：上述 [联网搜索结果] 是从搜索引擎获取的**实时真实数据**。"
-                "\n你必须：1) 优先基于搜索结果回答 2) 引用搜索结果的标题和来源 "
-                "3) 如果搜索结果不够充分，请诚实说明。禁止编造不存在的事实。\n"
-            )
 
+    base_profile = (
+        f"学生画像：\n"
+        f"- 知识基础：{profile.get('knowledge_base', '初级') if profile else '初级'}\n"
+        f"- 学习风格：{profile.get('learning_style', '视觉型') if profile else '视觉型'}，{style_guide}\n"
+        f"- 薄弱点：{', '.join(profile.get('weak_points', ['无'])) if profile else '无'}\n"
+        f"- 兴趣方向：{profile.get('interest', '编程') if profile else '编程'}"
+    )
+
+    # 模式1：新闻/资讯摘要
     if is_news_mode:
-        return f"""你是一个智能信息摘要助手「AI智学」，帮助用户快速了解实时资讯。
-请根据以下学生画像调整回答方式：
-- 知识基础：{profile.get('knowledge_base', '初级') if profile else '初级'}
-- 学习风格：{profile.get('learning_style', '视觉型') if profile else '视觉型'}，{style_guide}
-- 兴趣方向：{profile.get('interest', '编程') if profile else '编程'}
+        return (
+            f"你是一个智能信息摘要助手「AI智学」，帮助用户快速了解实时资讯。\n"
+            f"根据以下学生画像调整语言难度：\n{base_profile}\n\n"
+            f"{course_ctx}\n\n"
+            f"请简洁、结构化地呈现信息。用条目式输出，每条新闻配一句话摘要+来源链接。\n"
+            f"禁止生成教学文档、练习题、思维导图等教学材料。"
+        )
 
-{course_ctx}
-{search_note}
-请简洁、结构化地呈现信息。用条目式输出，每条新闻配一句话摘要+来源链接。"""
-
-    return f"""你是一个智能学习助手「AI智学」，提供个性化学习服务。
-请根据以下学生画像调整回答方式：
-- 知识基础：{profile.get('knowledge_base', '初级') if profile else '初级'}
-- 学习风格：{profile.get('learning_style', '视觉型') if profile else '视觉型'}，{style_guide}
-- 薄弱点：{', '.join(profile.get('weak_points', ['无'])) if profile else '无'}
-- 兴趣方向：{profile.get('interest', '编程') if profile else '编程'}
-
-{course_ctx}
-{search_note}
-请用适合学生水平和风格的方式回答问题。如果涉及学生薄弱点，请重点解释。"""
+    # 模式2：搜索增强对话（非新闻的搜索查询）
+    if has_search:
+        return (
+            f"你是一个智能学习助手「AI智学」，提供个性化学习服务。\n"
+            f"{base_profile}\n\n"
+            f"{course_ctx}\n\n"
+            f"【注意】上述 [联网搜索结果] 包含来自搜索引擎的实时信息。\n"
+            f"请将这些信息作为辅助参考融入回答中，优先引用搜索结果中的事实数据。\n"
+            f"如果搜索结果充分且相关，就以此为基础回答；如果不够充分，可结合你的知识补充。\n"
+            f"坚持你的「学习助手」身份，不要变成搜索引擎的复读机。\n"
+            f"如果涉及学生薄弱点，请重点解释。")
+    # 模式3：纯学习助手（无搜索）
+    return (
+        f"你是一个智能学习助手「AI智学」，提供个性化学习服务。\n"
+        f"{base_profile}\n\n"
+        f"{course_ctx}\n\n"
+        f"请用适合学生水平和风格的方式回答问题。如果涉及学生薄弱点，请重点解释。"
+    )
 
 
 def build_greeting_prompt(user_msg: str) -> str:

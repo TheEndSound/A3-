@@ -38,7 +38,7 @@ from core import (
     AgentState,
     RESOURCE_HEADERS,
     logger,
-    _is_news_query,
+    _has_time_reference,
 )
 from database import (
     upsert_session as db_upsert_session,
@@ -50,6 +50,20 @@ from database import (
 
 
 # ================== 智能体节点（生成器版） ==================
+
+# 深度思考模式 — 高优先级格式指令（直接拼入 prompt 开头，确保不被忽略）
+_DEEP_THINKING_META = (
+    "【深度思考模式 — 必须严格遵守】\n"
+    "你的回复必须按以下格式输出，否则视为无效：\n\n"
+    "<深度思考>\n"
+    "（完整推理：问题拆解→关键概念→多角度分析→推导论证→反思验证）\n"
+    "</深度思考>\n\n"
+    "（最终答案 — 可包含任意格式：标题、列表、代码、表格等）\n\n"
+    "硬性规则：\n"
+    "1. <深度思考> 和 </深度思考> 标签必须成对出现，缺一不可\n"
+    "2. 思考过程写在标签内，最终答案写在标签外\n"
+    "3. 只有一对标签，不要嵌套\n"
+)
 
 def profile_agent(state: AgentState, events_out: List):
     """画像分析智能体（非流式）。"""
@@ -70,7 +84,7 @@ def profile_agent(state: AgentState, events_out: List):
 
     if new_p is not None:
         merged = merge_profile(existing, new_p)
-        events_out.append(("status", f"✅ 画像已更新：{merged.get('knowledge_base', '?')}基础 | {merged.get('learning_style', '?')}型"))
+        events_out.append(("status", f"✅ 画像已更新：{merged.get('knowledge_base', '?')}基础 | {merged.get('learning_style', '?')}"))
         events_out.append(("data", json.dumps({"type": "profile", "data": merged})))
         return {"profile": merged}
 
@@ -141,6 +155,10 @@ def chat_node_gen(state: AgentState):
     else:
         msgs = [{"role": "system", "content": sysp}] + history
 
+    # 深度思考：将格式指令直接拼入系统提示词开头（合并为一条消息，优先级更高）
+    if state.get("deep_thinking"):
+        msgs[0]["content"] = _DEEP_THINKING_META + "\n\n" + msgs[0]["content"]
+
     answer = ""
     for evt in call_llm_stream(msgs):
         if evt[0] == "chunk":
@@ -149,10 +167,10 @@ def chat_node_gen(state: AgentState):
 
     answer = output_safety_filter(answer)
 
-    # 追加学习路径推荐（新闻/资讯模式下跳过）
+    # 追加学习路径推荐（新闻模式 / 搜索增强模式下跳过，用户处于信息获取模式）
     plan = state.get("learning_plan")
-    is_news = "信息摘要助手" in course_ctx
-    if plan and not is_news:
+    has_search = "[联网搜索结果" in course_ctx
+    if plan and not has_search:
         pt = "\n\n📌 **推荐学习路径：**\n" + "\n".join(
             f"{i + 1}. {s.get('title', str(s))}" for i, s in enumerate(plan)
         )
@@ -171,8 +189,12 @@ def tutor_node_gen(state: AgentState):
     yield ("status", "🧑‍🏫 智能辅导节点启动，正在为你详细解答...")
     prompt = build_tutor_prompt(last_q, profile, course_ctx)
 
+    msgs = [{"role": "user", "content": prompt}]
+    if state.get("deep_thinking"):
+        msgs[0]["content"] = _DEEP_THINKING_META + "\n\n" + msgs[0]["content"]
+
     answer = ""
-    for evt in call_llm_stream([{"role": "user", "content": prompt}]):
+    for evt in call_llm_stream(msgs):
         if evt[0] == "chunk":
             answer += evt[1]
         yield evt
@@ -192,8 +214,12 @@ def evaluation_node_gen(state: AgentState):
 
     prompt = build_evaluation_prompt(profile, hist)
 
+    msgs = [{"role": "user", "content": prompt}]
+    if state.get("deep_thinking"):
+        msgs[0]["content"] = _DEEP_THINKING_META + "\n\n" + msgs[0]["content"]
+
     answer = ""
-    for evt in call_llm_stream([{"role": "user", "content": prompt}]):
+    for evt in call_llm_stream(msgs):
         if evt[0] == "chunk":
             answer += evt[1]
         yield evt
@@ -614,10 +640,10 @@ def _image_gen_node_gen(user_message: str):
     yield ("_result", {"messages": [AIMessage(content=answer)]})
 
 
-def process_message(session_id: str, user_message: str, image_mode: bool = False, web_search: bool = False):
+def process_message(session_id: str, user_message: str, image_mode: bool = False, web_search: bool = False, deep_thinking: bool = False):
     """处理用户消息，实时 yield 流式事件供 SSE 推送。"""
-    logger.info("process_message: session=%s, image_mode=%s, web_search=%s, msg=%s",
-                 session_id[:12], image_mode, web_search, user_message[:60])
+    logger.info("process_message: session=%s, image_mode=%s, web_search=%s, deep_thinking=%s, msg=%s",
+                 session_id[:12], image_mode, web_search, deep_thinking, user_message[:60])
     with _session_lock:
         if session_id not in sessions:
             # 尝试从数据库恢复会话历史
@@ -637,6 +663,7 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
                     "learning_plan": None,
                     "course_context": "",
                     "resource_plan": "",
+                    "deep_thinking": False,
                     "_next_seq": len(db_msgs),
                 }
             else:
@@ -647,6 +674,7 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
                     "learning_plan": None,
                     "course_context": "",
                     "resource_plan": "",
+                    "deep_thinking": False,
                     "_next_seq": 0,
                 }
         _session_times[session_id] = time.time()
@@ -730,6 +758,11 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
         else:
             yield ("status", "🌐 搜索无结果，请稍后重试")
 
+    # 深度思考模式：存储到 state，由各节点在 LLM 调用时注入高优先级元指令
+    state["deep_thinking"] = deep_thinking
+    if deep_thinking:
+        yield ("status", "🔍 深度思考模式已激活")
+
     # 保存用户消息到数据库（原始消息，不含搜索上下文）
     db_upsert_session(session_id)
     db_insert_message(session_id, "human", user_message, state["_next_seq"])
@@ -739,19 +772,18 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
     _trim_messages(state)
 
     # 构建发给 LLM 的消息：如果有搜索结果，直接嵌入用户消息
+    # 时间指代词加注具体日期，防止 LLM 误解（如"昨天"→泰剧）
     llm_message = user_message
     if search_context:
-        # 新闻模式：清理用户问题中的歧义词（如"昨天"会被 LLM 误解为泰剧名）
         safe_query = user_message
-        if _is_news_query(user_message):
+        if _has_time_reference(user_message):
             import datetime
             today = datetime.date.today()
-            day_before_yesterday = (today - datetime.timedelta(days=2)).strftime("%Y年%m月%d日")
-            yesterday = (today - datetime.timedelta(days=1)).strftime("%Y年%m月%d日")
-            today_str = today.strftime("%Y年%m月%d日")
-            safe_query = safe_query.replace("前天", f"前天({day_before_yesterday})")
-            safe_query = safe_query.replace("昨天", f"昨天({yesterday})")
-            safe_query = safe_query.replace("今天", f"今天({today_str})")
+            safe_query = safe_query.replace("前天", f"前天({(today - datetime.timedelta(days=2)).strftime('%Y年%m月%d日')})")
+            safe_query = safe_query.replace("昨天", f"昨天({(today - datetime.timedelta(days=1)).strftime('%Y年%m月%d日')})")
+            safe_query = safe_query.replace("今天", f"今天({today.strftime('%Y年%m月%d日')})")
+            safe_query = safe_query.replace("明天", f"明天({(today + datetime.timedelta(days=1)).strftime('%Y年%m月%d日')})")
+            safe_query = safe_query.replace("后天", f"后天({(today + datetime.timedelta(days=2)).strftime('%Y年%m月%d日')})")
         llm_message = f"{search_context}\n---\n用户问题: {safe_query}"
     state["messages"].append(HumanMessage(content=llm_message))
 
