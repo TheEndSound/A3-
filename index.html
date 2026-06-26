@@ -510,62 +510,121 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .dimension-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
 .dimension-fill { height: 100%; background: var(--accent); border-radius: 2px; }
 
-/* 资源生成页面 */
-.gen-controls { display: flex; gap: 12px; margin-bottom: 8px; align-items: center; }
-.gen-btn { padding: 14px 24px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: all 0.2s ease; }
-.gen-btn.primary { flex: 2; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 15px; font-weight: 600; box-shadow: 0 2px 8px rgba(99,102,241,0.25); }
-.gen-btn.primary:hover:not(:disabled) { background: linear-gradient(135deg, #6366f1, #4f46e5); box-shadow: 0 4px 14px rgba(99,102,241,0.35); transform: scale(1.02); }
-.gen-btn.primary:disabled { opacity: 0.7; cursor: not-allowed; }
-.gen-btn.secondary { flex: 0 0 auto; background: transparent; color: var(--main-muted); border: 1px solid var(--border); padding: 14px 18px; font-size: 13px; }
-.gen-btn.secondary:hover { color: var(--main-secondary); background: var(--chat-ai-bg); }
-.gen-hint { font-size: 12px; color: var(--main-muted); margin-bottom: 20px; padding-left: 4px; }
+/* ========== 资源工坊 Dashboard ========== */
+.dash-topic-bar {
+    display: flex; gap: 10px; margin-bottom: 24px;
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 6px; box-shadow: var(--shadow-sm);
+}
+.dash-topic-input {
+    flex: 1; border: none; outline: none; font-size: 14px; padding: 12px 16px;
+    background: transparent; color: var(--main-text);
+    font-family: inherit;
+}
+.dash-topic-input::placeholder { color: var(--main-muted); }
+.dash-topic-btn {
+    padding: 12px 24px; border: none; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+    color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.25);
+}
+.dash-topic-btn:hover { transform: scale(1.02); box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
 
-.workflow-panel { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 20px; }
-.workflow-title { font-size: 15px; font-weight: 600; margin-bottom: 18px; }
-.agents-row { display: flex; align-items: center; gap: 10px; }
+/* 卡片网格 */
+.dash-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+@media (max-width: 900px) { .dash-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .dash-grid { grid-template-columns: 1fr; } }
 
-.agent-card { flex: 1; padding: 18px 14px; background: var(--chat-ai-bg); border-radius: var(--radius-md); text-align: center; border: 2px solid transparent; transition: all 0.3s ease; }
-.agent-card.active { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 16px rgba(99,102,241,0.15); }
-.agent-card.done { border-color: var(--success); background: #f0fdf4; }
+.dash-card {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 24px; display: flex; flex-direction: column; gap: 14px;
+    transition: all 0.25s ease; cursor: default; position: relative; overflow: hidden;
+}
+.dash-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--border); transition: background 0.25s ease;
+}
+.dash-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-color: var(--accent-subtle); }
+.dash-card:hover::before { background: var(--accent); }
+.dash-card.generating { pointer-events: none; opacity: 0.7; }
+.dash-card.generating::before { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
 
-.agent-icon-circle { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 8px; transition: all 0.3s ease; }
-.agent-card.active .agent-icon-circle { border-color: var(--accent); box-shadow: 0 0 12px rgba(99,102,241,0.2); }
-.agent-card.done .agent-icon-circle { border-color: var(--success); background: #dcfce7; }
-.agent-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
-.agent-desc { font-size: 11px; color: var(--main-muted); margin-bottom: 6px; }
-.agent-status { font-size: 11px; color: var(--main-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
-.agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--main-muted); flex-shrink: 0; }
-.agent-dot.pulse { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
-.agent-card.done .agent-dot { background: var(--success); }
-.agent-card.active .agent-status { color: var(--accent); }
-.agent-card.done .agent-status { color: var(--success); }
-@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
-.arrow { font-size: 18px; color: var(--main-muted); }
+.dash-card-icon {
+    width: 52px; height: 52px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+}
+.dash-card-icon.doc-icon { background: #dbeafe; }
+.dash-card-icon.exercise-icon { background: #dcfce7; }
+.dash-card-icon.mindmap-icon { background: #ede9fe; }
+.dash-card-icon.video-icon { background: #fce7f3; }
+.dash-card-icon.case-icon { background: #fff7ed; }
+.dash-card-icon.ppt-icon { background: #fef3c7; }
 
-.gen-status-bar { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px 16px; margin-bottom: 14px; font-size: 13px; min-height: 20px; transition: all 0.3s ease; }
-.gen-status-bar.preparing { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
-.gen-status-bar.running { background: var(--accent-light); border-color: var(--accent-subtle); color: var(--accent); }
-.gen-status-bar.done { background: #f0fdf4; border-color: #bbf7d0; color: var(--success); }
-.gen-status-bar.error { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+.dash-card-body { flex: 1; }
+.dash-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--main-text); letter-spacing: -0.2px; }
+.dash-card-desc { font-size: 13px; color: var(--main-muted); line-height: 1.55; margin-bottom: 10px; }
+.dash-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.dash-card-tags span {
+    font-size: 11px; padding: 3px 10px; border-radius: 12px;
+    background: var(--chat-ai-bg); color: var(--main-secondary); font-weight: 500;
+}
 
-.stream-preview { display: none; background: var(--accent-light); border: 1px solid var(--accent-subtle); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 14px; max-height: 400px; overflow-y: auto; font-size: 14px; line-height: 1.8; }
-.stream-preview h2, .stream-preview h3 { margin-top: 1em; margin-bottom: 0.5em; }
-.stream-preview p { margin-bottom: 0.8em; }
-.stream-preview code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
-.stream-preview pre { background: rgba(0,0,0,0.05); padding: 12px; border-radius: var(--radius-sm); overflow-x: auto; font-size: 13px; }
+.dash-card-btn {
+    width: 100%; padding: 11px 0; border: 1px solid var(--border); border-radius: var(--radius-md);
+    background: #fff; color: var(--main-text); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+}
+.dash-card-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-.shimmer { background: linear-gradient(90deg, #c7d2fe 25%, #eef2ff 50%, #c7d2fe 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: var(--radius-sm); height: 18px; margin: 8px 0; }
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+/* 输出区域 */
+.dash-output {
+    margin-top: 28px; background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+.dash-output-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    background: var(--chat-ai-bg);
+}
+.dash-output-title-row { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; }
+.dash-output-title-row span:first-child { font-size: 22px; }
+.dash-output-badge {
+    font-size: 11px; padding: 2px 10px; border-radius: 10px;
+    background: var(--accent-light); color: var(--accent); font-weight: 500;
+}
+.dash-output-actions { display: flex; gap: 8px; align-items: center; }
+.dash-export-btn {
+    padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: #fff; color: var(--main-secondary); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+}
+.dash-export-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.dash-output-close {
+    padding: 6px 12px; border: none; background: transparent; color: var(--main-muted);
+    font-size: 16px; cursor: pointer; border-radius: var(--radius-sm);
+}
+.dash-output-close:hover { background: var(--chat-ai-bg); color: var(--main-text); }
+.dash-output-content {
+    padding: 20px; max-height: 65vh; overflow-y: auto; font-size: 14px; line-height: 1.8;
+}
+.dash-output-content h2, .dash-output-content h3 { margin-top: 1.2em; margin-bottom: 0.5em; }
+.dash-output-content p { margin-bottom: 0.8em; }
+.dash-output-content code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+.dash-output-content pre { background: rgba(0,0,0,0.04); padding: 14px; border-radius: var(--radius-sm); overflow-x: auto; font-size: 13px; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-.resource-list { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; }
-.stats-panel { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; padding: 12px 16px; background: var(--chat-ai-bg); border-radius: var(--radius-md); font-size: 13px; color: var(--main-secondary); }
-.stats-panel .stat-chip { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fff; border-radius: 16px; font-size: 12px; font-weight: 500; }
-.resource-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 640px) { .resource-grid { grid-template-columns: 1fr; } .agents-row { flex-wrap: wrap; } }
-
+/* 保留旧版样式供其他模块使用 */
+.resource-item { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.resource-item:last-child { border-bottom: none; }
+.resource-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--chat-ai-bg); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 16px; }
 .resource-card { display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: var(--main-bg); border: 1px solid var(--border); border-radius: var(--radius-md); cursor: default; transition: all 0.2s ease; }
 .resource-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--accent-subtle); }
-
 .resource-type-badge { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .resource-type-badge.doc { background: #dbeafe; }
 .resource-type-badge.exercise { background: #dcfce7; }
@@ -578,10 +637,10 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .resource-card-desc { font-size: 12px; color: var(--main-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .resource-card-arrow { width: 30px; height: 30px; border-radius: 50%; background: var(--chat-ai-bg); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; cursor: pointer; transition: all 0.2s ease; color: var(--main-muted); }
 .resource-card-arrow:hover { background: var(--accent); color: white; }
-
-.resource-item { display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
-.resource-item:last-child { border-bottom: none; }
-.resource-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); background: var(--chat-ai-bg); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 16px; }
+.shimmer { background: linear-gradient(90deg, #c7d2fe 25%, #eef2ff 50%, #c7d2fe 75%); background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: var(--radius-sm); height: 18px; margin: 8px 0; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.stats-panel { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; padding: 12px 16px; background: var(--chat-ai-bg); border-radius: var(--radius-md); font-size: 13px; color: var(--main-secondary); }
+.stats-panel .stat-chip { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: #fff; border-radius: 16px; font-size: 12px; font-weight: 500; }
 
 /* 学习路径 */
 .path-page { max-width: 1000px; }
@@ -605,9 +664,8 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .path-detail-desc { font-size: 14px; color: var(--main-secondary); margin-bottom: 10px; line-height: 1.7; }
 .path-detail-goal { font-size: 13px; color: var(--main-muted); margin-bottom: 14px; padding: 8px 12px; background: var(--chat-ai-bg); border-radius: var(--radius-sm); }
 .path-detail-goal strong { color: var(--main-secondary); }
-.path-detail-resources { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-.path-resource-tag { padding: 6px 14px; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--main-secondary); transition: all 0.15s ease; }
-.path-resource-tag:hover { background: var(--accent-light); border-color: var(--accent-subtle); color: var(--accent); }
+
+
 .path-detail-actions { display: flex; gap: 10px; }
 .path-btn { padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s ease; }
 .path-btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
@@ -619,6 +677,10 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .path-btn-secondary { background: #fff; color: var(--main-secondary); }
 .path-btn-secondary:hover { background: var(--chat-ai-bg); }
 
+.path-generate-btn { padding: 10px 22px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: #fff; transition: all 0.15s ease; }
+.path-generate-btn:hover { background: var(--accent-hover); }
+.path-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.path-generate-status { margin-left: 12px; font-size: 13px; color: var(--main-muted); }
 .path-empty { text-align: center; padding: 60px 20px; color: var(--main-muted); }
 .path-empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
 .path-empty-title { font-size: 16px; font-weight: 500; color: var(--main-secondary); margin-bottom: 8px; }
@@ -791,7 +853,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
                     <span class="sidebar-func-icon">📊</span> 画像分析
                 </button>
                 <button class="sidebar-func-item" data-feature="generate" onclick="openFeaturePanel('generate')">
-                    <span class="sidebar-func-icon">✨</span> 资源生成
+                    <span class="sidebar-func-icon">✨</span> 资源工坊
                 </button>
                 <button class="sidebar-func-item" data-feature="path" onclick="openFeaturePanel('path')">
                     <span class="sidebar-func-icon">🗺️</span> 路径规划
@@ -876,7 +938,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 <div id="tpl-profile">
     <div class="page-header">
         <h1 class="page-title">学习画像分析</h1>
-        <p class="page-subtitle">基于你在对话中的学习行为，自动构建个性化学习特征模型。在主页对话中与AI交流，画像将自动更新</p>
+        <p class="page-subtitle">基于对话历史自动抽取10维度学习画像，支持随学随新。在主页对话中与AI交流，画像将自动更新</p>
     </div>
     <div class="profile-dashboard" id="profile-dashboard">
         <!-- 空状态 -->
@@ -891,7 +953,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
                 <!-- 雷达图 -->
                 <div class="profile-card">
                     <div class="profile-card-title">画像总览</div>
-                    <div class="radar-wrapper"><canvas id="radar-canvas" width="320" height="320"></canvas></div>
+                    <div class="radar-wrapper"><canvas id="radar-canvas" width="360" height="360"></canvas></div>
                     <div class="tags" id="profile-tags"></div>
                 </div>
                 <!-- 维度分析 -->
@@ -907,16 +969,32 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
                             <div class="dimension-bar"><div class="dimension-fill" id="bar-style" style="width:0%"></div></div>
                         </div>
                         <div class="dimension-item">
+                            <div class="dimension-header"><span class="dimension-name">认知风格</span><span class="dimension-value" id="dim-cognitive">--</span></div>
+                            <div class="dimension-bar"><div class="dimension-fill" id="bar-cognitive" style="width:0%"></div></div>
+                        </div>
+                        <div class="dimension-item">
                             <div class="dimension-header"><span class="dimension-name">学习节奏</span><span class="dimension-value" id="dim-pace">--</span></div>
                             <div class="dimension-bar"><div class="dimension-fill" id="bar-pace" style="width:0%"></div></div>
+                        </div>
+                        <div class="dimension-item">
+                            <div class="dimension-header"><span class="dimension-name">学习动机</span><span class="dimension-value" id="dim-motivation">--</span></div>
+                            <div class="dimension-bar"><div class="dimension-fill" id="bar-motivation" style="width:0%"></div></div>
                         </div>
                         <div class="dimension-item">
                             <div class="dimension-header"><span class="dimension-name">兴趣方向</span><span class="dimension-value" id="dim-interest">--</span></div>
                             <div class="dimension-bar"><div class="dimension-fill" id="bar-interest" style="width:0%"></div></div>
                         </div>
                         <div class="dimension-item">
+                            <div class="dimension-header"><span class="dimension-name">学习目标</span><span class="dimension-value" id="dim-goals">--</span></div>
+                            <div class="dimension-bar"><div class="dimension-fill" id="bar-goals" style="width:0%"></div></div>
+                        </div>
+                        <div class="dimension-item">
                             <div class="dimension-header"><span class="dimension-name">薄弱点</span><span class="dimension-value" id="dim-weakness">--</span></div>
                             <div class="tags" id="weak-points-tags" style="margin-top:4px;"></div>
+                        </div>
+                        <div class="dimension-item">
+                            <div class="dimension-header"><span class="dimension-name">易错点</span><span class="dimension-value" id="dim-errors">--</span></div>
+                            <div class="tags" id="error-patterns-tags" style="margin-top:4px;"></div>
                         </div>
                     </div>
                 </div>
@@ -930,54 +1008,126 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
     </div>
 </div>
 
-<!-- 资源生成 -->
+<!-- 资源工坊 -->
 <div id="tpl-generate">
     <div class="page-header">
-        <h1 class="page-title">个性化资源生成</h1>
-        <p class="page-subtitle">多智能体协同，根据你的画像自动生成定制学习内容</p>
+        <h1 class="page-title">资源工坊</h1>
+        <p class="page-subtitle">输入知识点，AI 智能生成全套教学资源 — 文档 / 习题 / 导图 / 视频 / 案例 / PPT</p>
     </div>
-    <div class="gen-controls">
-        <button class="gen-btn primary" id="gen-btn" onclick="startGen()"><span style="margin-right:4px;">✨</span>开始生成</button>
-        <button class="gen-btn secondary" onclick="resetGen()"><span style="margin-right:4px;">↺</span>重置</button>
+
+    <!-- 主题输入栏 -->
+    <div class="dash-topic-bar">
+        <input type="text" class="dash-topic-input" id="dash-topic"
+            placeholder="输入知识点或主题，如：二叉树遍历、快速排序、动态规划..."
+            onkeydown="if(event.key==='Enter')genFirstResource()">
+        <button class="dash-topic-btn" id="dash-topic-btn" onclick="genFirstResource()">🎯 智能生成全部</button>
     </div>
-    <div class="gen-hint">基于你的学习画像和薄弱点，自动生成个性化学习内容</div>
-    <div id="gen-status-bar" class="gen-status-bar" style="display:none;"></div>
-    <div class="workflow-panel">
-        <div class="workflow-title">🤖 智能体工作流</div>
-        <div class="agents-row">
-            <div class="agent-card" id="agent-1">
-                <div class="agent-icon-circle">🔍</div><div class="agent-name">需求分析</div><div class="agent-desc">理解学习目标</div><div class="agent-status"><span class="agent-dot"></span>等待</div>
+
+    <!-- 资源卡片网格 -->
+    <div class="dash-grid" id="dash-grid">
+        <div class="dash-card" data-type="doc">
+            <div class="dash-card-icon doc-icon">📄</div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">讲解文档</div>
+                <div class="dash-card-desc">概念解释 + 原理说明 + 代码示例 + 复杂度分析，一键导出 DOCX</div>
+                <div class="dash-card-tags"><span>DOCX导出</span><span>结构化</span></div>
             </div>
-            <div class="arrow">→</div>
-            <div class="agent-card" id="agent-2">
-                <div class="agent-icon-circle">📋</div><div class="agent-name">内容规划</div><div class="agent-desc">制定生成方案</div><div class="agent-status"><span class="agent-dot"></span>等待</div>
+            <button class="dash-card-btn" onclick="genSingleResource('doc')">生成</button>
+        </div>
+
+        <div class="dash-card" data-type="exercise">
+            <div class="dash-card-icon exercise-icon">📝</div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">练习题</div>
+                <div class="dash-card-desc">选择题 + 编程题 + 答案与解析，难度自适应</div>
+                <div class="dash-card-tags"><span>自测</span><span>含解析</span></div>
             </div>
-            <div class="arrow">→</div>
-            <div class="agent-card" id="agent-3">
-                <div class="agent-icon-circle">⚡</div><div class="agent-name">资源创作</div><div class="agent-desc">生成学习材料</div><div class="agent-status"><span class="agent-dot"></span>等待</div>
+            <button class="dash-card-btn" onclick="genSingleResource('exercise')">生成</button>
+        </div>
+
+        <div class="dash-card" data-type="mindmap">
+            <div class="dash-card-icon mindmap-icon">🧠</div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">思维导图</div>
+                <div class="dash-card-desc">AI 智能生成知识思维导图</div>
+                <div class="dash-card-tags"><span>AI生图</span><span>JPG导出</span></div>
             </div>
-            <div class="arrow">→</div>
-            <div class="agent-card" id="agent-4">
-                <div class="agent-icon-circle">✅</div><div class="agent-name">质量审核</div><div class="agent-desc">优化完善内容</div><div class="agent-status"><span class="agent-dot"></span>等待</div>
+            <button class="dash-card-btn" onclick="genSingleResource('mindmap')">生成</button>
+        </div>
+
+        <div class="dash-card" data-type="video">
+            <div class="dash-card-icon video-icon">🎬</div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">教学视频脚本</div>
+                <div class="dash-card-desc">分场景脚本 + 画面描述 + 旁白 + 时长，可直接录制或导出 MP4</div>
+                <div class="dash-card-tags"><span>脚本</span><span>MP4导出</span></div>
+            </div>
+            <button class="dash-card-btn" onclick="genSingleResource('video')">生成</button>
+        </div>
+
+        <div class="dash-card" data-type="case">
+            <div class="dash-card-icon case-icon">💻</div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">实操案例</div>
+                <div class="dash-card-desc">完整代码 + 运行结果 + 需求分析 + 扩展思考，即学即用</div>
+                <div class="dash-card-tags"><span>实战</span><span>可运行</span></div>
+            </div>
+            <button class="dash-card-btn" onclick="genSingleResource('case')">生成</button>
+        </div>
+
+        <div class="dash-card" data-type="ppt">
+            <div class="dash-card-icon ppt-icon">📊</div>
+            <div class="dash-card-body">
+                <div class="dash-card-title">知识点 PPT</div>
+                <div class="dash-card-desc">生成幻灯片大纲并一键导出 PPTX，专业设计模板</div>
+                <div class="dash-card-tags"><span>PPTX导出</span><span>精美模板</span></div>
+            </div>
+            <button class="dash-card-btn" onclick="genSingleResource('ppt')">生成</button>
+        </div>
+    </div>
+
+    <!-- 生成输出区域 -->
+    <div class="dash-output" id="dash-output" style="display:none;">
+        <div class="dash-output-header">
+            <div class="dash-output-title-row">
+                <span id="dash-output-icon">📄</span>
+                <span id="dash-output-title">生成结果</span>
+                <span id="dash-output-badge" style="display:none;"></span>
+            </div>
+            <div class="dash-output-actions" id="dash-output-actions">
+                <button class="dash-export-btn" id="dash-btn-docx" onclick="exportDashDocx()" style="display:none;" title="导出为 DOCX 文档">📥 导出DOCX</button>
+                <button class="dash-export-btn" id="dash-btn-pptx" onclick="exportDashPptx()" style="display:none;" title="导出为 PPTX 幻灯片">📊 导出PPTX</button>
+                <button class="dash-export-btn" id="dash-btn-mp4" onclick="exportDashMp4()" style="display:none;" title="生成 MP4 视频">🎬 生成MP4</button>
+                <button class="dash-output-close" onclick="closeDashOutput()">✕ 关闭</button>
+            </div>
+        </div>
+        <div class="dash-output-content" id="dash-output-content">
+            <div style="text-align:center;padding:50px 0;color:var(--main-muted);">
+                <div style="font-size:32px;margin-bottom:12px;">⏳</div>
+                <div>等待生成...</div>
             </div>
         </div>
     </div>
-    <div class="resource-list">
-        <div class="section-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><h2 class="section-title" style="font-size:15px;font-weight:600;margin:0;">📦 生成资源</h2></div>
-        <div id="gen-stats-panel" class="stats-panel" style="display:none;"></div>
-        <div id="gen-streaming" class="stream-preview"><div style="color:var(--main-muted);">正在等待模型响应...</div></div>
-        <div id="resource-items"></div>
-    </div>
+
+    <!-- 旧版兼容：资源项容器（供学习路径面板引用） -->
+    <div id="resource-items" style="display:none;"></div>
+    <div id="gen-streaming" style="display:none;"></div>
+    <div id="gen-stats-panel" class="stats-panel" style="display:none;"></div>
+    <div id="gen-status-bar" class="gen-status-bar" style="display:none;"></div>
 </div>
 
 <!-- 学习路径 -->
 <div id="tpl-path">
     <div class="page-header">
         <h1 class="page-title">学习路径规划</h1>
-        <p class="page-subtitle">基于你的知识掌握情况，智能规划最优学习路线</p>
+        <p class="page-subtitle">基于你的历史对话深度分析，智能规划最优学习路线</p>
+        <div style="margin-top:12px;">
+            <button class="path-generate-btn" id="path-generate-btn" onclick="generatePlan()">🔍 分析对话并生成学习路径</button>
+            <span class="path-generate-status" id="path-generate-status" style="display:none;"></span>
+        </div>
     </div>
     <div class="path-empty" id="path-empty">
-        <div class="path-empty-icon">🗺️</div><div class="path-empty-title">暂无学习路径</div><div class="path-empty-desc">请先在「资源生成」页面点击「开始生成」，系统将自动为你规划个性化学习路径。</div>
+        <div class="path-empty-icon">🗺️</div><div class="path-empty-title">暂无学习路径</div><div class="path-empty-desc">点击下方按钮，AI 将基于你的历史对话深度分析，为你规划个性化学习路径。</div>
     </div>
     <div class="path-canvas-wrapper" id="path-canvas-wrapper" style="display:none;">
         <canvas id="path-canvas" class="path-canvas"></canvas>
@@ -993,7 +1143,6 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
             <div class="path-detail-title"><span id="path-step-number"></span><span id="path-step-title"></span><span class="path-detail-status-badge" id="path-step-badge"></span></div>
             <div class="path-detail-desc" id="path-step-desc"></div>
             <div class="path-detail-goal" id="path-step-goal"></div>
-            <div class="path-detail-resources" id="path-step-resources"></div>
             <div class="path-detail-actions">
                 <button class="path-btn path-btn-success" id="path-btn-complete" onclick="toggleStepStatus()">✅ 标记为已完成</button>
                 <button class="path-btn path-btn-secondary" onclick="document.getElementById('path-detail-panel').classList.remove('visible')">关闭</button>
@@ -1145,7 +1294,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 // ========== 全局状态管理 ==========
 window.appState = {
     profile: null,
-    learningPlan: {steps: [], summary: ''},
+    learningPlan: {steps: [], summary: '', diagnosis: ''},
     resourceCount: 0,
     messageCount: 0,
     evalScores: (function() {
@@ -1215,6 +1364,16 @@ function switchSession(sid) {
                     }
                 });
                 window.appState.messageCount = messages.length;
+            }
+            // 恢复学习路径
+            if (data.plan && data.plan.steps) {
+                window.appState.learningPlan = {
+                    steps: data.plan.steps,
+                    summary: data.plan.summary || '个性化学习路径',
+                    diagnosis: data.plan.diagnosis || ''
+                };
+            } else {
+                window.appState.learningPlan = {steps: [], summary: '', diagnosis: ''};
             }
             loadConversationList();
         })
@@ -1305,7 +1464,7 @@ function openFeaturePanel(name) {
     // 将模板内容移入面板 (模板本身是 wrapper div，取子节点)
     while (clone.firstChild) { panelBody.appendChild(clone.firstChild); }
 
-    var titles = {profile: '画像分析', generate: '资源生成', path: '路径规划', eval: '学习评估', knowledge: '知识库'};
+    var titles = {profile: '画像分析', generate: '资源工坊', path: '路径规划', eval: '学习评估', knowledge: '知识库'};
     document.getElementById('feature-panel-title').textContent = titles[name] || '功能面板';
 
     document.getElementById('chat-view').style.display = 'none';
@@ -1657,13 +1816,17 @@ function sendMainMsg(msg) {
             }
         },
         onStatus: function(status) {
-            // 状态信息可选显示
+            // 在图像模式下显示状态更新
+            if (_currentChartMode !== 'chat' && typingEl.parentNode) {
+                typingEl.querySelector('.chat-bubble').innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--main-muted);font-size:14px;"><span>🎨</span> ' + escapeHtml(status) + '</div>';
+            }
         },
         onProfile: function(profile) {
             applyProfileData(profile);
         },
         onPlan: function(plan) {
-            // already set in SSE handler
+            // 如果当前正在查看路径规划面板，自动刷新
+            if (_currentFeature === 'path') { drawPath(); bindPathCanvasClick(); }
         },
         onEval: function(evalData) {
             // update eval data
@@ -1672,17 +1835,16 @@ function sendMainMsg(msg) {
             mainSending = false;
             document.getElementById('main-send-btn').disabled = false;
             if (typingEl.parentNode) {
-                if (fullContent) {
+                if (fullContent || (_currentChartMode !== 'chat' && _currentImageUrl)) {
                     if (_currentChartMode !== 'chat') {
-                        // 图像模式：提取 mermaid 代码并渲染为 JPG
-                        var code = extractMermaidCode(fullContent);
-                        if (code) {
-                            var bubble = typingEl.querySelector('.chat-bubble');
-                            bubble.innerHTML = '<div class="mermaid-container" style="cursor:pointer;" onclick="openImageModal(this)"></div>';
-                            renderMermaidToJpg(code, bubble.querySelector('.mermaid-container'));
+                        // 图像模式：显示豆包生成的图片
+                        var bubble = typingEl.querySelector('.chat-bubble');
+                        if (_currentImageUrl) {
+                            bubble.innerHTML = '<img src="' + _currentImageUrl + '" alt="AI生成图片" style="max-width:100%;border-radius:12px;cursor:pointer;" onclick="openImageModal(this)" onerror="this.onerror=null;this.alt=\'图片加载失败，请检查网络\';this.style.display=\'block\';this.style.padding=\'40px\';this.style.color=\'var(--main-muted)\';">';
                         } else {
-                            typingEl.querySelector('.chat-bubble').innerHTML = '<div class="mermaid-error">AI 未生成有效图像代码，请重试</div>';
+                            bubble.innerHTML = '<div class="mermaid-error">图像生成失败，请重试</div>';
                         }
+                        _currentImageUrl = '';
                     } else {
                         try {
                             typingEl.querySelector('.chat-bubble').innerHTML = renderWithThinking(fullContent, false);
@@ -1787,12 +1949,13 @@ function scrollMainChat() {
 }
 
 // ========== SSE 流式函数 ==========
-function streamChat(message, callbacks) {
+function streamChat(message, callbacks, options) {
     var sessionId = getSessionId();
     var body = { message: message, session_id: sessionId };
     if (window.appState.webSearchEnabled) body.web_search = true;
     if (_currentChartMode !== 'chat') body.image_mode = true;
     if (window.appState.deepThinkingEnabled) body.deep_thinking = true;
+    if (options && options.resource_type) body.resource_type = options.resource_type;
     if (_pendingFiles.length > 0) {
         body.files = _pendingFiles.slice();
         _pendingFiles = [];
@@ -1842,7 +2005,7 @@ function streamChat(message, callbacks) {
                                                 var title = s.replace(/\|.*$/, '').trim().slice(0, 20);
                                                 return {title: title, description: s, goal: '掌握相关知识', resource_types: ['文档', '练习'], status: i === 0 ? 'current' : 'todo'};
                                             });
-                                            window.appState.learningPlan = {steps: steps, summary: '个性化学习路径'};
+                                            window.appState.learningPlan = {steps: steps, summary: '个性化学习路径', diagnosis: ''};
                                         } else if (planData && planData.steps) {
                                             window.appState.learningPlan = planData;
                                         }
@@ -1859,6 +2022,9 @@ function streamChat(message, callbacks) {
                                         if (typeof callbacks.onEval === 'function') callbacks.onEval(payload.data);
                                     }
                                 } catch(e) {}
+                            } else if (data.type === 'image_url') {
+                                _currentImageUrl = data.content;
+                                if (typeof callbacks.onImageUrl === 'function') callbacks.onImageUrl(data.content);
                             } else if (data.type === 'end' && callbacks.onEnd) {
                                 stopped = true;
                                 callbacks.onEnd();
@@ -1986,20 +2152,21 @@ function addChatMsg(type, text) {
 }
 
 function updateProfileFromStatus(parts) {
-    var kb = '中级', style = '视觉型';
+    var kb = '中级';
     if (parts.length > 0) kb = parts[0].replace('基础', '').trim();
-    if (parts.length > 1) style = parts[1].trim();
-    var labels = {'初级':'初级','中级':'中等','高级':'良好'};
-    var vals = {'初级':[55,50,50,50],'中级':[78,75,65,70],'高级':[90,88,82,85]};
+    var labels = {'入门':'入门','初级':'初级','中级':'中等','高级':'良好','精通':'优秀'};
+    var vals = {'入门':[35,50,45,40,35,45],'初级':[55,55,50,50,50,50],'中级':[78,70,70,65,70,65],'高级':[90,85,82,80,85,80],'精通':[95,90,88,88,90,88]};
     var level = kb in vals ? kb : '中级';
     var selected = vals[level];
-    var dims = ['knowledge','style','pace','interest'];
+    var dims = ['knowledge','style','cognitive','pace','motivation','interest'];
     dims.forEach(function(d, i) {
         var el = document.getElementById('dim-' + d);
         var bar = document.getElementById('bar-' + d);
         if (!el || !bar) return;
         var v = selected[i] + Math.floor(Math.random() * 6);
-        el.textContent = (d === 'knowledge') ? (labels[level] || '中等') : (d === 'style' ? style : v + '%');
+        if (d === 'knowledge') {
+            el.textContent = labels[level] || '中等';
+        }
         bar.style.width = Math.min(v, 100) + '%';
     });
     drawRadar();
@@ -2014,18 +2181,29 @@ function applyProfileData(profile) {
     if (emptyState) emptyState.style.display = 'none';
     if (content) content.style.display = '';
 
-    var kbMap = {'初级':40,'中级':70,'高级':92};
+    // 知识基础
+    var kbMap = {'入门':25,'初级':40,'中级':70,'高级':88,'精通':96};
     var kbVal = kbMap[profile.knowledge_base] || 60;
     var dimKnowledge = document.getElementById('dim-knowledge');
     var barKnowledge = document.getElementById('bar-knowledge');
     if (dimKnowledge) dimKnowledge.textContent = profile.knowledge_base || '--';
     if (barKnowledge) barKnowledge.style.width = kbVal + '%';
 
+    // 学习风格
     var dimStyle = document.getElementById('dim-style');
     var barStyle = document.getElementById('bar-style');
+    var styleMap = {'视觉型':75,'听觉型':60,'动手型':85,'读写型':70};
     if (dimStyle) dimStyle.textContent = profile.learning_style || '--';
-    if (barStyle) barStyle.style.width = '70%';
+    if (barStyle) barStyle.style.width = (styleMap[profile.learning_style] || 65) + '%';
 
+    // 认知风格 (new)
+    var dimCognitive = document.getElementById('dim-cognitive');
+    var barCognitive = document.getElementById('bar-cognitive');
+    var cogMap = {'分析型':82,'直觉型':68,'反思型':75,'实践型':85};
+    if (dimCognitive) dimCognitive.textContent = profile.cognitive_style || '--';
+    if (barCognitive) barCognitive.style.width = (cogMap[profile.cognitive_style] || 65) + '%';
+
+    // 学习节奏
     var paceMap = {'慢':40,'中':65,'快':85};
     var paceVal = paceMap[profile.learning_pace] || 60;
     var dimPace = document.getElementById('dim-pace');
@@ -2033,11 +2211,26 @@ function applyProfileData(profile) {
     if (dimPace) dimPace.textContent = profile.learning_pace || '--';
     if (barPace) barPace.style.width = paceVal + '%';
 
+    // 学习动机 (new)
+    var dimMotivation = document.getElementById('dim-motivation');
+    var barMotivation = document.getElementById('bar-motivation');
+    var motMap = {'低':35,'中':65,'高':88};
+    if (dimMotivation) dimMotivation.textContent = profile.motivation_level || '--';
+    if (barMotivation) barMotivation.style.width = (motMap[profile.motivation_level] || 60) + '%';
+
+    // 兴趣方向
     var dimInterest = document.getElementById('dim-interest');
     var barInterest = document.getElementById('bar-interest');
     if (dimInterest) dimInterest.textContent = profile.interest || '--';
-    if (barInterest) barInterest.style.width = '70%';
+    if (barInterest) barInterest.style.width = (profile.interest ? '75%' : '30%');
 
+    // 学习目标 (new)
+    var dimGoals = document.getElementById('dim-goals');
+    var barGoals = document.getElementById('bar-goals');
+    if (dimGoals) dimGoals.textContent = profile.learning_goals || '--';
+    if (barGoals) barGoals.style.width = (profile.learning_goals ? '72%' : '25%');
+
+    // 薄弱点
     var weakEl = document.getElementById('weak-points-tags');
     var dimWeakness = document.getElementById('dim-weakness');
     if (profile.weak_points && profile.weak_points.length > 0) {
@@ -2048,29 +2241,45 @@ function applyProfileData(profile) {
         if (weakEl) weakEl.innerHTML = '';
     }
 
+    // 易错点 (new)
+    var errEl = document.getElementById('error-patterns-tags');
+    var dimErrors = document.getElementById('dim-errors');
+    if (profile.error_patterns && profile.error_patterns.length > 0) {
+        if (dimErrors) dimErrors.textContent = profile.error_patterns.length + ' 项';
+        if (errEl) errEl.innerHTML = profile.error_patterns.map(function(e) { return '<span class="tag active" style="background:#fef2f2;color:#991b1b;">' + e + '</span>'; }).join('');
+    } else {
+        if (dimErrors) dimErrors.textContent = '暂无';
+        if (errEl) errEl.innerHTML = '';
+    }
+
+    // 交互摘要
     var dimSummary = document.getElementById('dim-summary');
     if (dimSummary) dimSummary.textContent = profile.interaction_summary || '暂无交互';
 
+    // 顶部标签
     var tagsEl = document.getElementById('profile-tags');
     if (tagsEl) {
-        var tags = [profile.learning_style || '分析中'];
+        var tags = [];
+        if (profile.learning_style) tags.push(profile.learning_style);
+        if (profile.cognitive_style) tags.push(profile.cognitive_style);
         if (profile.interest) tags.push(profile.interest);
-        if (profile.learning_pace) tags.push(profile.learning_pace + '节奏');
+        if (profile.motivation_level) tags.push('动机' + profile.motivation_level);
         tagsEl.innerHTML = tags.map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('');
     }
 
     drawRadar();
 }
 
-// ========== 雷达图 ==========
+// ========== 雷达图 (8轴) ==========
 function drawRadar() {
     var canvas = document.getElementById('radar-canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
-    var cx = 160, cy = 160, r = 115;
-    var labels = ['知识', '风格', '节奏', '兴趣', '薄弱', '总结'];
+    var cx = 180, cy = 180, r = 120;
+    var N = 8;
+    var labels = ['知识', '风格', '认知', '节奏', '动机', '兴趣', '薄弱', '易错'];
 
-    ctx.clearRect(0, 0, 320, 320);
+    ctx.clearRect(0, 0, 360, 360);
 
     var p = window.appState.profile;
 
@@ -2085,10 +2294,11 @@ function drawRadar() {
     if (emptyState) emptyState.style.display = 'none';
     if (content) content.style.display = '';
 
+    // 绘制网格
     for (var i = 1; i <= 4; i++) {
         ctx.beginPath();
-        for (var j = 0; j <= 6; j++) {
-            var a = (Math.PI * 2 / 6) * j - Math.PI / 2;
+        for (var j = 0; j <= N; j++) {
+            var a = (Math.PI * 2 / N) * j - Math.PI / 2;
             var x = cx + r * (i / 4) * Math.cos(a);
             var y = cy + r * (i / 4) * Math.sin(a);
             if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -2097,19 +2307,32 @@ function drawRadar() {
         ctx.strokeStyle = '#e7e5e4';
         ctx.stroke();
     }
+    // 轴线
+    for (var k = 0; k < N; k++) {
+        var a = (Math.PI * 2 / N) * k - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+        ctx.strokeStyle = '#e7e5e4';
+        ctx.stroke();
+    }
 
-    var kbVal = {'初级':0.4,'中级':0.7,'高级':0.92}[p.knowledge_base] || 0.6;
-    var styleVal = {'视觉型':0.7,'听觉型':0.5,'动手型':0.85}[p.learning_style] || 0.6;
+    // 数据值映射
+    var kbVal = {'入门':0.25,'初级':0.4,'中级':0.7,'高级':0.88,'精通':0.96}[p.knowledge_base] || 0.6;
+    var styleVal = {'视觉型':0.7,'听觉型':0.5,'动手型':0.85,'读写型':0.7}[p.learning_style] || 0.6;
+    var cogVal = {'分析型':0.82,'直觉型':0.68,'反思型':0.75,'实践型':0.85}[p.cognitive_style] || 0.6;
     var paceVal = {'慢':0.4,'中':0.65,'快':0.85}[p.learning_pace] || 0.6;
+    var motVal = {'低':0.35,'中':0.65,'高':0.88}[p.motivation_level] || 0.6;
     var interestVal = p.interest ? 0.75 : 0.4;
     var weakScore = p.weak_points && p.weak_points.length > 0 ? Math.max(0.3, 1 - p.weak_points.length * 0.15) : 1.0;
-    var summaryVal = p.interaction_summary ? 0.7 : 0.3;
-    var data = [kbVal, styleVal, paceVal, interestVal, weakScore, summaryVal];
-    var valueLabels = [(kbVal*4).toFixed(1),(styleVal*4).toFixed(1),(paceVal*4).toFixed(1),(interestVal*4).toFixed(1),(weakScore*4).toFixed(1),(summaryVal*4).toFixed(1)];
+    var errScore = p.error_patterns && p.error_patterns.length > 0 ? Math.max(0.3, 1 - p.error_patterns.length * 0.15) : 1.0;
+    var data = [kbVal, styleVal, cogVal, paceVal, motVal, interestVal, weakScore, errScore];
+    var valueLabels = data.map(function(v) { return (v * 5).toFixed(1); });
 
+    // 绘制数据多边形
     ctx.beginPath();
     data.forEach(function(v, i) {
-        var a = (Math.PI * 2 / 6) * i - Math.PI / 2;
+        var a = (Math.PI * 2 / N) * i - Math.PI / 2;
         var x = cx + r * v * Math.cos(a);
         var y = cy + r * v * Math.sin(a);
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -2121,166 +2344,449 @@ function drawRadar() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
+    // 标签与分值
     ctx.textAlign = 'center';
     labels.forEach(function(l, i) {
-        var a = (Math.PI * 2 / 6) * i - Math.PI / 2;
-        var x = cx + (r + 18) * Math.cos(a);
-        var y = cy + (r + 18) * Math.sin(a);
+        var a = (Math.PI * 2 / N) * i - Math.PI / 2;
+        var labelR = r + 20;
+        var x = cx + labelR * Math.cos(a);
+        var y = cy + labelR * Math.sin(a);
         ctx.fillStyle = '#57534e';
         ctx.font = '11px sans-serif';
         ctx.fillText(l, x, y + 4);
-        var vx = cx + (r + 32) * Math.cos(a);
-        var vy = cy + (r + 32) * Math.sin(a);
+        // 分值
+        var valR = r + 38;
+        var vx = cx + valR * Math.cos(a);
+        var vy = cy + valR * Math.sin(a);
         ctx.fillStyle = '#6366f1';
         ctx.font = 'bold 10px sans-serif';
         ctx.fillText(valueLabels[i], vx, vy + 3);
     });
 }
 
-// ========== 资源生成 ==========
-var isGenerating = false;
+// ========== 资源工坊 Dashboard ==========
+var _dashGenerating = false;
+var _dashContent = '';
+var _dashCurrentType = '';
 
-function startGen() {
-    if (isGenerating) return;
-    isGenerating = true;
-    var btn = document.getElementById('gen-btn');
-    if (!btn) return;
-    btn.disabled = true;
-    btn.innerHTML = '<span style="margin-right:4px;">⏳</span>生成中...';
+var RESOURCE_PROMPTS = {
+    doc: '请帮我生成关于{主题}的讲解文档。要求：概念解释+原理说明+代码示例+复杂度分析+应用场景。用Markdown格式输出，只生成讲解文档，不要生成练习题或思维导图。',
+    exercise: '请帮我生成关于{主题}的练习题。要求：至少3道选择题（附答案和解析）+2道编程题（附参考代码和思路）。用Markdown格式输出，只生成练习题。',
+    mindmap: '请帮我生成关于{主题}的知识点思维导图。使用Mermaid mindmap语法：至少3个一级分支、每分支至少2个子节点、根节点用((双括号))包裹。用```mermaid代码块输出，只生成思维导图，不要生成其他内容。',
+    video: '请帮我生成关于{主题}的教学视频脚本。要求：3-5个场景，每个场景含画面描述+旁白+动画效果+时长，适合3-5分钟视频。用Markdown格式输出，只生成视频脚本。',
+    case: '请帮我生成关于{主题}的实操案例。要求：案例名称+问题描述+需求分析+完整代码（可直接运行）+运行结果+扩展思考。用Markdown格式输出，只生成实操案例。',
+    ppt: '请帮我生成关于{主题}的知识点PPT幻灯片大纲。要求：封面标题+目录+每页要点（3-5个）+总结页。用Markdown格式，##标记每页标题，-标记要点。只生成PPT大纲，不要生成其他内容。'
+};
 
-    document.querySelectorAll('.agent-card').forEach(function(c) { c.classList.remove('active','done'); var dot=c.querySelector('.agent-dot'); if(dot)dot.classList.remove('pulse'); var st=c.querySelector('.agent-status'); if(st) st.childNodes.forEach(function(n){if(n.nodeType===3)n.textContent='等待';}); });
-    document.getElementById('resource-items').innerHTML = '';
-    var statsPanel = document.getElementById('gen-stats-panel');
-    if (statsPanel) { statsPanel.style.display = 'none'; }
+var RESOURCE_META = {
+    doc: {icon:'📄', label:'讲解文档', badge:'DOC'},
+    exercise: {icon:'📝', label:'练习题', badge:'习题'},
+    mindmap: {icon:'🧠', label:'思维导图', badge:'导图'},
+    video: {icon:'🎬', label:'教学视频脚本', badge:'视频'},
+    case: {icon:'💻', label:'实操案例', badge:'案例'},
+    ppt: {icon:'📊', label:'知识点PPT', badge:'PPT'}
+};
 
-    var content = '';
-    var agents = ['agent-1','agent-2','agent-3','agent-4'];
-    var agentKeywords = ['资源规划','内容生成','多模态','案例'];
+function getResourceTopic() {
+    var input = document.getElementById('dash-topic');
+    if (input && input.value.trim()) return input.value.trim();
+    // 回退：尝试从最近聊天消息提取主题
+    var msgs = document.querySelectorAll('#main-chat-messages .chat-bubble');
+    if (msgs.length > 0) {
+        var last = msgs[msgs.length-1].textContent || '';
+        if (last.length > 5) return last.slice(0, 80);
+    }
+    return '数据结构与算法';
+}
 
-    function setAgentActive(idx) {
-        if (idx > 0) {
-            var prev = document.getElementById(agents[idx-1]);
-            if (prev) { prev.classList.remove('active'); prev.classList.add('done'); var dot=prev.querySelector('.agent-dot'); if(dot)dot.classList.remove('pulse'); var st=prev.querySelector('.agent-status'); if(st)st.childNodes.forEach(function(n){if(n.nodeType===3)n.textContent='完成';}); }
-        }
-        if (idx < agents.length) {
-            var cur = document.getElementById(agents[idx]);
-            if (cur) { cur.classList.add('active'); var dot=cur.querySelector('.agent-dot'); if(dot)dot.classList.add('pulse'); var st=cur.querySelector('.agent-status'); if(st)st.childNodes.forEach(function(n){if(n.nodeType===3)n.textContent='运行中';}); }
-        }
+function genFirstResource() {
+    var topic = getResourceTopic();
+    if (!topic) { showToast('请先输入知识点主题'); return; }
+    // 智能生成全部：使用完整多智能体管线
+    genSingleResource('all');
+}
+
+function genSingleResource(type) {
+    if (_dashGenerating) { showToast('正在生成中，请等待完成'); return; }
+    var topic = getResourceTopic();
+    if (!topic && type !== 'all') { showToast('请先输入知识点主题'); return; }
+    if (!topic) topic = '数据结构与算法';
+
+    _dashGenerating = true;
+    _dashContent = '';
+    _dashCurrentType = type;
+
+    // 高亮当前卡片
+    if (type !== 'all') {
+        var card = document.querySelector('.dash-card[data-type="'+type+'"]');
+        if (card) { card.classList.add('generating'); }
+    } else {
+        document.querySelectorAll('.dash-card').forEach(function(c){c.classList.add('generating');});
     }
 
-    var statusBar = document.getElementById('gen-status-bar');
-    if (statusBar) { statusBar.style.display = 'block'; statusBar.className = 'gen-status-bar preparing'; statusBar.textContent = '⏳ 准备中 — 正在初始化生成流程...'; }
+    var meta = RESOURCE_META[type] || {icon:'✨', label:'学习资源', badge:''};
 
-    var streamArea = document.getElementById('gen-streaming');
-    if (streamArea) { streamArea.style.display = 'block'; streamArea.innerHTML = '<div style="color:var(--main-muted);">正在等待模型响应...</div><div class="shimmer" style="width:80%;"></div><div class="shimmer" style="width:60%;"></div><div class="shimmer" style="width:70%;"></div>'; }
+    // 智能生成全部：保留预览模式
+    if (type === 'all') {
+        var output = document.getElementById('dash-output');
+        var contentArea = document.getElementById('dash-output-content');
+        var titleEl = document.getElementById('dash-output-title');
+        var iconEl = document.getElementById('dash-output-icon');
+        var badgeEl = document.getElementById('dash-output-badge');
+        if (output) output.style.display = '';
+        if (contentArea) contentArea.innerHTML = '<div style="text-align:center;padding:50px 0;color:var(--main-muted);"><div style="font-size:32px;margin-bottom:12px;">⏳</div><div>AI 正在生成中...</div><div class="shimmer" style="width:70%;margin:12px auto;"></div><div class="shimmer" style="width:50%;margin:8px auto;"></div><div class="shimmer" style="width:60%;margin:8px auto;"></div></div>';
+        if (titleEl) titleEl.textContent = '学习资源合集';
+        if (iconEl) iconEl.textContent = '✨';
+        if (badgeEl) { badgeEl.style.display = 'none'; }
+        var btnDocx = document.getElementById('dash-btn-docx');
+        var btnPptx = document.getElementById('dash-btn-pptx');
+        var btnMp4 = document.getElementById('dash-btn-mp4');
+        if (btnDocx) btnDocx.style.display = '';
+        if (btnPptx) btnPptx.style.display = '';
+        if (btnMp4) btnMp4.style.display = '';
 
-    streamChat('帮我生成学习资源', {
-        onStatus: function(status) {
-            if (statusBar) { statusBar.textContent = '🔄 ' + status; statusBar.className = 'gen-status-bar running'; }
-            for (var i = 0; i < agentKeywords.length; i++) {
-                if (status.indexOf(agentKeywords[i]) !== -1) { setAgentActive(i); break; }
-            }
-        },
-        onChunk: function(text) {
-            content += text;
-            if (streamArea) {
-                try { streamArea.innerHTML = marked.parse(content); }
-                catch(e) { streamArea.innerHTML = '<pre style="white-space:pre-wrap;font-family:inherit;">' + escapeHtml(content) + '</pre>'; }
-                streamArea.scrollTop = streamArea.scrollHeight;
-            }
-        },
-        onEnd: function() {
-            var lastAgent = document.getElementById(agents[agents.length-1]);
-            if (lastAgent) { lastAgent.classList.remove('active'); lastAgent.classList.add('done'); var dot=lastAgent.querySelector('.agent-dot'); if(dot)dot.classList.remove('pulse'); var st=lastAgent.querySelector('.agent-status'); if(st)st.childNodes.forEach(function(n){if(n.nodeType===3)n.textContent='完成';}); }
-            if (statusBar) { statusBar.textContent = '✅ 资源生成完成！'; statusBar.className = 'gen-status-bar done'; setTimeout(function(){statusBar.style.display='none';},4000); }
-            isGenerating = false;
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span style="margin-right:4px;">✨</span>再次生成'; }
-            loadConversationList();
-
-            if (content) {
-                var itemsDiv = document.getElementById('resource-items');
-                var headingPattern = /^#{1,3}\s+(.+)$/gm;
-                var headings = []; var m;
-                while ((m = headingPattern.exec(content)) !== null) { headings.push({title: m[1].replace(/\*\*/g,'').trim(), pos: m.index, end: m.index + m[0].length}); }
-                var rawSections = [];
-                if (headings.length === 0) { rawSections = [{title:'资源详情', body: content}]; }
-                else {
-                    for (var i = 0; i < headings.length; i++) {
-                        var bodyStart = headings[i].end;
-                        var bodyEnd = i+1 < headings.length ? headings[i+1].pos : content.length;
-                        rawSections.push({title: headings[i].title, body: content.substring(bodyStart, bodyEnd).trim()});
+        var prompt = '请帮我生成关于' + topic + '的完整学习资源，包括：讲解文档、练习题、思维导图(Mermaid mindmap)、视频脚本和实操案例。每个资源用## 标题区分。';
+        streamChat(prompt, {
+            onStatus: function(status) {
+                if (contentArea) {
+                    var loadingEl = contentArea.querySelector('div[style]');
+                    if (loadingEl && loadingEl.textContent.indexOf('生成中') !== -1) {
+                        loadingEl.innerHTML = '<div style="font-size:28px;margin-bottom:12px;">🔄</div><div>' + status + '</div>';
                     }
                 }
-                var mermaidBlockRe = /```mermaid\s*([\s\S]*?)```/g;
-                rawSections.forEach(function(sec) {
-                    var codes = []; var m2;
-                    while ((m2 = mermaidBlockRe.exec(sec.body)) !== null) { codes.push(m2[1].trim()); }
-                    if (codes.length > 0) sec.mermaidCodes = codes;
-                });
-                window._resourceSections = rawSections;
-                itemsDiv.className = 'resource-grid';
-
-                var typeCounts = {doc:0,exercise:0,mindmap:0,video:0,case:0};
-                var labelMap = {doc:'文档',exercise:'练习',mindmap:'导图',video:'视频',case:'案例'};
-                var typeBadgeMap = {doc:'doc',exercise:'exercise',mindmap:'mindmap',video:'video',case:'case'};
-                var typeIconBadge = {doc:'📄',exercise:'✏️',mindmap:'🧠',video:'▶️',case:'🔬'};
-
-                rawSections.forEach(function(sec, idx) {
-                    var title = sec.title; if (!title) return;
-                    var isMindmap = sec.mermaidCodes && sec.mermaidCodes.length > 0;
-                    var desc = sec.body.replace(/\*\*/g,'').replace(/#{1,3}\s+/g,'').replace(/```\w*\n[\s\S]*?```/g,'').replace(/\n+/g,' ').trim().slice(0,100);
-                    if (!desc) desc = isMindmap ? '包含思维导图，点击查看详情' : '点击查看详细内容';
-                    var resType = 'doc';
-                    if (isMindmap) resType = 'mindmap';
-                    else if (/(导图|思维|图谱|脑图)/.test(title)) resType = 'mindmap';
-                    else if (/(练习|习题|题目|试题|测验)/.test(title)) resType = 'exercise';
-                    else if (/(视频|脚本|动画|影片|资源)/.test(title)) resType = 'video';
-                    else if (/(案例|实操|实践|项目|实战)/.test(title)) resType = 'case';
-                    else if (/(讲解|文档|概念|原理|笔记)/.test(title)) resType = 'doc';
-                    typeCounts[resType]++;
-                    var div = document.createElement('div');
-                    div.className = 'resource-card'; div.style.opacity = '0'; div.style.transition = 'opacity 0.3s ease';
-                    div.innerHTML = '<div class="resource-type-badge '+typeBadgeMap[resType]+'">'+typeIconBadge[resType]+'</div><div class="resource-card-info"><div class="resource-card-type">'+labelMap[resType]+'</div><div class="resource-card-title">'+title.slice(0,30)+'</div><div class="resource-card-desc">'+desc.slice(0,80)+'</div></div><div class="resource-card-arrow" onclick="showResourceDetail('+idx+')" title="查看详情">→</div>';
-                    itemsDiv.appendChild(div);
-                    setTimeout(function() { div.style.opacity = '1'; }, idx * 150);
-                });
-
-                var statsPanel2 = document.getElementById('gen-stats-panel');
-                var statsHtml = ''; var iconMap = {doc:'📘',exercise:'📝',mindmap:'🗺️',video:'🎬',case:'💻'};
-                for (var k in typeCounts) { if (typeCounts[k] > 0) statsHtml += '<div class="stat-chip">'+iconMap[k]+' '+typeCounts[k]+' '+labelMap[k]+'</div>'; }
-                if (statsHtml && statsPanel2) { statsPanel2.innerHTML = statsHtml; statsPanel2.style.display = 'flex'; }
-                window.appState.resourceCount = rawSections.length;
+            },
+            onChunk: function(text) {
+                _dashContent += text;
+                if (contentArea) {
+                    try { contentArea.innerHTML = marked.parse(_dashContent); }
+                    catch(e) { contentArea.innerHTML = '<pre style="white-space:pre-wrap;font-family:inherit;">' + escapeHtml(_dashContent) + '</pre>'; }
+                    contentArea.scrollTop = contentArea.scrollHeight;
+                }
+            },
+            onEnd: function() {
+                _dashGenerating = false;
+                document.querySelectorAll('.dash-card.generating').forEach(function(c){c.classList.remove('generating');});
+                if (_dashContent) { storeResourceSections(_dashContent, type); }
+                if (contentArea) { renderMermaid(contentArea); renderBilibiliVideos(contentArea); }
+                showToast('全部资源已生成');
+            },
+            onError: function(err) {
+                _dashGenerating = false;
+                document.querySelectorAll('.dash-card.generating').forEach(function(c){c.classList.remove('generating');});
+                if (contentArea) contentArea.innerHTML = '<div style="text-align:center;padding:40px;color:#ef4444;">❌ '+err+'</div>';
+                showToast('生成出错：'+err);
             }
-            if (streamArea) { renderMermaid(streamArea); renderBilibiliVideos(streamArea); }
+        });
+        return;
+    }
+
+    // 思维导图：直接调用豆包 API 生成图片，自动下载
+    if (type === 'mindmap') {
+        showToast('正在生成思维导图，请稍候...');
+        var enhancedPrompt = '清晰的知识思维导图，主题：' + topic + '，中心节点连接多个分支，专业配色，白色背景，结构清晰，文字可读';
+        fetch('/api/doubao-image', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({prompt: enhancedPrompt})
+        }).then(function(r) { return r.json(); })
+        .then(function(result) {
+            _dashGenerating = false;
+            var card = document.querySelector('.dash-card[data-type="mindmap"]');
+            if (card) card.classList.remove('generating');
+            if (result.success && result.url) {
+                autoDownloadImage(result.url, topic + '_思维导图');
+                showToast('✅ 思维导图已下载');
+            } else {
+                showToast('思维导图生成失败：' + (result.error || '未知错误'));
+            }
+        }).catch(function(err) {
+            _dashGenerating = false;
+            var card = document.querySelector('.dash-card[data-type="mindmap"]');
+            if (card) card.classList.remove('generating');
+            showToast('请求失败：' + err.message);
+        });
+        return;
+    }
+
+    // 单资源模式（非思维导图）：直接生成并下载，不预览
+    showToast('正在生成' + meta.label + '，请稍候...');
+    // 只传纯主题，格式指令由后端 resource_type 快速通道的系统提示词控制
+    var prompt = topic;
+
+    streamChat(prompt, {
+        onStatus: function(status) {},
+        onChunk: function(text) { _dashContent += text; },
+        onEnd: function() {
+            _dashGenerating = false;
+            var card2 = document.querySelector('.dash-card[data-type="'+type+'"]');
+            if (card2) card2.classList.remove('generating');
+            if (!_dashContent) { showToast('生成失败：无内容返回'); return; }
+            storeResourceSections(_dashContent, type);
+
+            // 自动导出并下载
+            if (type === 'ppt') {
+                downloadPPTX(_dashContent, topic);
+            } else if (type === 'video') {
+                downloadMP4(topic, _dashContent);
+            } else {
+                // doc / exercise / case → DOCX
+                downloadDOCX(_dashContent, topic);
+            }
         },
         onError: function(err) {
-            isGenerating = false;
-            if (btn) { btn.disabled = false; btn.textContent = '✨ 重新生成'; }
-            if (statusBar) { statusBar.textContent = '❌ 生成出错：'+err; statusBar.className = 'gen-status-bar error'; }
+            _dashGenerating = false;
+            var card3 = document.querySelector('.dash-card[data-type="'+type+'"]');
+            if (card3) card3.classList.remove('generating');
             showToast('生成出错：'+err);
         }
+    }, {resource_type: type});
+}
+
+function closeDashOutput() {
+    document.getElementById('dash-output').style.display = 'none';
+    document.getElementById('dash-output-content').innerHTML = '';
+    _dashContent = '';
+    _dashCurrentType = '';
+}
+
+function exportDashDocx() {
+    if (!_dashContent) { showToast('请先生成内容'); return; }
+    var title = document.getElementById('dash-topic').value.trim() || '学习资源';
+    fetch('/resource/export-docx', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({content: _dashContent, title: title})
+    }).then(function(r){
+        if (!r.ok) throw new Error('导出失败');
+        return r.blob();
+    }).then(function(blob){
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (title.replace(/[\\/*?:"<>|]/g, '_') || '学习资源') + '.docx';
+        a.click(); URL.revokeObjectURL(a.href);
+        showToast('DOCX 导出成功');
+    }).catch(function(e){ showToast('导出失败：'+e.message); });
+}
+
+function exportDashPptx() {
+    if (!_dashContent) { showToast('请先生成内容'); return; }
+    var title = document.getElementById('dash-topic').value.trim() || '学习资源';
+    fetch('/resource/export-pptx', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({content: _dashContent, title: title})
+    }).then(function(r){
+        if (!r.ok) throw new Error('导出失败');
+        return r.blob();
+    }).then(function(blob){
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (title.replace(/[\\/*?:"<>|]/g, '_') || '学习资源') + '.pptx';
+        a.click(); URL.revokeObjectURL(a.href);
+        showToast('PPTX 导出成功');
+    }).catch(function(e){ showToast('导出失败：'+e.message); });
+}
+
+function exportDashMp4() {
+    if (!_dashContent) { showToast('请先生成视频脚本内容'); return; }
+    var topic = document.getElementById('dash-topic').value.trim() || '学习资源';
+    showToast('视频生成请求已提交，请稍候...（可能需要1-2分钟）');
+    fetch('/resource/export-mp4', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question: topic, reference: _dashContent})
+    }).then(function(r){
+        if (!r.ok) throw new Error('生成失败');
+        return r.blob();
+    }).then(function(blob){
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = (topic.replace(/[\\/*?:"<>|]/g, '_') || '学习资源') + '.mp4';
+        a.click(); URL.revokeObjectURL(a.href);
+        showToast('MP4 导出成功');
+    }).catch(function(e){ showToast('导出失败：'+e.message); });
+}
+
+// ========== 单资源自动下载辅助函数 ==========
+
+function storeResourceSections(content, type) {
+    var headingPattern = /^#{1,3}\s+(.+)$/gm;
+    var headings = []; var m;
+    while ((m = headingPattern.exec(content)) !== null) {
+        headings.push({title: m[1].replace(/\*\*/g,'').trim(), pos: m.index, end: m.index + m[0].length});
+    }
+    var rawSections = [];
+    if (headings.length === 0) {
+        rawSections = [{title: (RESOURCE_META[type]||{}).label||'资源内容', body: content}];
+    } else {
+        for (var i = 0; i < headings.length; i++) {
+            var bs = headings[i].end;
+            var be = i+1 < headings.length ? headings[i+1].pos : content.length;
+            rawSections.push({title: headings[i].title, body: content.substring(bs, be).trim()});
+        }
+    }
+    var mmRe = /```mermaid\s*([\s\S]*?)```/g;
+    rawSections.forEach(function(sec) {
+        var codes = []; var m2;
+        while ((m2 = mmRe.exec(sec.body)) !== null) { codes.push(m2[1].trim()); }
+        if (codes.length > 0) sec.mermaidCodes = codes;
+    });
+    window._resourceSections = rawSections;
+    window.appState.resourceCount = rawSections.length;
+}
+
+function triggerDownload(blob, filename) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+}
+
+function autoDownloadImage(url, filename) {
+    // 用表单提交方式下载，避免浏览器拦截异步回调中的 a.click()
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/api/proxy-download';
+    form.style.display = 'none';
+    var inputUrl = document.createElement('input');
+    inputUrl.type = 'hidden';
+    inputUrl.name = 'url';
+    inputUrl.value = url;
+    form.appendChild(inputUrl);
+    var inputName = document.createElement('input');
+    inputName.type = 'hidden';
+    inputName.name = 'filename';
+    inputName.value = filename + '.jpg';
+    form.appendChild(inputName);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function downloadDOCX(content, title) {
+    var safeTitle = title.replace(/[\\/*?:"<>|]/g, '_').slice(0,50);
+    fetch('/resource/export-docx', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({content: content, title: title})
+    }).then(function(r){ if(!r.ok)throw new Error('导出失败'); return r.blob(); })
+    .then(function(blob){ triggerDownload(blob, safeTitle+'.docx'); showToast('✅ DOCX 已下载'); })
+    .catch(function(e){ showToast('导出失败：'+e.message); });
+}
+
+function downloadPPTX(content, title) {
+    var safeTitle = title.replace(/[\\/*?:"<>|]/g, '_').slice(0,50);
+    fetch('/resource/export-pptx', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({content: content, title: title})
+    }).then(function(r){ if(!r.ok)throw new Error('导出失败'); return r.blob(); })
+    .then(function(blob){ triggerDownload(blob, safeTitle+'.pptx'); showToast('✅ PPTX 已下载'); })
+    .catch(function(e){ showToast('导出失败：'+e.message); });
+}
+
+function downloadMindmapJPG(content, title) {
+    var safeTitle = title.replace(/[\\/*?:"<>|]/g, '_').slice(0,50);
+    // 提取 mermaid 代码
+    var mmRe = /```mermaid\s*([\s\S]*?)```/;
+    var match = mmRe.exec(content);
+    var mermaidCode = match ? match[1].trim() : content.trim();
+    // 如果内容中没有 mermaid 代码块，尝试将整个内容作为 mindmap 代码
+    if (!match && !/^mindmap/i.test(mermaidCode)) {
+        mermaidCode = 'mindmap\n  root((' + title + '))\n' +
+            content.split('\n').filter(function(l){return l.trim();}).slice(0,12)
+            .map(function(l,i){ var indent=i%3===0?'':'  '; return indent+l.replace(/^[-*#\s]+/,'').trim().slice(0,30); })
+            .join('\n');
+    }
+    fetch('/api/render-image', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code: mermaidCode})
+    }).then(function(r){ if(!r.ok)throw new Error('渲染失败'); return r.blob(); })
+    .then(function(blob){ triggerDownload(blob, safeTitle+'_思维导图.jpg'); showToast('✅ 思维导图 JPG 已下载'); })
+    .catch(function(e){
+        // 降级：渲染失败时导出为文本
+        showToast('图像渲染失败，已导出文本');
+        var blob2 = new Blob([content], {type:'text/plain;charset=utf-8'});
+        triggerDownload(blob2, safeTitle+'_思维导图.txt');
     });
 }
 
-function resetGen() {
-    document.querySelectorAll('.agent-card').forEach(function(c) { c.classList.remove('active','done'); var dot=c.querySelector('.agent-dot'); if(dot)dot.classList.remove('pulse'); var st=c.querySelector('.agent-status'); if(st)st.childNodes.forEach(function(n){if(n.nodeType===3)n.textContent='等待';}); });
-    var items = document.getElementById('resource-items'); if (items) { items.innerHTML = ''; items.className = ''; }
-    var streamEl = document.getElementById('gen-streaming'); if (streamEl) { streamEl.style.display = 'none'; streamEl.innerHTML = ''; }
-    var statsEl = document.getElementById('gen-stats-panel'); if (statsEl) { statsEl.style.display = 'none'; statsEl.innerHTML = ''; }
-    var sb = document.getElementById('gen-status-bar'); if (sb) { sb.style.display = 'none'; sb.textContent = ''; sb.className = 'gen-status-bar'; }
-    var btn = document.getElementById('gen-btn'); if (btn) { btn.disabled = false; btn.innerHTML = '<span style="margin-right:4px;">✨</span>开始生成'; }
-    isGenerating = false;
+function downloadMP4(topic, content) {
+    var safeTitle = topic.replace(/[\\/*?:"<>|]/g, '_').slice(0,50);
+    showToast('正在生成视频，可能需要1-2分钟...');
+    fetch('/resource/export-mp4', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({question: topic, reference: content})
+    }).then(function(r){ if(!r.ok)throw new Error('生成失败'); return r.blob(); })
+    .then(function(blob){ triggerDownload(blob, safeTitle+'.mp4'); showToast('✅ MP4 已下载'); })
+    .catch(function(e){ showToast('视频生成失败：'+e.message); });
 }
 
 // ========== 学习路径 ==========
 var _selectedStepIndex = -1;
+var _planGenerating = false;
+
+function generatePlan() {
+    if (_planGenerating) return;
+    var sid = getActiveSessionId();
+    if (!sid) { showToast('请先开始对话'); return; }
+
+    _planGenerating = true;
+    var btn = document.getElementById('path-generate-btn');
+    var status = document.getElementById('path-generate-status');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ 正在分析对话历史...'; }
+    if (status) { status.style.display = 'inline'; status.textContent = '正在加载对话数据...'; }
+
+    fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({session_id: sid})
+    })
+    .then(function(r) {
+        return r.json().then(function(data) {
+            if (!r.ok) {
+                var errMsg = data.detail || ('HTTP ' + r.status);
+                throw new Error(errMsg);
+            }
+            return data;
+        });
+    })
+    .then(function(data) {
+        if (data.success && data.plan) {
+            window.appState.learningPlan = data.plan;
+            if (data.profile) {
+                window.appState.profile = data.profile;
+                applyProfileData(data.profile);
+            }
+            drawPath();
+            bindPathCanvasClick();
+            if (status) { status.textContent = '✅ 路径生成完成！共 ' + (data.plan.steps || []).length + ' 个步骤'; }
+            showToast('✅ 学习路径已生成');
+        } else {
+            if (status) { status.textContent = '❌ 生成失败'; }
+            showToast('❌ 路径生成失败，请稍后重试');
+        }
+    })
+    .catch(function(e) {
+        if (status) { status.textContent = '❌ ' + (e.message || '未知错误'); }
+        showToast('❌ ' + (e.message || '路径生成失败'));
+    })
+    .finally(function() {
+        _planGenerating = false;
+        if (btn) { btn.disabled = false; btn.textContent = '🔍 分析对话并生成学习路径'; }
+        setTimeout(function() {
+            if (status) { status.style.display = 'none'; }
+        }, 5000);
+    });
+}
 
 function getPlan() {
     var p = window.appState.learningPlan;
-    if (!p) return {steps:[], summary:''};
+    if (!p) return {steps:[], summary:'', diagnosis:''};
     if (Array.isArray(p)) {
         var steps = p.map(function(s,i) { return {title:s.replace(/\|.*$/,'').trim().slice(0,20), description:s, goal:'掌握相关知识', resource_types:['文档','练习'], status: i===0?'current':'todo'}; });
-        return {steps:steps, summary:'个性化学习路径'};
+        return {steps:steps, summary:'个性化学习路径', diagnosis:''};
     }
     return p;
 }
@@ -2311,7 +2817,13 @@ function drawPath() {
 
     if (plan.summary) {
         var summaryEl = document.getElementById('path-summary');
-        if (summaryEl) summaryEl.textContent = '📌 ' + plan.summary;
+        if (summaryEl) {
+            var summaryHtml = '📌 ' + escapeHtml(plan.summary);
+            if (plan.diagnosis) {
+                summaryHtml += '<div style="margin-top:8px;font-size:13px;color:var(--main-muted);line-height:1.6;">🔍 ' + escapeHtml(plan.diagnosis) + '</div>';
+            }
+            summaryEl.innerHTML = summaryHtml;
+        }
     }
 
     var count = steps.length;
@@ -2416,15 +2928,10 @@ function renderStepDetail(index) {
         badge.textContent = badgeText; badge.className = 'path-detail-status-badge '+status;
     }
     var stepDesc = document.getElementById('path-step-desc'); if (stepDesc) stepDesc.textContent = step.description || '';
-    var stepGoal = document.getElementById('path-step-goal'); if (stepGoal) stepGoal.innerHTML = '<strong>学习目标：</strong>'+(step.goal||'');
-    var resContainer = document.getElementById('path-step-resources'); if (resContainer) {
-        resContainer.innerHTML = '';
-        var types = step.resource_types || ['文档','练习'];
-        types.forEach(function(t) {
-            var tag = document.createElement('span'); tag.className = 'path-resource-tag'; tag.textContent = '📚 '+t;
-            tag.onclick = function() { openResourceForType(t); };
-            resContainer.appendChild(tag);
-        });
+    var stepGoal = document.getElementById('path-step-goal'); if (stepGoal) {
+        var goalHtml = '<strong>学习目标：</strong>'+(step.goal||'');
+        if (step.estimated_time) { goalHtml += ' &nbsp;|&nbsp; <strong>预估时间：</strong>'+step.estimated_time; }
+        stepGoal.innerHTML = goalHtml;
     }
     var btn = document.getElementById('path-btn-complete'); if (btn) {
         var status = step.status || 'todo';
@@ -2450,7 +2957,7 @@ function toggleStepStatus() {
 
 function openResourceForType(resourceType) {
     var sections = window._resourceSections || [];
-    if (sections.length === 0) { showToast('暂无可用资源，请先在「资源生成」页面生成学习内容'); return; }
+    if (sections.length === 0) { showToast('暂无可用资源，请先在「资源工坊」页面生成学习内容'); return; }
     var typeKeywords = {'文档':['讲解','文档','概念','原理','笔记'],'视频':['视频','脚本','动画','影片'],'练习':['练习','习题','题目','试题','测验'],'案例':['案例','实操','实践','项目','实战'],'导图':['导图','思维','图谱','脑图']};
     var keywords = typeKeywords[resourceType] || [resourceType];
     var foundIdx = -1;
@@ -2657,7 +3164,8 @@ function showResourceDetail(idx) {
                 var placeholder = document.getElementById('mermaid-render-'+mi);
                 if (!placeholder || typeof mermaid === 'undefined') return;
                 var id = 'mermaid-modal-'+mi+'-'+Math.random().toString(36).slice(2,6);
-                mermaid.render(id, mc).then(function(result) {
+                var nmc = normalizeMermaidCode(mc);
+                mermaid.render(id, nmc).then(function(result) {
                     var wrapper = document.createElement('div'); wrapper.className = 'mermaid-container'; wrapper.style.cssText = 'text-align:center;margin:12px 0;'; wrapper.innerHTML = result.svg;
                     if (placeholder && placeholder.parentNode) placeholder.parentNode.replaceChild(wrapper, placeholder);
                 }).catch(function(err) { if(placeholder){placeholder.innerHTML='❌ 思维导图渲染失败';placeholder.style.color='#ef4444';placeholder.style.background='#fef2f2';placeholder.style.borderColor='#fecaca';} });
@@ -2674,6 +3182,94 @@ function closeResourceModal(e) {
 // ========== Mermaid 渲染 ==========
 if (typeof mermaid !== 'undefined') { mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' }); }
 
+// ========== Mermaid 代码规范化 ==========
+// 将 graph/flowchart 语法转换为 mindmap 语法
+function normalizeMermaidCode(code) {
+    code = code.trim();
+    // 已经是 mindmap，直接返回
+    if (/^mindmap/i.test(code)) return code;
+
+    // 如果没有 graph/flowchart 开头，也不是 mindmap，尝试检测是否为纯 edge 列表
+    if (!/^(graph|flowchart)\s/i.test(code)) {
+        // 可能是漏掉了类型声明，但有 --> 箭头
+        if (/-->/i.test(code)) {
+            code = 'graph TD\n' + code;
+        } else {
+            return code; // 无法识别，原样返回
+        }
+    }
+
+    // 解析 graph/flowchart → mindmap
+    var edges = [];
+    var nodeLabels = {};
+    var lines = code.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (/^(graph|flowchart)\s/i.test(line)) continue;
+        if (/^(style|classDef|class\s|linkStyle|click)/i.test(line)) continue;
+        if (!line) continue;
+
+        // 提取节点定义: A[Label] 或 A(Label) 或 A((Label)) 或 A{Label}
+        var nodeRe = /(\w+)\[(.*?)\]|(\w+)\(\((.*?)\)\)|(\w+)\((.*?)\)|(\w+)\{(.*?)\}/g;
+        var nm;
+        while ((nm = nodeRe.exec(line)) !== null) {
+            var nid = nm[1] || nm[3] || nm[5] || nm[7];
+            var nlabel = nm[2] || nm[4] || nm[6] || nm[8];
+            if (nlabel && nlabel.trim()) nodeLabels[nid] = nlabel.trim();
+        }
+
+        // 提取边: A --> B 或 A -->|label| B
+        var edgeRe = /(\w+)\s*-->\s*(?:\|(.*?)\|)?\s*(\w+)/g;
+        var em;
+        while ((em = edgeRe.exec(line)) !== null) {
+            edges.push({from: em[1], to: em[3], label: em[2] || ''});
+        }
+    }
+
+    if (edges.length === 0) return code;
+
+    // 找根节点（只出现在 from 中，不出现在 to 中）
+    var fromSet = new Set(edges.map(function(e) { return e.from; }));
+    var toSet = new Set(edges.map(function(e) { return e.to; }));
+    var roots = [];
+    fromSet.forEach(function(n) { if (!toSet.has(n)) roots.push(n); });
+    if (roots.length === 0 && edges.length > 0) roots = [edges[0].from];
+
+    // 构建邻接表
+    var children = {};
+    edges.forEach(function(e) {
+        if (!children[e.from]) children[e.from] = [];
+        children[e.from].push({id: e.to, label: e.label || nodeLabels[e.to] || e.to});
+    });
+
+    // 选择主根节点
+    var root = roots[0];
+    var rootLabel = nodeLabels[root] || root;
+
+    // 生成 mindmap，限制深度和节点数量防止过大
+    var mindmap = 'mindmap\n  root((' + rootLabel + '))';
+    var visited = new Set();
+    visited.add(root);
+    var nodeCount = 1;
+    var MAX_NODES = 30;
+
+    function buildBranch(nodeId, indent) {
+        if (!children[nodeId] || nodeCount >= MAX_NODES) return;
+        var kids = children[nodeId];
+        for (var k = 0; k < kids.length && nodeCount < MAX_NODES; k++) {
+            if (visited.has(kids[k].id)) continue;
+            visited.add(kids[k].id);
+            var lbl = (kids[k].label || kids[k].id).replace(/[\(\)\[\]\{\}]/g, '');
+            mindmap += '\n' + indent + '  ' + lbl;
+            nodeCount++;
+            buildBranch(kids[k].id, indent + '    ');
+        }
+    }
+
+    buildBranch(root, '  ');
+    return mindmap;
+}
+
 // 从文本中提取 mermaid 代码
 function extractMermaidCode(text) {
     var re = /```\s*mermaid\s*\n?([\s\S]*?)```/i;
@@ -2686,6 +3282,7 @@ function extractMermaidCode(text) {
 
 // 将 mermaid 代码渲染为 JPG 图片插入容器
 function renderMermaidToJpg(code, containerEl) {
+    code = normalizeMermaidCode(code);
     _currentMermaidCode = code;
     var id = 'mermaid-' + Math.random().toString(36).slice(2, 10);
     containerEl.innerHTML = '';
@@ -3031,6 +3628,7 @@ function stopVoiceInput() {
 var _currentMermaidCode = '';
 var _currentMermaidUrl = '';
 var _currentSvg = '';
+var _currentImageUrl = '';
 var _imageZoomState = { scale: 1, x: 0, y: 0, img: null, dragging: false, lastX: 0, lastY: 0 };
 
 function openImageModal(el) {
@@ -3341,8 +3939,109 @@ function _attachMsgActions(bubble) {
     var actions = document.createElement('div');
     actions.className = 'msg-actions';
     actions.innerHTML = '<button class="msg-action-btn" onclick="copyMessage(this)" title="复制内容">📋 复制</button>'
+        + '<button class="msg-action-btn" onclick="exportPPT(this)" title="导出为PPT">📊 PPT</button>'
+        + '<button class="msg-action-btn" onclick="exportVideo(this)" title="导出为教学视频">🎬 视频</button>'
         + '<button class="msg-action-btn" onclick="regenerateMessage(this)" title="重新生成">🔄 重新生成</button>';
     bubble.appendChild(actions);
+}
+
+// ========== 导出PPT ==========
+function exportPPT(btn) {
+    var bubble = btn.closest('.chat-bubble');
+    if (!bubble) return;
+    // 获取气泡中的原始文本（不含HTML标签）
+    var text = bubble.innerText || bubble.textContent || '';
+    if (!text.trim()) { showToast('没有可导出的内容'); return; }
+    // 尝试从消息上下文获取标题
+    var title = 'AI智学 · 学习资源';
+    var msgDiv = btn.closest('.chat-msg');
+    if (msgDiv) {
+        var prevUser = msgDiv.previousElementSibling;
+        if (prevUser && prevUser.classList.contains('chat-msg')) {
+            var prevBubble = prevUser.querySelector('.chat-bubble');
+            if (prevBubble) {
+                var userText = (prevBubble.innerText || prevBubble.textContent || '').trim();
+                title = userText.substring(0, 40) || title;
+            }
+        }
+    }
+    btn.textContent = '⏳ 生成中...';
+    btn.disabled = true;
+    fetch('/resource/export-pptx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: text, title: title })
+    }).then(function(resp) {
+        if (!resp.ok) return resp.json().then(function(e) { throw new Error(e.detail || '生成失败'); });
+        return resp.blob();
+    }).then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = (title.replace(/[\\/*?:"<>|]/g, '_') || '学习资源') + '.pptx';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('PPT 已下载');
+    }).catch(function(err) {
+        showToast('导出失败: ' + (err.message || '未知错误'));
+    }).finally(function() {
+        btn.textContent = '📊 PPT';
+        btn.disabled = false;
+    });
+}
+
+// ========== 导出视频 ==========
+function exportVideo(btn) {
+    var bubble = btn.closest('.chat-bubble');
+    if (!bubble) return;
+    var aiText = bubble.innerText || bubble.textContent || '';
+    if (!aiText.trim()) { showToast('没有可导出的内容'); return; }
+
+    // 获取用户原始提问
+    var userQuestion = '';
+    var msgDiv = btn.closest('.chat-msg');
+    if (msgDiv) {
+        var prevUser = msgDiv.previousElementSibling;
+        if (prevUser && prevUser.classList.contains('chat-msg')) {
+            var prevBubble = prevUser.querySelector('.chat-bubble');
+            if (prevBubble) {
+                userQuestion = (prevBubble.innerText || prevBubble.textContent || '').trim();
+            }
+        }
+    }
+    if (!userQuestion) userQuestion = '学习资源';
+
+    if (!confirm('视频生成需要约30-60秒（含AI脚本生成+配音+合成），是否继续？')) return;
+    btn.textContent = '⏳ 生成中...';
+    btn.disabled = true;
+    fetch('/resource/export-mp4', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            question: userQuestion,
+            reference: aiText.substring(0, 8000)
+        })
+    }).then(function(resp) {
+        if (!resp.ok) return resp.json().then(function(e) { throw new Error(e.detail || '生成失败'); });
+        return resp.blob();
+    }).then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = (userQuestion.replace(/[\\/*?:"<>|]/g, '_').substring(0, 40) || '视频') + '.mp4';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('视频已下载');
+    }).catch(function(err) {
+        showToast('视频生成失败: ' + (err.message || '未知错误'));
+    }).finally(function() {
+        btn.textContent = '🎬 视频';
+        btn.disabled = false;
+    });
 }
 
 // ========== Toast ==========

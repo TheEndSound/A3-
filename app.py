@@ -10,8 +10,10 @@ import io as _io
 import json
 import re as _re
 import asyncio
+import requests
 import subprocess
 import tempfile
+from urllib.parse import quote
 from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -31,7 +33,13 @@ except ImportError:
 from graph_web import process_message
 from video_downloader import download_video_async, get_download_progress, get_video_info_simple
 from database import list_sessions, get_session, get_session_messages, delete_session, \
-    insert_document, list_documents, get_document, delete_document, upsert_session
+    insert_document, list_documents, get_document, delete_document, upsert_session, get_plan, \
+    get_profile, save_profile, save_plan as db_save_plan, get_documents_content
+from core import build_ppt_prompt, parse_ppt_json, call_llm_sync, \
+    build_video_prompt, parse_video_script, sanitize_video_scenes, \
+    render_video_frames, generate_video_narration, compose_video, \
+    build_video_fallback_script, call_doubao_image, \
+    build_plan_prompt, build_profile_prompt, extract_json, merge_profile
 
 load_dotenv()
 
@@ -117,8 +125,9 @@ async def chat_stream(request: Request):
     image_mode = data.get("image_mode", False)
     web_search = data.get("web_search", False)
     deep_thinking = data.get("deep_thinking", False)
+    resource_type = data.get("resource_type", "")
     files = data.get("files", [])
-    print(f"[DEBUG chat_stream] web_search={web_search} image_mode={image_mode} deep_thinking={deep_thinking} files={len(files)} msg={user_message[:40]}", flush=True)
+    print(f"[DEBUG chat_stream] web_search={web_search} image_mode={image_mode} deep_thinking={deep_thinking} resource_type={resource_type} files={len(files)} msg={user_message[:40]}", flush=True)
 
     # 输入验证
     if (not user_message or not user_message.strip()) and not files:
@@ -144,7 +153,7 @@ async def chat_stream(request: Request):
         full_message = file_context + "\n" + (user_message or "请帮我分析上传的文件内容")
 
     async def event_generator():
-        gen = process_message(session_id, full_message, image_mode=image_mode, web_search=web_search, deep_thinking=deep_thinking)
+        gen = process_message(session_id, full_message, image_mode=image_mode, web_search=web_search, deep_thinking=deep_thinking, resource_type=resource_type)
         ended = False
         try:
             for event_type, content in gen:
@@ -205,7 +214,8 @@ async def api_get_session_messages(session_id: str):
     if session is None:
         raise HTTPException(status_code=404, detail="会话不存在")
     messages = get_session_messages(session_id)
-    return {"session": session, "messages": messages}
+    plan = get_plan(session_id)
+    return {"session": session, "messages": messages, "plan": plan}
 
 
 @app.delete("/sessions/{session_id}")
@@ -594,10 +604,586 @@ async def export_resource_docx(request: Request):
     buf.seek(0)
 
     safe_filename = _re.sub(r'[\\/*?:"<>|]', "_", title)[:50]
+    encoded_fn = quote(f"{safe_filename}.docx")
     return Response(
         content=buf.getvalue(),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f'attachment; filename="{safe_filename}.docx"'}
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_fn}"}
+    )
+
+
+@app.post("/resource/export-pptx")
+async def export_resource_pptx(request: Request):
+    """将 Markdown 资源内容转换为 PPT 并下载。"""
+    data = await request.json()
+    markdown = data.get("content", "")
+    title = data.get("title", "学习资源")
+
+    if not markdown or not markdown.strip():
+        raise HTTPException(status_code=400, detail="内容为空，无法生成PPT")
+
+    if len(markdown) > 20000:
+        raise HTTPException(status_code=400, detail="内容过长（最多20000字符）")
+
+    # 调用 DeepSeek 生成幻灯片 JSON
+    prompt = build_ppt_prompt(markdown, title)
+    raw = call_llm_sync([{"role": "user", "content": prompt}])
+    slides_data = parse_ppt_json(raw)
+
+    # 降级：LLM 生成失败时，从 Markdown 手动拆分
+    if not slides_data or "slides" not in slides_data:
+        lines = [l.strip() for l in markdown.split("\n") if l.strip()]
+        slides_data = {
+            "title": title,
+            "slides": [{"title": "封面", "bullets": [title], "layout": "title"}]
+        }
+        current = {"title": "", "bullets": [], "layout": "content"}
+        for line in lines:
+            if line.startswith("## "):
+                if current["bullets"]:
+                    slides_data["slides"].append(current)
+                current = {"title": line.lstrip("# ").strip(), "bullets": [], "layout": "content"}
+            elif line.startswith("# "):
+                if current["bullets"]:
+                    slides_data["slides"].append(current)
+                current = {"title": line.lstrip("# ").strip(), "bullets": [], "layout": "content"}
+            elif line.startswith("- ") or line.startswith("* "):
+                current["bullets"].append(line.lstrip("-* ").strip())
+            else:
+                current["bullets"].append(line[:40])
+        if current["bullets"]:
+            slides_data["slides"].append(current)
+        slides_data["slides"].insert(0, {"title": title, "bullets": ["AI智学 · 个性化学习系统"], "layout": "title"})
+        slides_data["slides"].append({"title": "Q&A", "bullets": ["感谢观看", "欢迎提问"], "layout": "summary"})
+
+    # ================================================================
+    # 组装 PPT 文件 — 专业设计
+    # ================================================================
+    from pptx import Presentation
+    from pptx.util import Inches as PptInches, Pt as PptPt, Emu
+    from pptx.dml.color import RGBColor as PptRGB
+    from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+    from pptx.oxml.ns import qn as pptx_qn
+
+    prs = Presentation()
+    prs.slide_width = PptInches(13.333)
+    prs.slide_height = PptInches(7.5)
+
+    # ── 专业配色方案 ──
+    C = {
+        "primary":    PptRGB(37, 99, 235),     # 宝蓝
+        "primary_dark": PptRGB(30, 64, 175),   # 深蓝
+        "accent":     PptRGB(99, 102, 241),    # 靛蓝
+        "accent2":    PptRGB(236, 72, 153),    # 玫红点缀
+        "dark":       PptRGB(15, 23, 42),      # 近黑文字
+        "body":       PptRGB(51, 65, 85),      # 正文灰
+        "muted":      PptRGB(148, 163, 184),   # 浅灰
+        "bg_light":   PptRGB(248, 250, 252),   # 页背景
+        "card_bg":    PptRGB(255, 255, 255),   # 卡片白
+        "white":      PptRGB(255, 255, 255),
+        "gradient_top": PptRGB(15, 23, 42),    # 封面渐变上
+        "gradient_bot": PptRGB(30, 64, 175),   # 封面渐变下
+    }
+
+    def _rect(slide, l, t, w, h, fill_color=None, border_color=None, border_width=None, radius=None):
+        """添加矩形，支持圆角。"""
+        shape = slide.shapes.add_shape(
+            1, PptInches(l), PptInches(t), PptInches(w), PptInches(h))
+        if fill_color:
+            shape.fill.solid()
+            shape.fill.fore_color.rgb = fill_color
+        else:
+            shape.fill.background()
+        if border_color:
+            shape.line.color.rgb = border_color
+            shape.line.width = PptPt(border_width or 1)
+        else:
+            shape.line.fill.background()
+        return shape
+
+    def _rounded_rect(slide, l, t, w, h, fill_color, border_color=None, border_width=None):
+        """添加圆角矩形（左上、右上、左下、右下统一半径）。"""
+        shape = slide.shapes.add_shape(
+            5, PptInches(l), PptInches(t), PptInches(w), PptInches(h))  # 5 = rounded rectangle
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = fill_color
+        if border_color:
+            shape.line.color.rgb = border_color
+            shape.line.width = PptPt(border_width or 1)
+        else:
+            shape.line.fill.background()
+        # 设置圆角半径
+        try:
+            shape.adjustments[0] = 0.08
+        except Exception:
+            pass
+        return shape
+
+    def _add_bg(slide, color):
+        bg = slide.background
+        fill = bg.fill
+        fill.solid()
+        fill.fore_color.rgb = color
+
+    def _textbox(slide, l, t, w, h, text, size=18, color=None, bold=False,
+                 align=PP_ALIGN.LEFT, font="Microsoft YaHei", anchor=MSO_ANCHOR.TOP):
+        """添加文本框。"""
+        txBox = slide.shapes.add_textbox(PptInches(l), PptInches(t), PptInches(w), PptInches(h))
+        tf = txBox.text_frame
+        tf.word_wrap = True
+        tf.auto_size = None
+        try:
+            tf.paragraphs[0].alignment = align
+        except Exception:
+            pass
+        p = tf.paragraphs[0]
+        p.text = text
+        p.font.size = PptPt(size)
+        p.font.color.rgb = color or C["body"]
+        p.font.bold = bold
+        p.font.name = font
+        # 东亚字体
+        for run in p.runs:
+            rPr = run._r.get_or_add_rPr()
+            rPr.set(pptx_qn('a:altLang'), 'zh-CN')
+        return tf
+
+    def _add_rich_textbox(slide, l, t, w, h, items, color=None, size=16):
+        """添加多段落文本框，每项一个段落。"""
+        txBox = slide.shapes.add_textbox(PptInches(l), PptInches(t), PptInches(w), PptInches(h))
+        tf = txBox.text_frame
+        tf.word_wrap = True
+        for i, item in enumerate(items):
+            if i == 0:
+                p = tf.paragraphs[0]
+            else:
+                p = tf.add_paragraph()
+            p.text = item
+            p.font.size = PptPt(size)
+            p.font.color.rgb = color or C["body"]
+            p.font.name = "Microsoft YaHei"
+            p.space_after = PptPt(6)
+        return tf
+
+    def _circle(slide, cx, cy, r, fill_color):
+        """添加实心圆。"""
+        d = r * 2
+        shape = slide.shapes.add_shape(
+            9, PptInches(cx - r), PptInches(cy - r), PptInches(d), PptInches(d))
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = fill_color
+        shape.line.fill.background()
+        return shape
+
+    def _slide_number(slide, num, total):
+        """右下角页码。"""
+        _textbox(slide, 12.0, 7.05, 1.2, 0.35, f"{num} / {total}",
+                 size=9, color=C["muted"], align=PP_ALIGN.RIGHT)
+
+    # ── 构建幻灯片 ──
+    slides_list = slides_data.get("slides", [])
+    total = len(slides_list)
+
+    for idx, slide_info in enumerate(slides_list):
+        layout_type = slide_info.get("layout", "content")
+        slide_title = slide_info.get("title", "")
+        bullets = slide_info.get("bullets", [])
+        notes_text = slide_info.get("notes", "")
+        blank = prs.slide_layouts[6]
+
+        # ═══════════════════════════════════════
+        # 封面页
+        # ═══════════════════════════════════════
+        if layout_type == "title" or idx == 0:
+            slide = prs.slides.add_slide(blank)
+            _add_bg(slide, C["gradient_top"])
+
+            # 大色块装饰
+            _rect(slide, 0, 0, 13.333, 7.5, fill_color=C["gradient_top"])
+            # 底部渐变条模拟
+            _rect(slide, 0, 5.0, 13.333, 2.5, fill_color=C["gradient_bot"])
+
+            # 装饰几何图形
+            _circle(slide, 11.5, 1.5, 1.8, C["primary"])        # 大圆
+            _circle(slide, 2.0, 5.8, 0.6, C["accent2"])          # 小玫红圆
+            # 半透明方块装饰
+            r1 = _rect(slide, 9.8, 0.8, 0.8, 0.8, fill_color=PptRGB(59, 130, 246))
+            r1.fill.fore_color.brightness = 0.3
+
+            # 标题
+            main_title = slide_title or title
+            _textbox(slide, 1.8, 2.2, 9.7, 1.6, main_title,
+                     size=48, color=C["white"], bold=True, align=PP_ALIGN.LEFT)
+            # 装饰线
+            _rect(slide, 1.8, 3.85, 2.0, 0.06, fill_color=C["accent2"])
+            # 副标题
+            subtitle = bullets[0] if bullets else "个性化学习系统"
+            _textbox(slide, 1.8, 4.1, 9.0, 0.8, subtitle,
+                     size=22, color=PptRGB(203, 213, 225), align=PP_ALIGN.LEFT)
+            # 底部信息
+            _textbox(slide, 1.8, 5.8, 5.0, 0.4, "AI 智学 · 多智能体学习平台",
+                     size=13, color=PptRGB(148, 163, 184), align=PP_ALIGN.LEFT)
+            _textbox(slide, 1.8, 6.2, 5.0, 0.4, "Powered by DeepSeek",
+                     size=10, color=C["muted"], align=PP_ALIGN.LEFT)
+
+        # ═══════════════════════════════════════
+        # 总结/Q&A 页
+        # ═══════════════════════════════════════
+        elif layout_type == "summary" or idx == total - 1:
+            slide = prs.slides.add_slide(blank)
+            _add_bg(slide, C["gradient_top"])
+            _rect(slide, 0, 0, 13.333, 7.5, fill_color=C["gradient_top"])
+
+            # 装饰
+            _circle(slide, 2.0, 5.5, 1.2, C["primary"])
+            _circle(slide, 11.0, 2.0, 0.5, C["accent2"])
+
+            # 标题
+            _textbox(slide, 2, 1.8, 9.3, 1.5, slide_title,
+                     size=40, color=C["white"], bold=True, align=PP_ALIGN.CENTER)
+            _rect(slide, 5.5, 3.3, 2.3, 0.06, fill_color=C["accent2"])
+
+            # 要点
+            y = 3.8
+            for i, b in enumerate(bullets[:5]):
+                _circle(slide, 2.5, y + 0.15, 0.14, C["accent2"])
+                _textbox(slide, 3.0, y, 8.3, 0.6, b,
+                         size=18, color=PptRGB(203, 213, 225), align=PP_ALIGN.LEFT)
+                y += 0.55
+
+            _textbox(slide, 2, 6.5, 9.3, 0.4, "感谢观看 · AI智学出品",
+                     size=12, color=C["muted"], align=PP_ALIGN.CENTER)
+
+        # ═══════════════════════════════════════
+        # 目录页
+        # ═══════════════════════════════════════
+        elif layout_type == "toc":
+            slide = prs.slides.add_slide(blank)
+            _add_bg(slide, C["white"])
+            # 顶部色条
+            _rect(slide, 0, 0, 13.333, 0.06, fill_color=C["primary"])
+            # 标题
+            _textbox(slide, 1.2, 0.5, 4.0, 0.8, slide_title or "目录",
+                     size=34, color=C["dark"], bold=True)
+            _rect(slide, 1.2, 1.3, 1.5, 0.04, fill_color=C["accent2"])
+
+            y = 2.0
+            for i, b in enumerate(bullets[:8]):
+                # 编号圆圈
+                _circle(slide, 1.8, y + 0.12, 0.28, C["primary"])
+                _textbox(slide, 1.56, y - 0.02, 0.56, 0.5, str(i + 1),
+                         size=14, color=C["white"], bold=True, align=PP_ALIGN.CENTER)
+                # 条目文本
+                _textbox(slide, 2.5, y, 8.5, 0.5, b,
+                         size=18, color=C["dark"])
+                # 分隔线
+                _rect(slide, 2.5, y + 0.52, 9.0, 0.01, fill_color=PptRGB(226, 232, 240))
+                y += 0.65
+
+            _slide_number(slide, idx + 1, total)
+
+        # ═══════════════════════════════════════
+        # 内容页
+        # ═══════════════════════════════════════
+        else:
+            slide = prs.slides.add_slide(blank)
+            _add_bg(slide, C["bg_light"])
+
+            # 顶部导航条
+            _rect(slide, 0, 0, 13.333, 0.06, fill_color=C["primary"])
+
+            # 左侧色条装饰
+            _rect(slide, 0, 0, 0.08, 7.5, fill_color=C["primary"])
+
+            # 标题区域背景
+            _rect(slide, 0.8, 0.35, 11.7, 1.15, fill_color=C["white"])
+            _rounded_rect(slide, 0.8, 0.35, 11.7, 1.15, fill_color=C["white"])
+
+            # 标题
+            _textbox(slide, 1.3, 0.45, 10.5, 0.6, slide_title,
+                     size=30, color=C["dark"], bold=True)
+            _rect(slide, 1.3, 1.05, 1.8, 0.04, fill_color=C["accent2"])
+
+            # 内容卡片
+            card_l = 0.8
+            card_t = 1.85
+            card_w = 8.2
+            card_h = min(5.0, 0.3 + len(bullets) * 0.75)
+
+            _rounded_rect(slide, card_l, card_t, card_w, card_h,
+                          fill_color=C["white"], border_color=PptRGB(226, 232, 240), border_width=0.5)
+
+            # 右侧信息卡
+            info_l = 9.4
+            info_t = 1.85
+            info_w = 3.3
+            _rounded_rect(slide, info_l, info_t, info_w, 2.8,
+                          fill_color=C["primary"], border_color=None)
+
+            # 右侧卡内文字
+            _textbox(slide, info_l + 0.3, info_t + 0.3, info_w - 0.6, 0.4, f"第 {idx + 1} 页",
+                     size=11, color=PptRGB(191, 219, 254), align=PP_ALIGN.LEFT)
+            _textbox(slide, info_l + 0.3, info_t + 0.7, info_w - 0.6, 0.4, f"共 {total} 页",
+                     size=11, color=PptRGB(191, 219, 254), align=PP_ALIGN.LEFT)
+            _textbox(slide, info_l + 0.3, info_t + 1.3, info_w - 0.6, 0.8,
+                     "AI智学\n多智能体学习平台",
+                     size=12, color=PptRGB(191, 219, 254), align=PP_ALIGN.LEFT)
+
+            # 要点列表
+            y = card_t + 0.35
+            for i, b in enumerate(bullets[:6]):
+                # 编号圆圈
+                _circle(slide, card_l + 0.45, y + 0.13, 0.2, C["primary"])
+                _textbox(slide, card_l + 0.22, y + 0.0, 0.46, 0.4, str(i + 1),
+                         size=11, color=C["white"], bold=True, align=PP_ALIGN.CENTER)
+                # 要点文本
+                _textbox(slide, card_l + 1.0, y, card_w - 1.5, 0.7, b if len(b) < 60 else b[:57] + "...",
+                         size=17, color=C["body"])
+                y += 0.72
+
+            # 底部品牌条
+            _rect(slide, 0, 7.1, 13.333, 0.4, fill_color=C["primary"])
+            _textbox(slide, 0.8, 7.1, 5.0, 0.35, "AI智学 · 个性化学习系统",
+                     size=8, color=PptRGB(191, 219, 254))
+            _slide_number(slide, idx + 1, total)
+
+        # 备注
+        if notes_text:
+            try:
+                notes_slide = slide.notes_slide
+                notes_slide.notes_text_frame.text = notes_text
+            except Exception:
+                pass
+
+    # ── 保存 ──
+    buf = _io.BytesIO()
+    prs.save(buf)
+    buf.seek(0)
+
+    safe_filename = _re.sub(r'[\\/*?:"<>|]', "_", title)[:50]
+    encoded_fn = quote(f"{safe_filename}.pptx")
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_fn}"}
+    )
+
+
+@app.post("/resource/export-mp4")
+async def export_resource_mp4(request: Request):
+    """根据用户问题生成教学视频 MP4。"""
+    import tempfile
+    import os as _os
+    import shutil
+
+    data = await request.json()
+    question = data.get("question", "").strip()
+    reference = data.get("reference", "")
+
+    if not question:
+        raise HTTPException(status_code=400, detail="问题为空，无法生成视频")
+
+    # 以用户问题为核心，参考资料仅供准确性校验
+    prompt = build_video_prompt(question, reference)
+    raw = call_llm_sync([{"role": "user", "content": prompt}])
+    scenes = parse_video_script(raw)
+
+    # 降级：LLM 失败时手动拆分
+    if not scenes:
+        scenes = build_video_fallback_script(reference, question)
+
+    # 清洗：修复封面标题 AI 幻觉
+    scenes = sanitize_video_scenes(scenes, question)
+
+    # 创建临时工作目录
+    work_dir = tempfile.mkdtemp(prefix="ai_video_")
+
+    try:
+        # 渲染视频帧
+        frames = render_video_frames(scenes, question, work_dir)
+
+        # 生成旁白
+        audio_files = await generate_video_narration(scenes, work_dir)
+
+        # 合成视频
+        output_path = _os.path.join(work_dir, "output.mp4")
+        success = compose_video(frames, audio_files, output_path)
+
+        if not success or not _os.path.exists(output_path):
+            raise HTTPException(status_code=500, detail="视频合成失败，请检查 ffmpeg 是否安装")
+
+        # 读取视频文件
+        with open(output_path, "rb") as f:
+            video_data = f.read()
+
+        safe_filename = _re.sub(r'[\\/*?:"<>|]', "_", question)[:50]
+        encoded_fn = quote(f"{safe_filename}.mp4")
+        return Response(
+            content=video_data,
+            media_type="video/mp4",
+            headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_fn}"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"视频生成失败: {str(e)}")
+    finally:
+        # 清理临时文件
+        try:
+            shutil.rmtree(work_dir, ignore_errors=True)
+        except Exception:
+            pass
+
+
+@app.post("/api/generate-plan")
+async def generate_plan(request: Request):
+    """基于历史对话深度分析，生成个性化学习路径。独立于资源生成管线。"""
+    data = await request.json()
+    session_id = data.get("session_id", "").strip()
+    if not session_id:
+        raise HTTPException(status_code=400, detail="缺少 session_id")
+
+    # 1. 加载历史对话（优先当前会话；若为空则合并所有会话）
+    messages = get_session_messages(session_id)
+    if not messages:
+        all_sessions = list_sessions(limit=100)
+        for s in all_sessions:
+            msgs = get_session_messages(s["session_id"])
+            messages.extend(msgs)
+        if not messages:
+            raise HTTPException(status_code=400, detail="没有任何对话历史，请先进行一些学习对话")
+
+    # 构建对话上下文（用于画像分析）
+    ctx_lines = []
+    for m in messages[-20:]:  # 取最近20条
+        role = "用户" if m["role"] == "human" else "AI"
+        content = m["content"][:300]
+        ctx_lines.append(f"{role}: {content}")
+    conv_ctx = "\n".join(ctx_lines)
+
+    # 2. 加载/分析画像
+    profile = get_profile(session_id)
+    if not profile:
+        # 首次分析画像
+        prompt = build_profile_prompt({}, conv_ctx)
+        resp = call_llm_sync([{"role": "user", "content": prompt}])
+        new_p = extract_json(resp)
+        if new_p:
+            profile = merge_profile({}, new_p)
+        else:
+            profile = {}
+    else:
+        # 增量更新画像
+        prompt = build_profile_prompt(profile, conv_ctx[-2000:])
+        resp = call_llm_sync([{"role": "user", "content": prompt}])
+        new_p = extract_json(resp)
+        if new_p:
+            profile = merge_profile(profile, new_p)
+
+    # 持久化画像
+    if profile:
+        try:
+            save_profile(session_id, profile)
+        except Exception:
+            pass
+
+    # 3. 获取课程上下文
+    course_ctx = ""
+    try:
+        docs = get_documents_content(session_id)
+    except Exception:
+        docs = []
+    if docs:
+        doc_texts = [f"[{d['title']}]: {d['content'][:500]}" for d in docs[:3]]
+        course_ctx = "已上传文档:\n" + "\n".join(doc_texts)
+
+    # 4. 生成学习路径
+    plan_prompt = build_plan_prompt(profile, course_ctx)
+    plan_text = call_llm_sync([{"role": "user", "content": plan_prompt}])
+
+    parsed = extract_json(plan_text)
+    if parsed and isinstance(parsed, dict) and "steps" in parsed:
+        steps = parsed["steps"]
+        summary = parsed.get("summary", "个性化学习路径")
+        diagnosis = parsed.get("diagnosis", "")
+    else:
+        steps = []
+        summary = "个性化学习路径"
+        diagnosis = ""
+        for line in plan_text.split("\n"):
+            line = line.strip()
+            if line and len(line) > 2 and line[0].isdigit() and "." in line:
+                s = line.split(".", 1)[1].strip()
+                if s:
+                    steps.append({"title": s[:20], "description": s, "goal": "掌握相关知识", "resource_types": ["文档", "练习"]})
+
+    if not steps:
+        weak = ", ".join(profile.get("weak_points", [])) or "无"
+        steps = [
+            {"title": "夯实基础", "description": f"复习核心概念和基本原理，重点关注{weak}", "goal": "建立知识框架", "resource_types": ["文档", "视频"]},
+            {"title": "专项练习", "description": "针对薄弱点进行针对性练习和巩固", "goal": "攻克薄弱环节", "resource_types": ["练习", "案例"]},
+            {"title": "综合实践", "description": "完成综合案例，将知识融会贯通", "goal": "综合运用", "resource_types": ["案例", "练习"]},
+        ]
+
+    for i, step in enumerate(steps):
+        step["status"] = "current" if i == 0 else "todo"
+
+    # 5. 持久化路径
+    try:
+        db_save_plan(session_id, diagnosis, summary, steps)
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "plan": {"steps": steps, "summary": summary, "diagnosis": diagnosis},
+        "profile": profile,
+    }
+
+
+@app.post("/api/doubao-image")
+async def doubao_image(request: Request):
+    """豆包(Seedream)图片生成代理端点。"""
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="无效的 JSON 请求体")
+    prompt = data.get("prompt", "").strip()
+    if not prompt:
+        raise HTTPException(status_code=400, detail="缺少 prompt 参数")
+    if len(prompt) > 2000:
+        raise HTTPException(status_code=400, detail="prompt 过长（最多2000字符）")
+
+    result = call_doubao_image(prompt)
+    return result
+
+
+@app.post("/api/proxy-download")
+async def proxy_download(request: Request):
+    """代理下载远程图片，解决跨域问题。支持 JSON 和表单两种格式。"""
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        data = await request.json()
+    else:
+        form = await request.form()
+        data = {k: v for k, v in form.items()}
+    url = data.get("url", "").strip()
+    filename = data.get("filename", "download.jpg")
+    if not url:
+        raise HTTPException(status_code=400, detail="缺少 url 参数")
+
+    try:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"下载图片失败: {e}")
+
+    safe_fn = _re.sub(r'[\\/*?:"<>|]', "_", filename)[:80]
+    encoded_fn = quote(safe_fn)
+    return Response(
+        content=resp.content,
+        media_type=resp.headers.get("Content-Type", "image/jpeg"),
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_fn}"}
     )
 
 
@@ -657,4 +1243,4 @@ async def render_mermaid_image(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True, reload_dirs=[os.path.dirname(__file__)])

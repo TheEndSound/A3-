@@ -22,8 +22,10 @@ from core import (
     output_safety_filter,
     call_llm_stream,
     call_llm_sync,
+    call_doubao_image,
     search_bilibili_videos,
     search_web,
+    enrich_search_results,
     format_search_context,
     build_profile_prompt,
     build_intent_prompt,
@@ -32,6 +34,7 @@ from core import (
     build_tutor_prompt,
     build_evaluation_prompt,
     build_plan_prompt,
+    build_single_resource_prompt,
     is_tutor_request,
     is_identity_question,
     merge_profile,
@@ -46,6 +49,8 @@ from database import (
     update_session_preview as db_update_session_preview,
     get_session_messages as db_get_session_messages,
     save_profile as db_save_profile,
+    save_plan as db_save_plan,
+    get_plan as db_get_plan,
 )
 
 
@@ -66,12 +71,21 @@ _DEEP_THINKING_META = (
 )
 
 def profile_agent(state: AgentState, events_out: List):
-    """画像分析智能体（非流式）。"""
+    """画像分析智能体（非流式）—— 深度分析最近对话，抽取10维度画像。
+
+    改进：分析最近 12 条消息（vs 旧版 4 条），覆盖更多对话上下文，
+    能更准确推断学生的专业背景、学习目标、认知风格等深层特征。
+    """
     existing = state.get("profile") or {}
-    recent = state["messages"][-4:]
-    ctx = "\n".join(
-        [f"{'用户' if isinstance(m, HumanMessage) else 'AI'}: {m.content}" for m in recent]
-    )
+    # 取更多历史消息以捕获深层特征
+    recent = state["messages"][-12:]
+    # 截断过长的消息内容，避免超出 token 限制
+    ctx_lines = []
+    for m in recent:
+        role = '用户' if isinstance(m, HumanMessage) else 'AI'
+        content = m.content[:300]  # 每条截断到300字
+        ctx_lines.append(f"{role}: {content}")
+    ctx = "\n".join(ctx_lines)
 
     hit = content_safety_check(ctx)
     if hit:
@@ -84,7 +98,13 @@ def profile_agent(state: AgentState, events_out: List):
 
     if new_p is not None:
         merged = merge_profile(existing, new_p)
-        events_out.append(("status", f"✅ 画像已更新：{merged.get('knowledge_base', '?')}基础 | {merged.get('learning_style', '?')}"))
+        # 更丰富状态信息
+        dims = []
+        if merged.get("knowledge_base"): dims.append(merged["knowledge_base"] + "基础")
+        if merged.get("cognitive_style"): dims.append(merged["cognitive_style"])
+        if merged.get("motivation_level"): dims.append("动机" + merged["motivation_level"])
+        status_msg = "✅ 画像已更新：" + " | ".join(dims) if dims else "✅ 画像已更新"
+        events_out.append(("status", status_msg))
         events_out.append(("data", json.dumps({"type": "profile", "data": merged})))
         return {"profile": merged}
 
@@ -319,6 +339,9 @@ def multimodal_generator_gen(state: AgentState):
         "      子节点D\n"
         "```\n"
         "要求：至少3个一级分支，每分支至少2个子节点，根节点用 ((双括号)) 包裹。\n"
+        "⛔ 严禁使用 graph/flowchart 语法（如 A --> B、subgraph 等），只能使用 mindmap 语法。\n"
+        "⛔ 严禁在 mindmap 中使用方括号 [ ]、圆括号 ( ) 包裹节点文字，节点文字必须是纯文本，不需要任何括号包裹。\n"
+        "⛔ 严禁使用 --> 箭头符号。\n"
         "## 🎥 5. 多模态教学视频/动画脚本（3-5个场景，含画面描述+旁白+动画效果+时长）",
     )
 
@@ -438,9 +461,12 @@ def plan_node(state: AgentState, events_out: List):
     for i, step in enumerate(steps):
         step["status"] = "current" if i == 0 else "todo"
 
+    # 提取诊断
+    diagnosis = parsed.get("diagnosis", "") if parsed and isinstance(parsed, dict) else ""
+
     events_out.append(("status", f"✅ 已生成 {len(steps)} 个学习步骤"))
-    events_out.append(("data", json.dumps({"type": "plan", "data": {"steps": steps, "summary": summary}})))
-    return {"learning_plan": steps}
+    events_out.append(("data", json.dumps({"type": "plan", "data": {"steps": steps, "summary": summary, "diagnosis": diagnosis}})))
+    return {"learning_plan": steps, "_plan_diagnosis": diagnosis, "_plan_summary": summary}
 
 
 # ================== 主流程生成器 ==================
@@ -529,13 +555,6 @@ def run_graph(state: AgentState):
         if "messages" in mr and mr["messages"]:
             state["messages"].append(mr["messages"][0])
 
-        # 路径规划（非流式）
-        events_buf.clear()
-        pl = plan_node(state, events_buf)
-        for e in events_buf:
-            yield e
-        state.update(pl)
-
     elif intent == "tutor":
         for evt in tutor_node_gen(state):
             if evt[0] == "_result":
@@ -613,41 +632,72 @@ def _trim_messages(state: AgentState):
 # ================== 对外接口 ==================
 
 def _image_gen_node_gen(user_message: str):
-    """Image generation fast path: skip all agents, generate Mermaid code directly."""
+    """Image generation fast path: call doubao Seedream API directly."""
     yield ("status", "🎨 正在生成图像...")
-    system_prompt = (
-        "You are a Mermaid diagram generator. Your ONLY job is to output a Mermaid code block.\n\n"
-        "CRITICAL RULES (violation = failure):\n"
-        "1. Output ONLY one ```mermaid code block. No text outside the code block.\n"
-        "2. No greetings, no introductions, no explanations, no summaries.\n"
-        "3. No phrases like 'Here is', 'This is', 'Below is', etc.\n"
-        "4. Pick the best diagram type: mindmap/flowchart/sequenceDiagram/classDiagram/gantt.\n"
-        "5. Content must be complete and well-structured. For mindmap: 3+ top branches, 2+ sub-nodes each.\n\n"
-        "Example output:\n"
-        "```mermaid\nmindmap\n  root((Topic))\n    Branch1\n      SubNode\n    Branch2\n      SubNode\n```\n\n"
-        "Remember: ONLY the code block. Nothing else."
-    )
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_message},
-    ]
-    answer = ""
-    for evt in call_llm_stream(messages, temperature=0):
-        if evt[0] == "chunk":
-            answer += evt[1]
-        yield evt
-    answer = output_safety_filter(answer)
-    yield ("_result", {"messages": [AIMessage(content=answer)]})
+    result = call_doubao_image(user_message)
+    if result["success"] and result["url"]:
+        yield ("image_url", result["url"])
+        yield ("status", "✅ 图像生成完成")
+        yield ("_result", {"messages": [AIMessage(content=f"[生成图像]\n![AI生成图片]({result['url']})")]})
+    else:
+        err_msg = result.get("error", "未知错误")
+        yield ("error", f"图像生成失败: {err_msg}")
+        yield ("_result", {"messages": [AIMessage(content=f"[图像生成失败] {err_msg}")]})
 
 
-def process_message(session_id: str, user_message: str, image_mode: bool = False, web_search: bool = False, deep_thinking: bool = False):
-    """处理用户消息，实时 yield 流式事件供 SSE 推送。"""
-    logger.info("process_message: session=%s, image_mode=%s, web_search=%s, deep_thinking=%s, msg=%s",
-                 session_id[:12], image_mode, web_search, deep_thinking, user_message[:60])
+# ---------- 单资源输出净化 ----------
+
+_SANITIZE_DOC_BAN = [
+    r"##\s*选择题[\s\S]*?(?=##\s|\Z)",
+    r"##\s*编程题[\s\S]*?(?=##\s|\Z)",
+    r"##\s*练习题[\s\S]*?(?=##\s|\Z)",
+    r"##\s*难度分级[\s\S]*?(?=##\s|\Z)",
+    r"##\s*课后作业[\s\S]*?(?=##\s|\Z)",
+]
+_SANITIZE_EXERCISE_BAN = [
+    r"##\s*概念解释[\s\S]*?(?=##\s|\Z)",
+    r"##\s*原理说明[\s\S]*?(?=##\s|\Z)",
+    r"##\s*知识回顾[\s\S]*?(?=##\s|\Z)",
+    r"##\s*复杂度分析[\s\S]*?(?=##\s|\Z)",
+    r"##\s*应用场景[\s\S]*?(?=##\s|\Z)",
+    r"##\s*背景知识[\s\S]*?(?=##\s|\Z)",
+    r"##\s*学习目标[\s\S]*?(?=##\s|\Z)",
+]
+
+
+def _sanitize_resource_output(text: str, resource_type: str) -> str:
+    """后处理净化：从输出中剥离不属于当前资源类型的章节。"""
+    import re as _re
+    if resource_type == "doc":
+        for pattern in _SANITIZE_DOC_BAN:
+            text = _re.sub(pattern, "", text)
+        # 去掉常见的 LLM 问候/结尾语
+        text = _re.sub(r"^(好的|没问题|明白了|收到)[，,].*?\n", "", text)
+        text = _re.sub(r"\n*希望.*?(有帮助|能帮到你).*?[。！]\s*$", "", text)
+    elif resource_type == "exercise":
+        for pattern in _SANITIZE_EXERCISE_BAN:
+            text = _re.sub(pattern, "", text)
+        # 去掉 LLM 常见的讲解性开头
+        text = _re.sub(r"^(好的|没问题|明白了|收到)[，,].*?\n", "", text)
+        # 去掉"同学你好"等开场白
+        text = _re.sub(r"^.{0,30}同学.{0,50}\n", "", text)
+        text = _re.sub(r"^\*\*\[.+\]\*\*\s*\n*", "", text)
+        text = _re.sub(r"\n*希望.*?(有帮助|能帮到你|练习顺利).*?[！。]\s*$", "", text)
+    return text.strip()
+
+
+def process_message(session_id: str, user_message: str, image_mode: bool = False, web_search: bool = False, deep_thinking: bool = False, resource_type: str = ""):
+    """处理用户消息，实时 yield 流式事件供 SSE 推送。
+    resource_type: 单资源快速通道 — doc/exercise/mindmap/video/case/ppt，跳过智能体管线直接生成。"""
+    logger.info("process_message: session=%s, image_mode=%s, web_search=%s, deep_thinking=%s, resource_type=%s, msg=%s",
+                 session_id[:12], image_mode, web_search, deep_thinking, resource_type, user_message[:60])
     with _session_lock:
         if session_id not in sessions:
             # 尝试从数据库恢复会话历史
             db_msgs = db_get_session_messages(session_id)
+            # 恢复学习路径
+            db_plan = db_get_plan(session_id)
+            restored_plan = db_plan.get("steps", []) if db_plan else None
             if db_msgs:
                 msgs = []
                 # 加载最近的消息用于对话上下文（最多40条）
@@ -660,7 +710,7 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
                     "messages": msgs,
                     "user_intent": "",
                     "profile": None,
-                    "learning_plan": None,
+                    "learning_plan": restored_plan,
                     "course_context": "",
                     "resource_plan": "",
                     "deep_thinking": False,
@@ -671,7 +721,7 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
                     "messages": [],
                     "user_intent": "",
                     "profile": None,
-                    "learning_plan": None,
+                    "learning_plan": restored_plan if restored_plan else None,
                     "course_context": "",
                     "resource_plan": "",
                     "deep_thinking": False,
@@ -722,6 +772,43 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
             yield ("error", str(e))
         return
 
+    # 单资源快速通道：跳过智能体管线，直接聚焦生成
+    if resource_type and resource_type in ("doc", "exercise", "mindmap", "video", "case", "ppt"):
+        yield ("status", f"🎯 正在生成{resource_type}资源...")
+        db_upsert_session(session_id)
+        db_insert_message(session_id, "human", user_message, state["_next_seq"])
+        db_update_session_preview(session_id, "human", user_message)
+        state["_next_seq"] += 1
+        state["messages"].append(HumanMessage(content=user_message))
+        pre_msg_count = len(state["messages"])
+
+        try:
+            sys_prompt, user_prompt = build_single_resource_prompt(user_message, resource_type)
+            msgs = [
+                {"role": "system", "content": sys_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+            answer = ""
+            for evt in call_llm_stream(msgs, temperature=0):
+                if evt[0] == "chunk":
+                    answer += evt[1]
+                    yield evt
+                elif evt[0] not in ("_result", "_llm_done"):
+                    yield evt
+            answer = output_safety_filter(answer)
+            answer = _sanitize_resource_output(answer, resource_type)
+            # 直接追加到 state.messages，不 yield _result（AIMessage 不可 JSON 序列化）
+            state["messages"].append(AIMessage(content=answer))
+            db_insert_message(session_id, "ai", answer, state["_next_seq"])
+            db_update_session_preview(session_id, "ai", answer)
+            state["_next_seq"] += 1
+            yield ("end", "")
+        except Exception as e:
+            logger.error("单资源生成出错: %s", e)
+            yield ("status", f"❌ 生成出错：{e}")
+            yield ("error", str(e))
+        return
+
     # 输入安全过滤
     hit = content_safety_check(user_message)
     if hit:
@@ -748,6 +835,8 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
         yield ("status", "🌐 正在联网搜索...")
         search_results = search_web(user_message)
         if search_results:
+            yield ("status", "📄 正在获取页面内容...")
+            enrich_search_results(search_results)
             search_context = format_search_context(search_results, user_message)
             # 注入 course_context（供系统提示词使用）
             if state.get("course_context"):
@@ -823,6 +912,15 @@ def process_message(session_id: str, user_message: str, image_mode: bool = False
         if profile:
             try:
                 db_save_profile(session_id, profile)
+            except Exception:
+                pass
+        # 保存学习路径
+        plan_steps = state.get("learning_plan")
+        if plan_steps:
+            try:
+                diagnosis = state.get("_plan_diagnosis", "")
+                summary = state.get("_plan_summary", "个性化学习路径")
+                db_save_plan(session_id, diagnosis, summary, plan_steps)
             except Exception:
                 pass
         if saved_ai_count > 0:
