@@ -8,6 +8,14 @@ ENV/
 .env
 .env.example
 
+# API keys & encryption
+crypto_utils.py
+encrypt_config.py
+.encryption_key
+.env.bak
+.claude/settings.local.json
+.server.pid
+
 # Python cache
 __pycache__/
 *.pyc
@@ -42,6 +50,7 @@ node_modules/
 # Temp / test files
 Bn/
 _t2.py
+open-webSearch/
 
 # Cached platform resources
 index_files/
