@@ -208,6 +208,23 @@ async def api_list_sessions(limit: int = 20):
     return list_sessions(limit=limit)
 
 
+@app.get("/profile/{session_id}")
+async def api_get_profile(session_id: str):
+    """获取会话的学习画像（从DB加载）；当前会话无画像时回退到最近的画像。"""
+    profile = get_profile(session_id)
+    if profile is None:
+        # 回退：查找任意有画像的会话
+        all_sessions = list_sessions(limit=50)
+        for s in all_sessions:
+            p = get_profile(s["session_id"])
+            if p:
+                profile = p
+                break
+    if profile is None:
+        raise HTTPException(status_code=404, detail="暂无画像数据，请先进行学习对话")
+    return {"profile": profile}
+
+
 @app.get("/sessions/{session_id}/messages")
 async def api_get_session_messages(session_id: str):
     session = get_session(session_id)

@@ -1382,7 +1382,7 @@ function switchSession(sid) {
 
 function deleteSession(sid, e) {
     if (e) { e.stopPropagation(); }
-    if (!confirm('确定要删除这个对话吗？')) return;
+    if (!confirm('确定要删除此对话吗？\n\n⚠️ 删除后与其相关的其他功能的数据将会产生变动：\n• 对话消息记录\n• 学习画像分析\n• 个性化学习路径\n• 学习效果评估\n\n此操作不可恢复。')) return;
     fetch('/sessions/' + encodeURIComponent(sid), { method: 'DELETE' })
         .then(function(r) { return r.json(); })
         .then(function() {
@@ -1473,7 +1473,24 @@ function openFeaturePanel(name) {
     _currentFeature = name;
 
     // 初始化功能
-    if (name === 'profile') { drawRadar(); }
+    if (name === 'profile') {
+        if (window.appState.profile) {
+            drawRadar();
+        } else {
+            // 从数据库加载画像
+            var sid = getActiveSessionId();
+            fetch('/profile/' + encodeURIComponent(sid))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.profile) {
+                        window.appState.profile = data.profile;
+                        applyProfileData(data.profile);
+                    }
+                    drawRadar();
+                })
+                .catch(function() { drawRadar(); });
+        }
+    }
     if (name === 'path') { drawPath(); bindPathCanvasClick(); }
     if (name === 'eval') { populateEvalUI(); animateScore(); }
     if (name === 'knowledge') { initKbPanel(); }
@@ -1878,7 +1895,7 @@ function addMainMsg(type, text) {
     var container = document.getElementById('main-chat-messages');
     var div = document.createElement('div');
     div.className = 'chat-msg ' + type;
-    var avatar = type === 'user' ? '我' : '助';
+    var avatar = type === 'user' ? '我' : '智';
 
     if (type === 'user') {
         div.innerHTML = '<div class="chat-msg-avatar">' + avatar + '</div><div class="chat-msg-content"><div class="chat-bubble">' + escapeHtml(text) + '</div></div>';
@@ -2151,86 +2168,54 @@ function addChatMsg(type, text) {
     }
 }
 
+// ========== 画像数据 - 统一值映射（条形图用0-100%，雷达图用0-1 = 百分比/100） ==========
+
+var _PROFILE_MAPS = {
+    knowledge: {'入门':25,'初级':40,'中级':70,'高级':88,'精通':96},
+    style:     {'视觉型':75,'听觉型':60,'动手型':85,'读写型':70},
+    cognitive: {'分析型':82,'直觉型':68,'反思型':75,'实践型':85},
+    pace:      {'慢':40,'中':65,'快':85},
+    motivation:{'低':35,'中':65,'高':88},
+};
+
+function _profilePct(dimKey, textVal) {
+    if (!textVal) return 60;
+    var map = _PROFILE_MAPS[dimKey];
+    if (!map) return 60;
+    return map[textVal] || 60;
+}
+
 function updateProfileFromStatus(parts) {
-    var kb = '中级';
-    if (parts.length > 0) kb = parts[0].replace('基础', '').trim();
-    var labels = {'入门':'入门','初级':'初级','中级':'中等','高级':'良好','精通':'优秀'};
-    var vals = {'入门':[35,50,45,40,35,45],'初级':[55,55,50,50,50,50],'中级':[78,70,70,65,70,65],'高级':[90,85,82,80,85,80],'精通':[95,90,88,88,90,88]};
-    var level = kb in vals ? kb : '中级';
-    var selected = vals[level];
-    var dims = ['knowledge','style','cognitive','pace','motivation','interest'];
-    dims.forEach(function(d, i) {
-        var el = document.getElementById('dim-' + d);
-        var bar = document.getElementById('bar-' + d);
-        if (!el || !bar) return;
-        var v = selected[i] + Math.floor(Math.random() * 6);
-        if (d === 'knowledge') {
-            el.textContent = labels[level] || '中等';
-        }
-        bar.style.width = Math.min(v, 100) + '%';
-    });
-    drawRadar();
+    // 从状态消息解析画像（已过时，改为调用 applyProfileData）
+    // 保留函数体但不再使用随机抖动值
 }
 
 function applyProfileData(profile) {
     if (!profile) return;
 
-    // 切换可见性
     var emptyState = document.getElementById('profile-empty-state');
     var content = document.getElementById('profile-content');
     if (emptyState) emptyState.style.display = 'none';
     if (content) content.style.display = '';
 
-    // 知识基础
-    var kbMap = {'入门':25,'初级':40,'中级':70,'高级':88,'精通':96};
-    var kbVal = kbMap[profile.knowledge_base] || 60;
-    var dimKnowledge = document.getElementById('dim-knowledge');
-    var barKnowledge = document.getElementById('bar-knowledge');
-    if (dimKnowledge) dimKnowledge.textContent = profile.knowledge_base || '--';
-    if (barKnowledge) barKnowledge.style.width = kbVal + '%';
+    // ---- 统一值映射：条形图用 pct (0-100%), 雷达图用 pct/100 (0-1) ----
 
-    // 学习风格
-    var dimStyle = document.getElementById('dim-style');
-    var barStyle = document.getElementById('bar-style');
-    var styleMap = {'视觉型':75,'听觉型':60,'动手型':85,'读写型':70};
-    if (dimStyle) dimStyle.textContent = profile.learning_style || '--';
-    if (barStyle) barStyle.style.width = (styleMap[profile.learning_style] || 65) + '%';
+    function _setDim(dimId, label, pctVal) {
+        var elVal = document.getElementById('dim-' + dimId);
+        var elBar = document.getElementById('bar-' + dimId);
+        if (elVal) elVal.textContent = label;
+        if (elBar) elBar.style.width = pctVal + '%';
+    }
 
-    // 认知风格 (new)
-    var dimCognitive = document.getElementById('dim-cognitive');
-    var barCognitive = document.getElementById('bar-cognitive');
-    var cogMap = {'分析型':82,'直觉型':68,'反思型':75,'实践型':85};
-    if (dimCognitive) dimCognitive.textContent = profile.cognitive_style || '--';
-    if (barCognitive) barCognitive.style.width = (cogMap[profile.cognitive_style] || 65) + '%';
+    _setDim('knowledge',  profile.knowledge_base     || '--', _profilePct('knowledge',  profile.knowledge_base));
+    _setDim('style',     profile.learning_style       || '--', _profilePct('style',      profile.learning_style));
+    _setDim('cognitive', profile.cognitive_style      || '--', _profilePct('cognitive',  profile.cognitive_style));
+    _setDim('pace',      profile.learning_pace        || '--', _profilePct('pace',       profile.learning_pace));
+    _setDim('motivation',profile.motivation_level     || '--', _profilePct('motivation', profile.motivation_level));
+    _setDim('interest',  profile.interest             || '--', profile.interest ? 75 : 30);
+    _setDim('goals',     profile.learning_goals       || '--', profile.learning_goals ? 72 : 25);
 
-    // 学习节奏
-    var paceMap = {'慢':40,'中':65,'快':85};
-    var paceVal = paceMap[profile.learning_pace] || 60;
-    var dimPace = document.getElementById('dim-pace');
-    var barPace = document.getElementById('bar-pace');
-    if (dimPace) dimPace.textContent = profile.learning_pace || '--';
-    if (barPace) barPace.style.width = paceVal + '%';
-
-    // 学习动机 (new)
-    var dimMotivation = document.getElementById('dim-motivation');
-    var barMotivation = document.getElementById('bar-motivation');
-    var motMap = {'低':35,'中':65,'高':88};
-    if (dimMotivation) dimMotivation.textContent = profile.motivation_level || '--';
-    if (barMotivation) barMotivation.style.width = (motMap[profile.motivation_level] || 60) + '%';
-
-    // 兴趣方向
-    var dimInterest = document.getElementById('dim-interest');
-    var barInterest = document.getElementById('bar-interest');
-    if (dimInterest) dimInterest.textContent = profile.interest || '--';
-    if (barInterest) barInterest.style.width = (profile.interest ? '75%' : '30%');
-
-    // 学习目标 (new)
-    var dimGoals = document.getElementById('dim-goals');
-    var barGoals = document.getElementById('bar-goals');
-    if (dimGoals) dimGoals.textContent = profile.learning_goals || '--';
-    if (barGoals) barGoals.style.width = (profile.learning_goals ? '72%' : '25%');
-
-    // 薄弱点
+    // 薄弱点标签
     var weakEl = document.getElementById('weak-points-tags');
     var dimWeakness = document.getElementById('dim-weakness');
     if (profile.weak_points && profile.weak_points.length > 0) {
@@ -2241,7 +2226,7 @@ function applyProfileData(profile) {
         if (weakEl) weakEl.innerHTML = '';
     }
 
-    // 易错点 (new)
+    // 易错点标签
     var errEl = document.getElementById('error-patterns-tags');
     var dimErrors = document.getElementById('dim-errors');
     if (profile.error_patterns && profile.error_patterns.length > 0) {
@@ -2270,7 +2255,15 @@ function applyProfileData(profile) {
     drawRadar();
 }
 
-// ========== 雷达图 (8轴) ==========
+// ========== 雷达图 (8轴) — 统一5分制，与条形图百分比一致 ==========
+
+// 薄弱/易错分数：越少错误清单得分越高（5分制）
+function _weaknessScore5(arr) {
+    if (!arr || arr.length === 0) return 5.0;
+    // 每项扣0.6分，最低1.5分
+    return Math.max(1.5, 5.0 - arr.length * 0.6);
+}
+
 function drawRadar() {
     var canvas = document.getElementById('radar-canvas');
     if (!canvas) return;
@@ -2278,12 +2271,13 @@ function drawRadar() {
     var cx = 180, cy = 180, r = 120;
     var N = 8;
     var labels = ['知识', '风格', '认知', '节奏', '动机', '兴趣', '薄弱', '易错'];
+    // 与条形图完全一致的百分比映射
+    var labelDimMap = ['knowledge','style','cognitive','pace','motivation','interest',null,null];
 
     ctx.clearRect(0, 0, 360, 360);
 
     var p = window.appState.profile;
 
-    // 切换空状态
     var emptyState = document.getElementById('profile-empty-state');
     var content = document.getElementById('profile-content');
     if (!p) {
@@ -2294,13 +2288,31 @@ function drawRadar() {
     if (emptyState) emptyState.style.display = 'none';
     if (content) content.style.display = '';
 
-    // 绘制网格
-    for (var i = 1; i <= 4; i++) {
+    // ---- 计算8轴数据（5分制，与条形图百分比严格一致：score5 = pct / 20） ----
+
+    var pctValues = [
+        _profilePct('knowledge',  p.knowledge_base),          // 0-100
+        _profilePct('style',      p.learning_style),
+        _profilePct('cognitive',  p.cognitive_style),
+        _profilePct('pace',       p.learning_pace),
+        _profilePct('motivation', p.motivation_level),
+        p.interest ? 75 : 30,                                // 兴趣
+        _weaknessScore5(p.weak_points) * 20,                 // 薄弱→百分比
+        _weaknessScore5(p.error_patterns) * 20,              // 易错→百分比
+    ];
+
+    // 统一转为5分制显示值，同时转为0-1雷达半径坐标
+    var score5 = pctValues.map(function(v) { return (v / 20).toFixed(1); });     // "4.4"
+    var radarVals = pctValues.map(function(v) { return v / 100; });               // 0-1
+
+    // ---- 绘制网格（5层 = 1~5分） ----
+    for (var i = 1; i <= 5; i++) {
         ctx.beginPath();
         for (var j = 0; j <= N; j++) {
             var a = (Math.PI * 2 / N) * j - Math.PI / 2;
-            var x = cx + r * (i / 4) * Math.cos(a);
-            var y = cy + r * (i / 4) * Math.sin(a);
+            var rr = r * (i / 5);
+            var x = cx + rr * Math.cos(a);
+            var y = cy + rr * Math.sin(a);
             if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.closePath();
@@ -2317,21 +2329,19 @@ function drawRadar() {
         ctx.stroke();
     }
 
-    // 数据值映射
-    var kbVal = {'入门':0.25,'初级':0.4,'中级':0.7,'高级':0.88,'精通':0.96}[p.knowledge_base] || 0.6;
-    var styleVal = {'视觉型':0.7,'听觉型':0.5,'动手型':0.85,'读写型':0.7}[p.learning_style] || 0.6;
-    var cogVal = {'分析型':0.82,'直觉型':0.68,'反思型':0.75,'实践型':0.85}[p.cognitive_style] || 0.6;
-    var paceVal = {'慢':0.4,'中':0.65,'快':0.85}[p.learning_pace] || 0.6;
-    var motVal = {'低':0.35,'中':0.65,'高':0.88}[p.motivation_level] || 0.6;
-    var interestVal = p.interest ? 0.75 : 0.4;
-    var weakScore = p.weak_points && p.weak_points.length > 0 ? Math.max(0.3, 1 - p.weak_points.length * 0.15) : 1.0;
-    var errScore = p.error_patterns && p.error_patterns.length > 0 ? Math.max(0.3, 1 - p.error_patterns.length * 0.15) : 1.0;
-    var data = [kbVal, styleVal, cogVal, paceVal, motVal, interestVal, weakScore, errScore];
-    var valueLabels = data.map(function(v) { return (v * 5).toFixed(1); });
+    // ---- 网格刻度数字（在正上方轴线标注 1,2,3,4,5） ----
+    ctx.fillStyle = '#a8a29e';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    for (var s = 1; s <= 5; s++) {
+        var rr = r * (s / 5);
+        var y = cy - rr;  // 正上方
+        ctx.fillText(s, cx, y - 4);
+    }
 
-    // 绘制数据多边形
+    // ---- 绘制数据多边形 ----
     ctx.beginPath();
-    data.forEach(function(v, i) {
+    radarVals.forEach(function(v, i) {
         var a = (Math.PI * 2 / N) * i - Math.PI / 2;
         var x = cx + r * v * Math.cos(a);
         var y = cy + r * v * Math.sin(a);
@@ -2344,7 +2354,18 @@ function drawRadar() {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // 标签与分值
+    // 数据点
+    radarVals.forEach(function(v, i) {
+        var a = (Math.PI * 2 / N) * i - Math.PI / 2;
+        var x = cx + r * v * Math.cos(a);
+        var y = cy + r * v * Math.sin(a);
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#6366f1';
+        ctx.fill();
+    });
+
+    // ---- 轴标签 + 分值 ----
     ctx.textAlign = 'center';
     labels.forEach(function(l, i) {
         var a = (Math.PI * 2 / N) * i - Math.PI / 2;
@@ -2354,13 +2375,13 @@ function drawRadar() {
         ctx.fillStyle = '#57534e';
         ctx.font = '11px sans-serif';
         ctx.fillText(l, x, y + 4);
-        // 分值
+        // 5分制分值
         var valR = r + 38;
         var vx = cx + valR * Math.cos(a);
         var vy = cy + valR * Math.sin(a);
         ctx.fillStyle = '#6366f1';
         ctx.font = 'bold 10px sans-serif';
-        ctx.fillText(valueLabels[i], vx, vy + 3);
+        ctx.fillText(score5[i], vx, vy + 3);
     });
 }
 
@@ -3028,7 +3049,7 @@ function addTutorMsg(type, text) {
     if (!container) return;
     var div = document.createElement('div');
     div.className = 'tutoring-msg '+type;
-    div.innerHTML = '<div class="tutoring-avatar">'+(type==='ai'?'助':'我')+'</div><div class="tutoring-content"><div class="tutoring-bubble">'+text+'</div></div>';
+    div.innerHTML = '<div class="tutoring-avatar">'+(type==='ai'?'智':'我')+'</div><div class="tutoring-content"><div class="tutoring-bubble">'+text+'</div></div>';
     container.appendChild(div);
     if (container.scrollTop+container.clientHeight >= container.scrollHeight-60) container.scrollTop = container.scrollHeight;
 }
