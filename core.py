@@ -13,6 +13,7 @@ import subprocess
 import requests
 from typing import TypedDict, Annotated, Dict, Any, List, Optional
 from dotenv import load_dotenv
+from crypto_utils import get_env_secret
 from langgraph.graph.message import add_messages
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
 from web_search_client import search_open_websearch, get_websearch_client
@@ -30,7 +31,7 @@ logger = logging.getLogger("ai_learning")
 
 load_dotenv()
 
-API_KEY = os.getenv("DEEPSEEK_API_KEY")
+API_KEY = get_env_secret("DEEPSEEK_API_KEY")
 if not API_KEY:
     raise ValueError("请在 .env 文件中设置 DEEPSEEK_API_KEY")
 
@@ -38,12 +39,14 @@ API_URL = "https://api.deepseek.com/v1/chat/completions"
 API_TIMEOUT = 120
 API_MODEL = "deepseek-chat"
 
-BING_API_KEY = os.getenv("BING_API_KEY", "")
+BING_API_KEY = get_env_secret("BING_API_KEY", "")
 BING_SEARCH_URL = "https://api.bing.microsoft.com/v7.0/search"
 
 # ================== 豆包(Seedream)图片生成 API ==================
 
-DOUBAO_API_KEY = os.getenv("DOUBAO_API_KEY", "ark-2a059d2d-ce46-45f2-b3f2-8e2d69a9052f-1db26")
+DOUBAO_API_KEY = get_env_secret("DOUBAO_API_KEY")
+if not DOUBAO_API_KEY:
+    raise ValueError("请在 .env 文件中设置 DOUBAO_API_KEY")
 DOUBAO_API_URL = "https://ark.cn-beijing.volces.com/api/v3/images/generations"
 DOUBAO_MODEL = "doubao-seedream-5-0-260128"
 

@@ -535,51 +535,169 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .dash-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 20px;
 }
 @media (max-width: 900px) { .dash-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .dash-grid { grid-template-columns: 1fr; } }
 
+/* ========== 卡片主体 ========== */
 .dash-card {
-    background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg);
-    padding: 24px; display: flex; flex-direction: column; gap: 14px;
-    transition: all 0.25s ease; cursor: default; position: relative; overflow: hidden;
+    background: #fff;
+    border: 1px solid #e8eaef;
+    border-radius: 16px;
+    padding: 22px 22px 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    cursor: default; position: relative; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
 }
 .dash-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: var(--border); transition: background 0.25s ease;
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: #d1d5db; border-radius: 0 2px 2px 0;
+    transition: all 0.3s ease;
 }
-.dash-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); border-color: var(--accent-subtle); }
-.dash-card:hover::before { background: var(--accent); }
-.dash-card.generating { pointer-events: none; opacity: 0.7; }
-.dash-card.generating::before { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.dash-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    border-color: #c7cdd8;
+}
+.dash-card:hover::before { width: 5px; }
 
+/* 卡片状态 */
+.dash-card.generating { pointer-events: none; }
+.dash-card.generating::before { animation: accentPulse 1.2s ease-in-out infinite; }
+.dash-card.generated { border-color: #bbf7d0; box-shadow: 0 1px 3px rgba(34,197,94,0.08); }
+.dash-card.generated::before { background: #22c55e; }
+.dash-card.completed { border-color: #bbf7d0; background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); }
+.dash-card.completed::before { background: #16a34a; }
+
+@keyframes accentPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* ========== 各类型左侧强调色 ========== */
+.dash-card[data-type="doc"]::before { background: #4f6ef7; }
+.dash-card[data-type="doc"]:hover { border-color: #c7d2fe; box-shadow: 0 8px 25px rgba(79,110,247,0.12), 0 2px 8px rgba(0,0,0,0.04); }
+.dash-card[data-type="doc"].generating::before { background: #4f6ef7; }
+.dash-card[data-type="doc"].generated::before { background: #4f6ef7; }
+.dash-card[data-type="doc"].completed::before { background: #4f6ef7; }
+
+.dash-card[data-type="exercise"]::before { background: #22b368; }
+.dash-card[data-type="exercise"]:hover { border-color: #bbf7d0; box-shadow: 0 8px 25px rgba(34,179,104,0.12); }
+.dash-card[data-type="exercise"].generating::before { background: #22b368; }
+.dash-card[data-type="exercise"].generated::before { background: #22b368; }
+.dash-card[data-type="exercise"].completed::before { background: #22b368; }
+
+.dash-card[data-type="mindmap"]::before { background: #7c5ce7; }
+.dash-card[data-type="mindmap"]:hover { border-color: #ddd6fe; box-shadow: 0 8px 25px rgba(124,92,231,0.12); }
+.dash-card[data-type="mindmap"].generating::before { background: #7c5ce7; }
+.dash-card[data-type="mindmap"].generated::before { background: #7c5ce7; }
+.dash-card[data-type="mindmap"].completed::before { background: #7c5ce7; }
+
+.dash-card[data-type="video"]::before { background: #e54a8a; }
+.dash-card[data-type="video"]:hover { border-color: #fbcfe8; box-shadow: 0 8px 25px rgba(229,74,138,0.12); }
+.dash-card[data-type="video"].generating::before { background: #e54a8a; }
+.dash-card[data-type="video"].generated::before { background: #e54a8a; }
+.dash-card[data-type="video"].completed::before { background: #e54a8a; }
+
+.dash-card[data-type="case"]::before { background: #f07b2b; }
+.dash-card[data-type="case"]:hover { border-color: #fed7aa; box-shadow: 0 8px 25px rgba(240,123,43,0.12); }
+.dash-card[data-type="case"].generating::before { background: #f07b2b; }
+.dash-card[data-type="case"].generated::before { background: #f07b2b; }
+.dash-card[data-type="case"].completed::before { background: #f07b2b; }
+
+.dash-card[data-type="ppt"]::before { background: #d9a617; }
+.dash-card[data-type="ppt"]:hover { border-color: #fde68a; box-shadow: 0 8px 25px rgba(217,166,23,0.12); }
+.dash-card[data-type="ppt"].generating::before { background: #d9a617; }
+.dash-card[data-type="ppt"].generated::before { background: #d9a617; }
+.dash-card[data-type="ppt"].completed::before { background: #d9a617; }
+
+/* ========== 状态徽章 ========== */
+.dash-card-status {
+    position: absolute; top: 14px; right: 14px;
+    font-size: 11px; font-weight: 600; padding: 5px 12px;
+    border-radius: 20px; pointer-events: none;
+    transition: all 0.3s ease;
+}
+.dash-card-status.show { display: inline-block; }
+.dash-card.generating .dash-card-status {
+    background: #e0e7ff; color: #4f6ef7;
+    animation: badgePulse 1.3s ease-in-out infinite;
+}
+.dash-card.generated .dash-card-status {
+    background: #f0fdf4; color: #15803d;
+}
+.dash-card.completed .dash-card-status {
+    background: #dcfce7; color: #166534;
+}
+@keyframes badgePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.95)} }
+
+/* ========== 图标容器 ========== */
 .dash-card-icon {
-    width: 52px; height: 52px; border-radius: var(--radius-md);
-    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    width: 54px; height: 54px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
 }
-.dash-card-icon.doc-icon { background: #dbeafe; }
-.dash-card-icon.exercise-icon { background: #dcfce7; }
-.dash-card-icon.mindmap-icon { background: #ede9fe; }
-.dash-card-icon.video-icon { background: #fce7f3; }
-.dash-card-icon.case-icon { background: #fff7ed; }
-.dash-card-icon.ppt-icon { background: #fef3c7; }
+.dash-card:hover .dash-card-icon { transform: scale(1.05); }
+.dash-card-icon.doc-icon { background: linear-gradient(135deg, #eff3ff 0%, #dbe8fe 100%); }
+.dash-card-icon.exercise-icon { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
+.dash-card-icon.mindmap-icon { background: linear-gradient(135deg, #f5f3ff 0%, #e8e2ff 100%); }
+.dash-card-icon.video-icon { background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); }
+.dash-card-icon.case-icon { background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); }
+.dash-card-icon.ppt-icon { background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%); }
 
+/* ========== 卡片内容 ========== */
 .dash-card-body { flex: 1; }
-.dash-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--main-text); letter-spacing: -0.2px; }
-.dash-card-desc { font-size: 13px; color: var(--main-muted); line-height: 1.55; margin-bottom: 10px; }
+.dash-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: #111827; letter-spacing: -0.3px; }
+.dash-card-desc { font-size: 13px; color: #6b7280; line-height: 1.6; margin-bottom: 10px; }
 .dash-card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .dash-card-tags span {
-    font-size: 11px; padding: 3px 10px; border-radius: 12px;
-    background: var(--chat-ai-bg); color: var(--main-secondary); font-weight: 500;
+    font-size: 11px; padding: 4px 10px; border-radius: 14px;
+    background: #f3f4f6; color: #4b5563; font-weight: 600;
+    letter-spacing: 0.2px;
 }
+/* 各类型标签颜色 */
+.dash-card[data-type="doc"] .dash-card-tags span { background: #eff3ff; color: #3b5de7; }
+.dash-card[data-type="exercise"] .dash-card-tags span { background: #ecfdf5; color: #15803d; }
+.dash-card[data-type="mindmap"] .dash-card-tags span { background: #f5f3ff; color: #6935d3; }
+.dash-card[data-type="video"] .dash-card-tags span { background: #fdf2f8; color: #c44074; }
+.dash-card[data-type="case"] .dash-card-tags span { background: #fff7ed; color: #c25d16; }
+.dash-card[data-type="ppt"] .dash-card-tags span { background: #fefce8; color: #a37e0c; }
 
+/* ========== 卡片按钮 ========== */
 .dash-card-btn {
-    width: 100%; padding: 11px 0; border: 1px solid var(--border); border-radius: var(--radius-md);
-    background: #fff; color: var(--main-text); font-size: 14px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+    width: 100%; padding: 11px 0; border: none; border-radius: 10px;
+    color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s ease; font-family: inherit;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    position: relative;
 }
-.dash-card-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.dash-card-btn:active { transform: scale(0.97); }
+/* 各类型按钮渐变 */
+.dash-card[data-type="doc"] .dash-card-btn { background: linear-gradient(135deg, #4f6ef7 0%, #6366f1 100%); box-shadow: 0 4px 12px rgba(79,110,247,0.25); }
+.dash-card[data-type="doc"] .dash-card-btn:hover { background: linear-gradient(135deg, #3b5de7 0%, #4f6ef7 100%); box-shadow: 0 6px 18px rgba(79,110,247,0.35); transform: translateY(-1px); }
+.dash-card[data-type="exercise"] .dash-card-btn { background: linear-gradient(135deg, #22b368 0%, #16a34a 100%); box-shadow: 0 4px 12px rgba(34,179,104,0.25); }
+.dash-card[data-type="exercise"] .dash-card-btn:hover { background: linear-gradient(135deg, #1a8f53 0%, #15803d 100%); box-shadow: 0 6px 18px rgba(34,179,104,0.35); transform: translateY(-1px); }
+.dash-card[data-type="mindmap"] .dash-card-btn { background: linear-gradient(135deg, #7c5ce7 0%, #8b5cf6 100%); box-shadow: 0 4px 12px rgba(124,92,231,0.25); }
+.dash-card[data-type="mindmap"] .dash-card-btn:hover { background: linear-gradient(135deg, #6935d3 0%, #7c5ce7 100%); box-shadow: 0 6px 18px rgba(124,92,231,0.35); transform: translateY(-1px); }
+.dash-card[data-type="video"] .dash-card-btn { background: linear-gradient(135deg, #e54a8a 0%, #ec4899 100%); box-shadow: 0 4px 12px rgba(229,74,138,0.25); }
+.dash-card[data-type="video"] .dash-card-btn:hover { background: linear-gradient(135deg, #c44074 0%, #e54a8a 100%); box-shadow: 0 6px 18px rgba(229,74,138,0.35); transform: translateY(-1px); }
+.dash-card[data-type="case"] .dash-card-btn { background: linear-gradient(135deg, #f07b2b 0%, #f97316 100%); box-shadow: 0 4px 12px rgba(240,123,43,0.25); }
+.dash-card[data-type="case"] .dash-card-btn:hover { background: linear-gradient(135deg, #c25d16 0%, #f07b2b 100%); box-shadow: 0 6px 18px rgba(240,123,43,0.35); transform: translateY(-1px); }
+.dash-card[data-type="ppt"] .dash-card-btn { background: linear-gradient(135deg, #d9a617 0%, #eab308 100%); box-shadow: 0 4px 12px rgba(217,166,23,0.25); }
+.dash-card[data-type="ppt"] .dash-card-btn:hover { background: linear-gradient(135deg, #a37e0c 0%, #d9a617 100%); box-shadow: 0 6px 18px rgba(217,166,23,0.35); transform: translateY(-1px); }
+
+/* ========== 生成/完成状态按钮覆盖 ========== */
+.dash-card.generated .dash-card-btn,
+.dash-card.completed .dash-card-btn {
+    background: #f0fdf4 !important; color: #15803d !important;
+    box-shadow: 0 2px 6px rgba(34,197,94,0.12) !important;
+}
+.dash-card.generated .dash-card-btn:hover,
+.dash-card.completed .dash-card-btn:hover {
+    background: #22c55e !important; color: #fff !important;
+    box-shadow: 0 4px 14px rgba(34,197,94,0.28) !important;
+}
 
 /* 输出区域 */
 .dash-output {
@@ -600,11 +718,11 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 }
 .dash-output-actions { display: flex; gap: 8px; align-items: center; }
 .dash-export-btn {
-    padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    background: #fff; color: var(--main-secondary); font-size: 12px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s ease; font-family: inherit;
+    padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px;
+    background: #fff; color: #4b5563; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s ease; font-family: inherit;
 }
-.dash-export-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.dash-export-btn:hover { background: #f3f4f6; color: #111827; border-color: #d1d5db; }
 .dash-output-close {
     padding: 6px 12px; border: none; background: transparent; color: var(--main-muted);
     font-size: 16px; cursor: pointer; border-radius: var(--radius-sm);
@@ -743,9 +861,31 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .metric-note { font-size: 11px; color: var(--main-muted); margin-top: 4px; }
 
 .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
 .chart-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; }
 .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 18px; }
-.chart-canvas { width: 100%; height: 220px; }
+.chart-canvas { width: 100%; height: 240px; }
+.chart-legend { display: flex; gap: 16px; justify-content: center; margin-top: 10px; font-size: 11px; color: #6b7280; flex-wrap: wrap; }
+.chart-legend span { display: flex; align-items: center; gap: 4px; }
+.chart-legend .legend-line { width: 16px; height: 3px; border-radius: 2px; }
+
+/* 实时进度区域 */
+.eval-progress-section { margin-bottom: 20px; }
+.eval-section-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #111827; }
+.eval-progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .eval-progress-grid { grid-template-columns: 1fr; } }
+.eval-progress-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 18px 20px; }
+.eval-progress-label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 12px; }
+.eval-progress-dots { display: flex; gap: 8px; margin-bottom: 10px; }
+.ep-dot {
+    width: 36px; height: 36px; border-radius: 10px; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: #f3f4f6; opacity: 0.4; transition: all 0.3s ease;
+}
+.ep-dot.done { background: #dcfce7; opacity: 1; box-shadow: 0 2px 6px rgba(34,197,94,0.15); }
+.eval-progress-text { font-size: 12px; color: #6b7280; font-weight: 500; }
+.eval-progress-bar-wrap { height: 10px; background: #f3f4f6; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+.eval-progress-bar { height: 100%; background: linear-gradient(90deg, #6366f1, #818cf8); border-radius: 6px; transition: width 0.5s ease; }
 
 .insights-list { display: flex; flex-direction: column; gap: 10px; }
 .insight-item { display: flex; gap: 10px; padding: 12px; background: var(--chat-ai-bg); border-radius: var(--radius-md); }
@@ -761,18 +901,64 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 .toast.show { opacity: 1; transform: translateY(0); }
 
 /* 模态框 */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
-.modal-overlay.open { display: flex; }
-.modal-content { background: #fff; border-radius: var(--radius-lg); max-width: 720px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.modal-header h3 { font-size: 15px; font-weight: 600; margin: 0; }
-.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--main-muted); padding: 0 4px; line-height: 1; }
-.modal-close:hover { color: var(--main-text); }
-.modal-body { padding: 20px; overflow-y: auto; font-size: 14px; line-height: 1.7; }
-.modal-body h2, .modal-body h3 { margin-top: 16px; margin-bottom: 8px; }
-.modal-body pre { background: var(--chat-ai-bg); padding: 12px; border-radius: var(--radius-sm); overflow-x: auto; font-size: 13px; }
-.modal-body code { background: var(--chat-ai-bg); padding: 2px 6px; border-radius: 3px; font-size: 13px; }
-.modal-body pre code { padding: 0; background: none; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 28px; backdrop-filter: blur(3px); }
+.modal-overlay.open { display: flex; animation: modalFadeIn 0.2s ease; }
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-content {
+    background: #fff; border-radius: 20px; max-width: 800px; width: 100%;
+    max-height: 85vh; display: flex; flex-direction: column;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
+    animation: modalSlideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    overflow: hidden;
+}
+@keyframes modalSlideUp { from { opacity: 0; transform: translateY(30px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+.modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 28px; border-bottom: 1px solid #f0f0f0;
+    background: #fafbfc; border-radius: 20px 20px 0 0;
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; margin: 0; color: #111827; letter-spacing: -0.2px; }
+.modal-header-left { display: flex; align-items: center; gap: 10px; }
+.modal-close {
+    background: #f3f4f6; border: none; width: 34px; height: 34px; border-radius: 50%;
+    font-size: 16px; cursor: pointer; color: #6b7280;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease; font-family: inherit; line-height: 1;
+}
+.modal-close:hover { background: #e5e7eb; color: #111827; }
+
+.modal-body {
+    padding: 28px; overflow-y: auto; font-size: 14px; line-height: 1.85;
+    color: #374151;
+}
+.modal-body h2 { margin-top: 1.5em; margin-bottom: 0.6em; font-size: 18px; font-weight: 700; color: #111827; }
+.modal-body h3 { margin-top: 1.2em; margin-bottom: 0.5em; font-size: 15px; font-weight: 600; color: #1f2937; }
+.modal-body p { margin-bottom: 1em; }
+.modal-body pre { background: #f8fafc; padding: 16px; border-radius: 10px; overflow-x: auto; font-size: 13px; border: 1px solid #e5e7eb; }
+.modal-body code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #e54a8a; }
+.modal-body pre code { padding: 0; background: none; color: inherit; }
+
+.modal-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; border-top: 1px solid #f0f0f0;
+    background: #fafbfc; border-radius: 0 0 20px 20px;
+}
+.modal-footer-left { display: flex; gap: 8px; }
+.modal-footer-right { display: flex; gap: 8px; }
+.resource-complete-btn {
+    padding: 10px 24px; border: 1.5px solid #bbf7d0; border-radius: 10px;
+    background: #f0fdf4; color: #15803d; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+    letter-spacing: 0.2px;
+}
+.resource-complete-btn:hover { background: #22c55e; color: #fff; border-color: #22c55e; box-shadow: 0 4px 14px rgba(34,197,94,0.25); }
+.resource-complete-btn.done {
+    background: #dcfce7; color: #166534; border-color: #86efac;
+    cursor: default; pointer-events: none; box-shadow: none;
+}
 
 /* Mermaid */
 .mermaid-container { margin: 14px 0; padding: 14px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-md); overflow-x: auto; }
@@ -1026,6 +1212,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
     <!-- 资源卡片网格 -->
     <div class="dash-grid" id="dash-grid">
         <div class="dash-card" data-type="doc">
+            <span class="dash-card-status" style="display:none;"></span>
             <div class="dash-card-icon doc-icon">📄</div>
             <div class="dash-card-body">
                 <div class="dash-card-title">讲解文档</div>
@@ -1036,6 +1223,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
         </div>
 
         <div class="dash-card" data-type="exercise">
+            <span class="dash-card-status" style="display:none;"></span>
             <div class="dash-card-icon exercise-icon">📝</div>
             <div class="dash-card-body">
                 <div class="dash-card-title">练习题</div>
@@ -1046,6 +1234,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
         </div>
 
         <div class="dash-card" data-type="mindmap">
+            <span class="dash-card-status" style="display:none;"></span>
             <div class="dash-card-icon mindmap-icon">🧠</div>
             <div class="dash-card-body">
                 <div class="dash-card-title">思维导图</div>
@@ -1056,6 +1245,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
         </div>
 
         <div class="dash-card" data-type="video">
+            <span class="dash-card-status" style="display:none;"></span>
             <div class="dash-card-icon video-icon">🎬</div>
             <div class="dash-card-body">
                 <div class="dash-card-title">教学视频脚本</div>
@@ -1066,6 +1256,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
         </div>
 
         <div class="dash-card" data-type="case">
+            <span class="dash-card-status" style="display:none;"></span>
             <div class="dash-card-icon case-icon">💻</div>
             <div class="dash-card-body">
                 <div class="dash-card-title">实操案例</div>
@@ -1076,6 +1267,7 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
         </div>
 
         <div class="dash-card" data-type="ppt">
+            <span class="dash-card-status" style="display:none;"></span>
             <div class="dash-card-icon ppt-icon">📊</div>
             <div class="dash-card-body">
                 <div class="dash-card-title">知识点 PPT</div>
@@ -1155,11 +1347,11 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 <div id="tpl-eval">
     <div class="page-header">
         <h1 class="page-title">学习效果评估</h1>
-        <p class="page-subtitle">多维度分析你的学习表现，提供个性化改进建议</p>
+        <p class="page-subtitle">多维度分析你的学习表现，实时追踪学习进度</p>
     </div>
     <div class="eval-header-card">
-        <div class="eval-title">学习效果评估</div>
-        <div class="eval-subtitle">在对话中输入"评估我的学习效果"后，评估数据将在此显示</div>
+        <div class="eval-title">综合评分</div>
+        <div class="eval-subtitle" id="eval-update-time">数据实时更新中...</div>
         <div class="score-display" id="eval-score-area" style="display:none;">
             <div class="score-ring">
                 <svg width="100" height="100"><circle class="bg" cx="50" cy="50" r="40"/><circle class="fg" id="score-circle" cx="50" cy="50" r="40"/></svg>
@@ -1167,8 +1359,35 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
             </div>
             <div class="score-label">分</div>
         </div>
-        <div id="eval-placeholder" style="color:var(--main-muted);font-size:14px;padding:20px 0;">在对话页面输入"评估我的学习效果"，评估完成后此处将自动展示数据</div>
+        <div id="eval-placeholder" style="color:var(--main-muted);font-size:14px;padding:20px 0;">开始学习后，此处将实时展示综合评估数据</div>
     </div>
+
+    <!-- 实时进度概览 -->
+    <div class="eval-progress-section" id="eval-progress-section">
+        <div class="eval-section-title">📋 实时学习进度</div>
+        <div class="eval-progress-grid">
+            <div class="eval-progress-card" id="eval-resource-progress">
+                <div class="eval-progress-label">资源工坊完成度</div>
+                <div class="eval-progress-dots" id="eval-resource-dots">
+                    <span class="ep-dot" data-rtype="doc" title="讲解文档">📄</span>
+                    <span class="ep-dot" data-rtype="exercise" title="练习题">📝</span>
+                    <span class="ep-dot" data-rtype="mindmap" title="思维导图">🧠</span>
+                    <span class="ep-dot" data-rtype="video" title="视频脚本">🎬</span>
+                    <span class="ep-dot" data-rtype="case" title="实操案例">💻</span>
+                    <span class="ep-dot" data-rtype="ppt" title="PPT">📊</span>
+                </div>
+                <div class="eval-progress-text" id="eval-resource-text">0 / 6 已完成</div>
+            </div>
+            <div class="eval-progress-card" id="eval-path-progress">
+                <div class="eval-progress-label">学习路径完成度</div>
+                <div class="eval-progress-bar-wrap">
+                    <div class="eval-progress-bar" id="eval-path-bar" style="width:0%;"></div>
+                </div>
+                <div class="eval-progress-text" id="eval-path-text">暂无学习路径</div>
+            </div>
+        </div>
+    </div>
+
     <div class="eval-metrics">
         <div class="metric-card"><div class="metric-icon">📚</div><div class="metric-name">知识掌握度</div><div class="metric-value" id="eval-knowledge">--</div><div class="metric-note" id="eval-knowledge-note">等待评估</div></div>
         <div class="metric-card"><div class="metric-icon">⚡</div><div class="metric-name">学习效率</div><div class="metric-value" id="eval-efficiency">--</div><div class="metric-note" id="eval-efficiency-note">等待评估</div></div>
@@ -1176,8 +1395,8 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
         <div class="metric-card"><div class="metric-icon">🔥</div><div class="metric-name">学习进度</div><div class="metric-value" id="eval-progress">--</div><div class="metric-note" id="eval-progress-note">等待评估</div></div>
     </div>
     <div class="charts-row">
-        <div class="chart-card"><div class="chart-title">学习趋势</div><canvas id="trend-chart" class="chart-canvas"></canvas></div>
-        <div class="chart-card"><div class="chart-title">学习洞察</div><div id="eval-insights" class="insights-list" style="color:var(--main-muted);font-size:13px;text-align:center;padding-top:40px;">在对话页面提问并触发效果评估后将显示洞察</div></div>
+        <div class="chart-card"><div class="chart-title">📈 学习趋势</div><canvas id="trend-chart" class="chart-canvas"></canvas><div class="chart-legend" id="trend-legend"></div></div>
+        <div class="chart-card"><div class="chart-title">💡 学习洞察</div><div id="eval-insights" class="insights-list" style="color:var(--main-muted);font-size:13px;text-align:center;padding-top:40px;">开始学习后触发评估将显示洞察</div></div>
     </div>
 </div>
 
@@ -1259,10 +1478,25 @@ details.deep-thinking-block[open] .deep-thinking-summary::after {
 <div id="resource-modal" class="modal-overlay" onclick="closeResourceModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
         <div class="modal-header">
-            <h3 id="modal-title">资源详情</h3>
-            <button class="modal-close" onclick="closeResourceModal()">&times;</button>
+            <div class="modal-header-left">
+                <span id="modal-icon" style="font-size:22px;">📄</span>
+                <h3 id="modal-title">资源详情</h3>
+                <span id="modal-badge" style="display:none;font-size:11px;padding:2px 10px;border-radius:10px;background:#e0e7ff;color:#4f46e5;font-weight:500;margin-left:8px;"></span>
+            </div>
+            <div class="modal-header-actions" style="display:flex;align-items:center;gap:8px;">
+                <button id="modal-btn-docx" class="dash-export-btn" onclick="exportDashDocx()" style="display:none;">📥 导出DOCX</button>
+                <button id="modal-btn-pptx" class="dash-export-btn" onclick="exportDashPptx()" style="display:none;">📊 导出PPTX</button>
+                <button id="modal-btn-mp4" class="dash-export-btn" onclick="exportDashMp4()" style="display:none;">🎬 生成MP4</button>
+                <button class="modal-close" onclick="closeResourceModal()">&times;</button>
+            </div>
         </div>
         <div id="modal-body" class="modal-body"></div>
+        <div class="modal-footer" id="modal-footer" style="display:none;">
+            <div class="modal-footer-left"></div>
+            <div class="modal-footer-right">
+                <button class="resource-complete-btn" id="resource-complete-btn" onclick="markResourceComplete()">✅ 标记为完成</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1299,6 +1533,10 @@ window.appState = {
     messageCount: 0,
     evalScores: (function() {
         try { var s = localStorage.getItem('evalScores'); return s ? JSON.parse(s) : []; }
+        catch(e) { return []; }
+    })(),
+    evalSnapshots: (function() {
+        try { var s = localStorage.getItem('evalSnapshots'); return s ? JSON.parse(s) : []; }
         catch(e) { return []; }
     })(),
     lastEval: (function() {
@@ -1447,6 +1685,8 @@ function escapeHtmlAttr(str) {
 
 // ========== 功能面板 ==========
 var _currentFeature = null;
+var _featurePanels = {};
+var _featurePanelsInited = {};
 
 function openFeaturePanel(name) {
     // 更新侧边栏高亮
@@ -1454,15 +1694,29 @@ function openFeaturePanel(name) {
         el.classList.toggle('active', el.dataset.feature === name);
     });
 
-    var tplId = 'tpl-' + name;
-    var tpl = document.getElementById(tplId);
-    if (!tpl) { showToast('功能模块未找到'); return; }
-
     var panelBody = document.getElementById('feature-panel-body');
-    panelBody.innerHTML = '';
-    var clone = tpl.cloneNode(true);
-    // 将模板内容移入面板 (模板本身是 wrapper div，取子节点)
-    while (clone.firstChild) { panelBody.appendChild(clone.firstChild); }
+
+    // 首次打开：从模板克隆并缓存，不清除
+    if (!_featurePanels[name]) {
+        var tplId = 'tpl-' + name;
+        var tpl = document.getElementById(tplId);
+        if (!tpl) { showToast('功能模块未找到'); return; }
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'feature-panel-page';
+        var clone = tpl.cloneNode(true);
+        while (clone.firstChild) { wrapper.appendChild(clone.firstChild); }
+        panelBody.appendChild(wrapper);
+        _featurePanels[name] = wrapper;
+
+        // 清除模板内容，避免重复 id 冲突
+        tpl.innerHTML = '';
+    }
+
+    // 隐藏所有已缓存面板，仅显示当前
+    Object.keys(_featurePanels).forEach(function(key) {
+        _featurePanels[key].style.display = (key === name) ? '' : 'none';
+    });
 
     var titles = {profile: '画像分析', generate: '资源工坊', path: '路径规划', eval: '学习评估', knowledge: '知识库'};
     document.getElementById('feature-panel-title').textContent = titles[name] || '功能面板';
@@ -1472,12 +1726,18 @@ function openFeaturePanel(name) {
     document.getElementById('feature-panel').classList.add('open');
     _currentFeature = name;
 
-    // 初始化功能
+    // 初始化功能 (仅执行一次的放这里)
+    if (!_featurePanelsInited[name]) {
+        if (name === 'knowledge') { initKbPanel(); }
+        if (name === 'path') { bindPathCanvasClick(); }
+        _featurePanelsInited[name] = true;
+    }
+
+    // 每次切换都刷新的放这里
     if (name === 'profile') {
         if (window.appState.profile) {
             drawRadar();
         } else {
-            // 从数据库加载画像
             var sid = getActiveSessionId();
             fetch('/profile/' + encodeURIComponent(sid))
                 .then(function(r) { return r.json(); })
@@ -1491,11 +1751,11 @@ function openFeaturePanel(name) {
                 .catch(function() { drawRadar(); });
         }
     }
-    if (name === 'path') { drawPath(); bindPathCanvasClick(); }
-    if (name === 'eval') { populateEvalUI(); animateScore(); }
-    if (name === 'knowledge') { initKbPanel(); }
+    if (name === 'path') { drawPath(); }
+    if (name === 'eval') { refreshEval(); /* refreshEval 内部已调用 populateEvalUI + animateScore */ }
 
     // 窗口 resize 时刷新当前功能
+    window.removeEventListener('resize', window._featureResizeHandler);
     window._featureResizeHandler = function() {
         if (_currentFeature === 'path') drawPath();
         if (_currentFeature === 'eval') drawTrend();
@@ -1507,7 +1767,10 @@ function closeFeaturePanel() {
     document.getElementById('feature-panel').style.display = 'none';
     document.getElementById('feature-panel').classList.remove('open');
     document.getElementById('chat-view').style.display = 'flex';
-    document.getElementById('feature-panel-body').innerHTML = '';
+    // 不销毁面板内容，保留生成进度
+    Object.keys(_featurePanels).forEach(function(key) {
+        _featurePanels[key].style.display = 'none';
+    });
     _currentFeature = null;
 
     document.querySelectorAll('.sidebar-func-item').forEach(function(el) { el.classList.remove('active'); });
@@ -2015,6 +2278,8 @@ function streamChat(message, callbacks, options) {
                                     if (payload.type === 'profile') {
                                         window.appState.profile = payload.data;
                                         if (typeof callbacks.onProfile === 'function') callbacks.onProfile(payload.data);
+                                        // 画像更新后刷新评估（用户表达学习进度时会触发）
+                                        if (typeof refreshEval === 'function') refreshEval();
                                     } else if (payload.type === 'plan') {
                                         var planData = payload.data;
                                         if (Array.isArray(planData)) {
@@ -2033,6 +2298,14 @@ function streamChat(message, callbacks, options) {
                                             window.appState.evalScores.push(payload.data.overall_score);
                                             if (window.appState.evalScores.length > 20) {
                                                 window.appState.evalScores = window.appState.evalScores.slice(-20);
+                                            }
+                                            // 存储富快照
+                                            if (typeof storeEvalSnapshot === 'function') {
+                                                storeEvalSnapshot({
+                                                    overall_score: payload.data.overall_score,
+                                                    knowledge_level: payload.data.knowledge_level || '0%',
+                                                    resourceRate: 0, pathRate: 0
+                                                });
                                             }
                                         }
                                         saveEvalData();
@@ -2389,6 +2662,8 @@ function drawRadar() {
 var _dashGenerating = false;
 var _dashContent = '';
 var _dashCurrentType = '';
+var _resourceCache = {};
+var _modalViewType = '';
 
 var RESOURCE_PROMPTS = {
     doc: '请帮我生成关于{主题}的讲解文档。要求：概念解释+原理说明+代码示例+复杂度分析+应用场景。用Markdown格式输出，只生成讲解文档，不要生成练习题或思维导图。',
@@ -2437,12 +2712,15 @@ function genSingleResource(type) {
     _dashContent = '';
     _dashCurrentType = type;
 
-    // 高亮当前卡片
+    // 高亮当前卡片 + 状态徽章
     if (type !== 'all') {
         var card = document.querySelector('.dash-card[data-type="'+type+'"]');
         if (card) { card.classList.add('generating'); }
+        setCardStatus(type, 'generating');
     } else {
         document.querySelectorAll('.dash-card').forEach(function(c){c.classList.add('generating');});
+        // 全部模式：隐藏各卡片独立状态徽章
+        ['doc','exercise','mindmap','video','case','ppt'].forEach(function(t){ setCardStatus(t, 'hidden'); });
     }
 
     var meta = RESOURCE_META[type] || {icon:'✨', label:'学习资源', badge:''};
@@ -2515,15 +2793,25 @@ function genSingleResource(type) {
             var card = document.querySelector('.dash-card[data-type="mindmap"]');
             if (card) card.classList.remove('generating');
             if (result.success && result.url) {
+                // 缓存结果并变换卡片按钮
+                _resourceCache['mindmap'] = { imageUrl: result.url, topic: topic };
+                if (card) {
+                    card.classList.add('generated');
+                    var btn = card.querySelector('.dash-card-btn');
+                    if (btn) { btn.textContent = '📋 查看'; btn.onclick = function() { viewResource('mindmap'); }; }
+                }
+                setCardStatus('mindmap', 'generated');
                 autoDownloadImage(result.url, topic + '_思维导图');
-                showToast('✅ 思维导图已下载');
+                showToast('✅ 思维导图已生成，点击"查看"预览');
             } else {
+                setCardStatus('mindmap', 'hidden');
                 showToast('思维导图生成失败：' + (result.error || '未知错误'));
             }
         }).catch(function(err) {
             _dashGenerating = false;
             var card = document.querySelector('.dash-card[data-type="mindmap"]');
             if (card) card.classList.remove('generating');
+            setCardStatus('mindmap', 'hidden');
             showToast('请求失败：' + err.message);
         });
         return;
@@ -2544,6 +2832,15 @@ function genSingleResource(type) {
             if (!_dashContent) { showToast('生成失败：无内容返回'); return; }
             storeResourceSections(_dashContent, type);
 
+            // 缓存内容到对应卡片
+            _resourceCache[type] = { content: _dashContent, topic: topic };
+            if (card2) {
+                card2.classList.add('generated');
+                var btnEl = card2.querySelector('.dash-card-btn');
+                if (btnEl) { btnEl.textContent = '📋 查看'; btnEl.onclick = function() { viewResource(type); }; }
+            }
+            setCardStatus(type, 'generated');
+
             // 自动导出并下载
             if (type === 'ppt') {
                 downloadPPTX(_dashContent, topic);
@@ -2558,16 +2855,111 @@ function genSingleResource(type) {
             _dashGenerating = false;
             var card3 = document.querySelector('.dash-card[data-type="'+type+'"]');
             if (card3) card3.classList.remove('generating');
+            setCardStatus(type, 'hidden');
             showToast('生成出错：'+err);
         }
     }, {resource_type: type});
 }
 
+function viewResource(type) {
+    var cached = _resourceCache[type];
+    if (!cached) { showToast('请先生成内容'); return; }
+
+    var meta = RESOURCE_META[type] || {icon:'📄', label:'学习资源', badge:''};
+    _dashContent = cached.content || '';
+    _dashCurrentType = type;
+    _modalViewType = type;
+
+    // 标题 & 图标
+    document.getElementById('modal-icon').textContent = meta.icon;
+    document.getElementById('modal-title').textContent = meta.label;
+    var badgeEl = document.getElementById('modal-badge');
+    badgeEl.style.display = ''; badgeEl.textContent = meta.badge;
+
+    // 导出按钮：按类型显示
+    var showDocx = (type === 'doc' || type === 'exercise' || type === 'case');
+    var showPptx = (type === 'ppt');
+    var showMp4 = (type === 'video');
+    document.getElementById('modal-btn-docx').style.display = showDocx ? '' : 'none';
+    document.getElementById('modal-btn-pptx').style.display = showPptx ? '' : 'none';
+    document.getElementById('modal-btn-mp4').style.display = showMp4 ? '' : 'none';
+
+    // 内容渲染
+    var bodyEl = document.getElementById('modal-body');
+    if (type === 'mindmap' && cached.imageUrl) {
+        bodyEl.innerHTML = '<div style="text-align:center;padding:10px 0;">' +
+            '<img src="' + cached.imageUrl + '" style="max-width:100%;max-height:55vh;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.1);" alt="思维导图" ' +
+            'onerror="this.onerror=null;this.parentElement.innerHTML=\'<div style=text-align:center;padding:40px;color:#f59e0b;>⚠️ 图片链接已过期，请重新生成</div>\'"/>' +
+            '<p style="margin-top:16px;">' +
+            '<button onclick="autoDownloadImage(\'' + cached.imageUrl + '\', \'' + (cached.topic || '思维导图').replace(/'/g, "\\'") + '_思维导图\')" ' +
+            'style="padding:8px 20px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;">📥 重新下载图片</button>' +
+            '</p></div>';
+    } else if (cached.content) {
+        try { bodyEl.innerHTML = marked.parse(cached.content); }
+        catch(e) { bodyEl.innerHTML = '<pre style="white-space:pre-wrap;font-family:inherit;">' + escapeHtml(cached.content) + '</pre>'; }
+        setTimeout(function() {
+            renderMermaid(bodyEl);
+            renderBilibiliVideos(bodyEl);
+        }, 100);
+    }
+
+    // 底部完成按钮
+    var footer = document.getElementById('modal-footer');
+    var completeBtn = document.getElementById('resource-complete-btn');
+    footer.style.display = '';
+    if (cached.completed) {
+        completeBtn.textContent = '✅ 已完成';
+        completeBtn.classList.add('done');
+    } else {
+        completeBtn.textContent = '✅ 标记为完成';
+        completeBtn.classList.remove('done');
+    }
+
+    // 弹出
+    document.getElementById('resource-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    bodyEl.scrollTop = 0;
+}
+
+function markResourceComplete() {
+    var type = _modalViewType;
+    if (!type || !_resourceCache[type]) return;
+    _resourceCache[type].completed = true;
+
+    // 更新弹窗按钮
+    var btn = document.getElementById('resource-complete-btn');
+    btn.textContent = '✅ 已完成';
+    btn.classList.add('done');
+
+    // 更新卡片样式 & 状态徽章
+    var card = document.querySelector('.dash-card[data-type="' + type + '"]');
+    if (card) { card.classList.add('completed'); card.classList.remove('generated'); }
+    setCardStatus(type, 'completed');
+
+    // 实时更新学习评估
+    refreshEval();
+
+    showToast('🎉 ' + (RESOURCE_META[type] || {}).label + ' 已标记为完成');
+}
+
+function setCardStatus(type, status) {
+    var card = document.querySelector('.dash-card[data-type="' + type + '"]');
+    if (!card) return;
+    var badge = card.querySelector('.dash-card-status');
+    if (!badge) return;
+    if (!status || status === 'hidden') {
+        badge.style.display = 'none'; badge.textContent = '';
+    } else {
+        badge.style.display = '';
+        if (status === 'generating') badge.textContent = '⏳ 生成中...';
+        else if (status === 'generated') badge.textContent = '📋 可查看';
+        else if (status === 'completed') badge.textContent = '✅ 已完成';
+    }
+}
+
 function closeDashOutput() {
     document.getElementById('dash-output').style.display = 'none';
-    document.getElementById('dash-output-content').innerHTML = '';
-    _dashContent = '';
-    _dashCurrentType = '';
+    // 不清空 _dashContent / _dashCurrentType，以便再次查看时可复用
 }
 
 function exportDashDocx() {
@@ -2973,6 +3365,8 @@ function toggleStepStatus() {
     window.appState.learningPlan = plan;
     renderStepDetail(_selectedStepIndex);
     drawPath();
+    // 实时更新学习评估
+    refreshEval();
     showToast('🎉 步骤 "'+step.title+'" 已完成！');
 }
 
@@ -3061,10 +3455,15 @@ function animateScore() {
     if (!circle || !num) return;
     var placeholder = document.getElementById('eval-placeholder');
     var scoreArea = document.getElementById('eval-score-area');
+    var timeEl = document.getElementById('eval-update-time');
     if (window.appState.lastEval && window.appState.lastEval.overall_score != null) {
         var target = window.appState.lastEval.overall_score;
         if (placeholder) placeholder.style.display = 'none';
         if (scoreArea) scoreArea.style.display = '';
+        if (timeEl) {
+            var now = new Date();
+            timeEl.textContent = '更新于 ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        }
         var circumference = 251;
         var current = 0;
         var offset = circumference - (target/100)*circumference;
@@ -3079,6 +3478,7 @@ function animateScore() {
         num.textContent = '--';
         if (placeholder) placeholder.style.display = '';
         if (scoreArea) scoreArea.style.display = 'none';
+        if (timeEl) timeEl.textContent = '数据实时更新中...';
     }
 }
 
@@ -3087,72 +3487,343 @@ function populateEvalUI() {
     if (!evalData) return;
 
     var scoreArea = document.getElementById('eval-score-area');
-    if (scoreArea) { document.querySelector('.score-ring') ? document.querySelector('.score-ring').style.display = '' : null; }
+    if (scoreArea) { var ring = document.querySelector('.score-ring'); if (ring) ring.style.display = ''; }
     var placeholder = document.getElementById('eval-placeholder');
     if (placeholder) placeholder.style.display = 'none';
 
+    // 四项指标
     var knowledgeEl = document.getElementById('eval-knowledge');
     if (knowledgeEl && evalData.knowledge_level) { knowledgeEl.textContent = evalData.knowledge_level; var n=document.getElementById('eval-knowledge-note'); if(n)n.textContent='知识掌握度'; }
     var efficiencyEl = document.getElementById('eval-efficiency');
     if (efficiencyEl && evalData.efficiency_level) { efficiencyEl.textContent = evalData.efficiency_level; var n=document.getElementById('eval-efficiency-note'); if(n)n.textContent='学习效率评估'; }
     var weaknessEl = document.getElementById('eval-weakness');
-    if (weaknessEl && evalData.weak_points_list) { weaknessEl.textContent = evalData.weak_points_list.length>0 ? evalData.weak_points_list.length+' 项' : '无'; var n=document.getElementById('eval-weakness-note'); if(n)n.textContent = evalData.weak_points_list.length>0 ? evalData.weak_points_list.join('、') : '暂未发现薄弱点'; }
+    if (weaknessEl && evalData.weak_points_list) { weaknessEl.textContent = evalData.weak_points_list.length>0 ? evalData.weak_points_list.length+' 项' : '无'; var n=document.getElementById('eval-weakness-note'); if(n)n.textContent = evalData.weak_points_list.length>0 ? evalData.weak_points_list.slice(0,3).join('、') : '暂未发现薄弱点'; }
     var progressEl = document.getElementById('eval-progress');
     if (progressEl && evalData.progress_summary) { progressEl.textContent = evalData.progress_summary.length>10 ? evalData.progress_summary.slice(0,10)+'...' : evalData.progress_summary; var n=document.getElementById('eval-progress-note'); if(n)n.textContent=evalData.progress_summary; }
 
+    // 洞察建议
     var insightsEl = document.getElementById('eval-insights');
     if (insightsEl) {
         var insights = [];
-        if (evalData.suggestions) insights.push('<strong>学习建议：</strong>'+evalData.suggestions);
-        if (evalData.pace_recommendation) insights.push('<strong>节奏建议：</strong>'+evalData.pace_recommendation);
-        if (insights.length > 0) { insightsEl.innerHTML = insights.map(function(s){return '<p>'+s+'</p>';}).join(''); insightsEl.style.color=''; insightsEl.style.textAlign='left'; insightsEl.style.paddingTop=''; }
+        if (evalData.suggestions) {
+            var suggestionsText = typeof evalData.suggestions === 'string' ? evalData.suggestions : evalData.suggestions.join('；');
+            insights.push({icon:'📝', title:'学习建议', desc: suggestionsText});
+        }
+        if (evalData.pace_recommendation) insights.push({icon:'⏱', title:'学习节奏', desc: '当前节奏：' + evalData.pace_recommendation});
+        if (evalData.resource_completion) insights.push({icon:'📦', title:'资源完成', desc: '资源工坊完成 ' + evalData.resource_completion});
+        if (evalData.path_completion && evalData.path_completion !== '--') insights.push({icon:'🗺', title:'路径进度', desc: '学习路径完成 ' + evalData.path_completion});
+        if (insights.length > 0) {
+            insightsEl.innerHTML = insights.map(function(item) {
+                return '<div class="insight-item"><div class="insight-icon">'+item.icon+'</div><div class="insight-content"><h4>'+item.title+'</h4><p>'+item.desc+'</p></div></div>';
+            }).join('');
+            insightsEl.style.color = ''; insightsEl.style.textAlign = 'left'; insightsEl.style.paddingTop = '';
+        }
     }
+
+    // 更新实时进度指示器
+    updateEvalProgressIndicators();
     drawTrend();
 }
 
 function drawTrend() {
     var canvas = document.getElementById('trend-chart');
     if (!canvas) return;
-    var scores = window.appState.evalScores;
-    var ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth * 2;
-    canvas.height = canvas.offsetHeight * 2;
-    ctx.scale(2, 2);
-    var w = canvas.offsetWidth, h = canvas.offsetHeight;
-
-    if (!scores || scores.length === 0) {
-        ctx.fillStyle = '#a8a29e'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('触发效果评估后将显示学习趋势', w/2, h/2); return;
+    var snapshots = window.appState.evalSnapshots || [];
+    // 同时兼容旧 evalScores
+    if (snapshots.length === 0 && window.appState.evalScores && window.appState.evalScores.length > 0) {
+        var oldScores = window.appState.evalScores;
+        for (var oi = 0; oi < oldScores.length; oi++) {
+            snapshots.push({ time: new Date(Date.now() - (oldScores.length - oi) * 60000).toISOString(), overall: oldScores[oi], knowledge: 0, resourceRate: 0, pathRate: 0 });
+        }
     }
 
-    var pad = 30;
-    ctx.strokeStyle = '#e7e5e4';
-    for (var i = 0; i <= 4; i++) { var y = pad + (h-pad*2)/4*i; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); }
+    var ctx = canvas.getContext('2d');
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var w = rect.width, h = rect.height;
 
-    if (scores.length === 1) {
-        var cy = pad + (100-scores[0])/100*(h-pad*2);
-        ctx.beginPath(); ctx.arc(w/2, cy, 8, 0, Math.PI*2); ctx.fillStyle='#6366f1'; ctx.fill();
-        ctx.fillStyle='#44403c'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center'; ctx.fillText(scores[0]+' 分', w/2, cy-16); ctx.textAlign='start';
-        ctx.fillStyle='#a8a29e'; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.fillText('#1', w/2, h-pad+16); ctx.textAlign='start';
+    // 图例
+    var legendEl = document.getElementById('trend-legend');
+    if (legendEl) {
+        if (snapshots.length > 0) {
+            legendEl.innerHTML = '<span><span class="legend-line" style="background:#6366f1;"></span>综合评分</span><span><span class="legend-line" style="background:#22c55e;"></span>知识掌握</span><span><span class="legend-line" style="background:#f59e0b;"></span>资源进度</span><span><span class="legend-line" style="background:#3b82f6;"></span>路径进度</span>';
+        } else {
+            legendEl.innerHTML = '';
+        }
+    }
+
+    if (snapshots.length === 0) {
+        ctx.fillStyle = '#9ca3af'; ctx.font = '13px -apple-system, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('开始学习后，此处将显示多维学习趋势', w / 2, h / 2);
         return;
     }
 
-    var stepX = (w - pad*2) / (scores.length - 1);
-    var grad = ctx.createLinearGradient(0, pad, 0, h-pad);
-    grad.addColorStop(0, 'rgba(99,102,241,0.1)'); grad.addColorStop(1, 'rgba(99,102,241,0)');
-    ctx.beginPath(); ctx.moveTo(pad, h-pad);
-    scores.forEach(function(v, i) { ctx.lineTo(pad + i*stepX, pad + (100-v)/100*(h-pad*2)); });
-    ctx.lineTo(pad + (scores.length-1)*stepX, h-pad); ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
-    ctx.beginPath(); ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 2;
-    scores.forEach(function(v, i) { var x=pad+i*stepX, y=pad+(100-v)/100*(h-pad*2); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); });
-    ctx.stroke();
-    scores.forEach(function(v, i) { var x=pad+i*stepX, y=pad+(100-v)/100*(h-pad*2); ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fillStyle='#6366f1'; ctx.fill(); });
-    ctx.fillStyle = '#a8a29e'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
-    scores.forEach(function(_, i) { ctx.fillText('#'+(i+1), pad+i*stepX, h-8); });
+    var pad = { top: 20, right: 20, bottom: 30, left: 32 };
+    var pw = w - pad.left - pad.right;
+    var ph = h - pad.top - pad.bottom;
+
+    // Y轴网格 (5 条线)
+    ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 1;
+    for (var yi = 0; yi <= 4; yi++) {
+        var y = pad.top + (ph / 4) * yi;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
+        ctx.fillStyle = '#9ca3af'; ctx.font = '10px -apple-system, sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText((100 - yi * 25) + '', pad.left - 6, y + 4);
+    }
+
+    // 数据系列定义
+    var series = [
+        { key: 'overall', color: '#6366f1', label: '综合', lineWidth: 2.5 },
+        { key: 'knowledge', color: '#22c55e', label: '知识', lineWidth: 1.5 },
+        { key: 'resourceRate', color: '#f59e0b', label: '资源', lineWidth: 1.2 },
+        { key: 'pathRate', color: '#3b82f6', label: '路径', lineWidth: 1.2 }
+    ];
+
+    var stepX = snapshots.length > 1 ? pw / (snapshots.length - 1) : pw / 2;
+
+    // 先画面积（仅综合评分）
+    var overallPoints = snapshots.map(function(s, i) {
+        return { x: pad.left + i * stepX, y: pad.top + (100 - (s.overall || 0)) / 100 * ph };
+    });
+    if (overallPoints.length > 1) {
+        var grad = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
+        grad.addColorStop(0, 'rgba(99,102,241,0.12)');
+        grad.addColorStop(1, 'rgba(99,102,241,0.0)');
+        ctx.beginPath();
+        ctx.moveTo(overallPoints[0].x, h - pad.bottom);
+        overallPoints.forEach(function(p) { ctx.lineTo(p.x, p.y); });
+        ctx.lineTo(overallPoints[overallPoints.length - 1].x, h - pad.bottom);
+        ctx.closePath();
+        ctx.fillStyle = grad; ctx.fill();
+    }
+
+    // 画各条线
+    series.forEach(function(ser) {
+        var points = snapshots.map(function(s, i) {
+            var val = s[ser.key] || 0;
+            return { x: pad.left + i * stepX, y: pad.top + (100 - val) / 100 * ph, val: val };
+        });
+
+        if (points.length < 2 && ser.key !== 'overall') return;
+
+        ctx.beginPath();
+        ctx.strokeStyle = ser.color;
+        ctx.lineWidth = ser.lineWidth;
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        points.forEach(function(p, i) {
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.stroke();
+
+        // 数据点
+        points.forEach(function(p) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, ser.key === 'overall' ? 4.5 : 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.strokeStyle = ser.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        });
+
+        // 综合线标注数值
+        if (ser.key === 'overall' && points.length > 0) {
+            var lastP = points[points.length - 1];
+            ctx.fillStyle = '#6366f1';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(lastP.val + '', lastP.x + 8, lastP.y - 4);
+        }
+    });
+
+    // X轴标签
+    ctx.fillStyle = '#9ca3af'; ctx.font = '10px -apple-system, sans-serif'; ctx.textAlign = 'center';
+    var maxLabels = Math.min(snapshots.length, 8);
+    var labelStep = Math.max(1, Math.floor(snapshots.length / maxLabels));
+    snapshots.forEach(function(s, i) {
+        if (i % labelStep === 0 || i === snapshots.length - 1) {
+            var d = new Date(s.time);
+            var label = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+            ctx.fillText(label, pad.left + i * stepX, h - 6);
+        }
+    });
 }
 
 function saveEvalData() {
-    try { localStorage.setItem('evalScores', JSON.stringify(window.appState.evalScores)); localStorage.setItem('lastEval', JSON.stringify(window.appState.lastEval)); } catch(e) {}
+    try {
+        localStorage.setItem('evalScores', JSON.stringify(window.appState.evalScores));
+        localStorage.setItem('evalSnapshots', JSON.stringify(window.appState.evalSnapshots));
+        localStorage.setItem('lastEval', JSON.stringify(window.appState.lastEval));
+    } catch(e) {}
+}
+
+// ========== 实时评估计算引擎 ==========
+
+function computeLocalEval() {
+    var RESOURCE_TYPES = ['doc', 'exercise', 'mindmap', 'video', 'case', 'ppt'];
+    var completedResources = RESOURCE_TYPES.filter(function(t) {
+        return _resourceCache[t] && _resourceCache[t].completed;
+    });
+    var resourceRate = completedResources.length / RESOURCE_TYPES.length;
+
+    var plan = getPlan ? getPlan() : window.appState.learningPlan;
+    var pathSteps = (plan && plan.steps) ? plan.steps : [];
+    var doneSteps = pathSteps.filter(function(s) { return s.status === 'done'; });
+    var pathRate = pathSteps.length > 0 ? doneSteps.length / pathSteps.length : 0;
+
+    var profile = window.appState.profile;
+    var knowledgeScore = 0;
+    if (profile && profile.knowledge_base) {
+        knowledgeScore = (_PROFILE_MAPS.knowledge[profile.knowledge_base] || 40) / 100;
+    }
+
+    // 综合评分: 资源 25% + 路径 25% + 知识 30% + 进度 20%
+    var resourceScore = Math.round(resourceRate * 100);
+    var pathScore = Math.round(pathRate * 100);
+    var knowledgePct = Math.round(knowledgeScore * 100);
+    var overall = Math.round(resourceRate * 25 + pathRate * 25 + knowledgeScore * 30 + Math.max(resourceRate, pathRate) * 20);
+
+    // 效率评估
+    var efficiency = '偏低';
+    if (completedResources.length >= 4 || doneSteps.length >= 3) efficiency = '较高';
+    else if (completedResources.length >= 2 || doneSteps.length >= 1) efficiency = '中等';
+
+    // 薄弱点
+    var weakPoints = (profile && profile.weak_points) ? profile.weak_points : [];
+
+    // 进度摘要
+    var progressParts = [];
+    if (completedResources.length > 0) progressParts.push('资源' + completedResources.length + '/6');
+    if (doneSteps.length > 0) progressParts.push('路径' + doneSteps.length + '/' + pathSteps.length);
+    var progressSummary = progressParts.length > 0 ? progressParts.join('，') : '尚未开始学习';
+
+    return {
+        overall_score: overall,
+        knowledge_level: profile ? (knowledgePct + '%') : '--',
+        efficiency_level: efficiency,
+        weak_points_list: weakPoints,
+        progress_summary: progressSummary,
+        suggestions: buildLocalSuggestions(resourceRate, pathRate, profile),
+        pace_recommendation: (profile && profile.learning_pace) ? profile.learning_pace : '中',
+        resource_completion: completedResources.length + '/' + RESOURCE_TYPES.length,
+        path_completion: pathSteps.length > 0 ? (doneSteps.length + '/' + pathSteps.length) : '--',
+        resourceRate: resourceRate,
+        pathRate: pathRate,
+        knowledgePct: knowledgePct
+    };
+}
+
+function buildLocalSuggestions(resourceRate, pathRate, profile) {
+    var tips = [];
+    if (resourceRate < 0.3) tips.push('建议前往资源工坊生成学习资料');
+    else if (resourceRate < 0.7) tips.push('继续完成资源工坊中的剩余资源');
+    else tips.push('资源完成度良好，可导出复习');
+
+    if (pathRate === 0) tips.push('建议生成学习路径规划以明确方向');
+    else if (pathRate < 0.5) tips.push('按学习路径继续推进，完成更多步骤');
+    else tips.push('学习路径进展顺利，保持节奏');
+
+    if (profile && profile.weak_points && profile.weak_points.length > 0) {
+        tips.push('重点关注薄弱环节：' + profile.weak_points.slice(0, 3).join('、'));
+    }
+    return tips.join('；');
+}
+
+function storeEvalSnapshot(evalData) {
+    if (!window.appState.evalSnapshots) window.appState.evalSnapshots = [];
+    var snapshots = window.appState.evalSnapshots;
+    var now = new Date();
+    snapshots.push({
+        time: now.toISOString(),
+        overall: evalData.overall_score,
+        knowledge: parseInt(evalData.knowledge_level) || 0,
+        resourceRate: Math.round((evalData.resourceRate || 0) * 100),
+        pathRate: Math.round((evalData.pathRate || 0) * 100)
+    });
+    // 合并 2 分钟内的重复快照
+    if (snapshots.length >= 2) {
+        var last = snapshots[snapshots.length - 2];
+        var curr = snapshots[snapshots.length - 1];
+        if (now - new Date(last.time) < 120000 && last.overall === curr.overall) {
+            snapshots.pop();
+        }
+    }
+    if (snapshots.length > 30) snapshots.shift();
+    saveEvalData();
+}
+
+function refreshEval() {
+    var evalData = computeLocalEval();
+
+    // 如果完全没有数据且之前没有LLM评估，保留占位状态
+    var hasLLMEval = window.appState.lastEval && window.appState.lastEval.suggestions && !window.appState.lastEval.resource_completion;
+    if (evalData.overall_score === 0 && !hasLLMEval && evalData.knowledge_level === '--') {
+        // 尚无任何学习活动，保留原有状态不覆盖
+        updateEvalProgressIndicators();
+        return;
+    }
+
+    // 若有LLM评估但本地数据不足，融合展示
+    if (hasLLMEval && evalData.overall_score < 20) {
+        evalData.overall_score = window.appState.lastEval.overall_score || evalData.overall_score;
+        evalData.knowledge_level = window.appState.lastEval.knowledge_level || evalData.knowledge_level;
+        evalData.weak_points_list = window.appState.lastEval.weak_points_list || evalData.weak_points_list;
+    }
+
+    window.appState.lastEval = evalData;
+
+    // 更新快照（仅在有实质变化时）
+    var snapshots = window.appState.evalSnapshots || [];
+    var lastSnap = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+    if (!lastSnap || lastSnap.overall !== evalData.overall_score) {
+        storeEvalSnapshot(evalData);
+    }
+
+    // 若当前在评估页面，刷新 UI
+    if (_currentFeature === 'eval') {
+        populateEvalUI();
+        animateScore();
+    }
+    // 更新进度指示器
+    updateEvalProgressIndicators();
+}
+
+function updateEvalProgressIndicators() {
+    // 资源圆点
+    var dots = document.querySelectorAll('#eval-resource-dots .ep-dot');
+    dots.forEach(function(dot) {
+        var rtype = dot.getAttribute('data-rtype');
+        if (_resourceCache[rtype] && _resourceCache[rtype].completed) {
+            dot.classList.add('done');
+        } else {
+            dot.classList.remove('done');
+        }
+    });
+    var resourceText = document.getElementById('eval-resource-text');
+    if (resourceText) {
+        var done = Object.keys(_resourceCache).filter(function(k) { return _resourceCache[k] && _resourceCache[k].completed; }).length;
+        resourceText.textContent = done + ' / 6 已完成';
+    }
+    // 路径进度条
+    var pathBar = document.getElementById('eval-path-bar');
+    var pathText = document.getElementById('eval-path-text');
+    if (pathBar && pathText) {
+        var plan = window.appState.learningPlan;
+        var steps = (plan && plan.steps) ? plan.steps : [];
+        if (steps.length > 0) {
+            var doneCount = steps.filter(function(s) { return s.status === 'done'; }).length;
+            var pct = Math.round(doneCount / steps.length * 100);
+            pathBar.style.width = pct + '%';
+            pathText.textContent = doneCount + ' / ' + steps.length + ' 步骤已完成';
+        } else {
+            pathBar.style.width = '0%';
+            pathText.textContent = '暂无学习路径';
+        }
+    }
 }
 
 // ========== 模态框 ==========
@@ -3162,7 +3833,14 @@ function showResourceDetail(idx) {
     var sec = sections[idx];
     var title = sec.title || '资源详情';
     var body = sec.body || sec;
+    document.getElementById('modal-icon').textContent = '📄';
     document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-badge').style.display = 'none';
+    document.getElementById('modal-btn-docx').style.display = 'none';
+    document.getElementById('modal-btn-pptx').style.display = 'none';
+    document.getElementById('modal-btn-mp4').style.display = 'none';
+    document.getElementById('modal-footer').style.display = 'none';
+    _modalViewType = '';
     var modalBody = document.getElementById('modal-body');
     modalBody.innerHTML = '<div style="text-align:center;padding:40px 0;color:var(--main-muted);"><div style="font-size:32px;margin-bottom:12px;">🔄</div><div style="font-size:14px;">正在渲染内容...</div><div class="shimmer" style="width:80%;margin:12px auto;"></div><div class="shimmer" style="width:60%;margin:8px auto;"></div><div class="shimmer" style="width:70%;margin:8px auto;"></div></div>';
     document.getElementById('resource-modal').classList.add('open');
@@ -3197,7 +3875,14 @@ function showResourceDetail(idx) {
 
 function closeResourceModal(e) {
     if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
-    document.getElementById('resource-modal').classList.remove('open'); document.body.style.overflow = '';
+    document.getElementById('resource-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    // 重置导出按钮和底部栏
+    document.getElementById('modal-btn-docx').style.display = 'none';
+    document.getElementById('modal-btn-pptx').style.display = 'none';
+    document.getElementById('modal-btn-mp4').style.display = 'none';
+    document.getElementById('modal-footer').style.display = 'none';
+    _modalViewType = '';
 }
 
 // ========== Mermaid 渲染 ==========

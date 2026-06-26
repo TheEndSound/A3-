@@ -14,3 +14,4 @@ ddgs>=9.0.0
 python-pptx>=0.6.21
 edge-tts>=6.1.0
 psycopg2-binary>=2.9
+cryptography>=46.0

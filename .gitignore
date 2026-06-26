@@ -46,3 +46,7 @@ _t2.py
 # Cached platform resources
 index_files/
 index_files/**/*
+
+# API Key encryption
+.encryption_key
+.env.bak

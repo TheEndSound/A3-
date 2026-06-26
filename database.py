@@ -12,6 +12,7 @@ from contextlib import contextmanager
 
 import psycopg2
 import psycopg2.pool
+from crypto_utils import get_env_secret
 
 # ================== 数据库连接配置 ==================
 
@@ -20,7 +21,7 @@ DB_CONFIG = {
     "port": int(os.getenv("DB_PORT", "5432")),
     "database": os.getenv("DB_NAME", "ai_learning"),
     "user": os.getenv("DB_USER", "postgres"),
-    "password": os.getenv("DB_PASSWORD", "123456"),
+    "password": get_env_secret("DB_PASSWORD", "123456"),
 }
 
 _lock = threading.Lock()
